@@ -1,99 +1,82 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tweet } from '../types';
 import Avatar from './Avatar';
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, AnalyticsIcon, MoreIcon, PinIcon } from './Icon';
 import PollDisplay from './PollDisplay';
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, BookmarkIcon, AnalyticsIcon, PinIcon, MoreIcon, HeartFillIcon, RetweetFillIcon, BookmarkFillIcon, VolumeUpIcon, VolumeOffIcon } from './Icon';
+import { motion } from 'framer-motion';
 
 interface TweetCardProps {
   tweet: Tweet;
-  isPinned?: boolean;
   onImageClick: (url: string) => void;
 }
 
-const TweetCard: React.FC<TweetCardProps> = ({ tweet, isPinned = false, onImageClick }) => {
-  const { user, content, timestamp, mediaUrls, poll, replyCount, retweetCount, likeCount, isLiked, isRetweeted, isBookmarked } = tweet;
-  const [isMuted, setIsMuted] = useState(true);
+const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick }) => {
+  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, viewCount, poll, pinned } = tweet;
 
-  const formatTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatTimestamp = (ts: string) => {
+    const date = new Date(ts);
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return `${diffInSeconds}s`;
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) return `${diffInMinutes}m`;
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h`;
-    
+    const diffSeconds = Math.round((now.getTime() - date.getTime()) / 1000);
+    if (diffSeconds < 60) return `${diffSeconds}s`;
+    const diffMinutes = Math.round(diffSeconds / 60);
+    if (diffMinutes < 60) return `${diffMinutes}m`;
+    const diffHours = Math.round(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
-  
-  const actionItems = [
-    { icon: <ReplyIcon />, count: replyCount, color: 'hover:text-twitter-blue hover:bg-twitter-blue/10' },
-    { icon: isRetweeted ? <RetweetFillIcon /> : <RetweetIcon />, count: retweetCount, color: isRetweeted ? 'text-green-500' : 'hover:text-green-500 hover:bg-green-500/10' },
-    { icon: isLiked ? <HeartFillIcon /> : <LikeIcon />, count: likeCount, color: isLiked ? 'text-red-500' : 'hover:text-red-500 hover:bg-red-500/10' },
-    { icon: <AnalyticsIcon />, color: 'hover:text-twitter-blue hover:bg-twitter-blue/10' },
-    { icon: isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />, color: isBookmarked ? 'text-twitter-blue' : 'hover:text-twitter-blue hover:bg-twitter-blue/10' },
-    { icon: <ShareIcon />, color: 'hover:text-twitter-blue hover:bg-twitter-blue/10' },
+
+  const actionButtons = [
+    { icon: <ReplyIcon />, count: replyCount, color: 'hover:text-twitter-blue' },
+    { icon: <RetweetIcon />, count: retweetCount, color: 'hover:text-green-500' },
+    { icon: <LikeIcon />, count: likeCount, color: 'hover:text-red-500' },
+    { icon: <AnalyticsIcon />, count: viewCount, color: 'hover:text-twitter-blue' },
+    { icon: <ShareIcon />, count: undefined, color: 'hover:text-twitter-blue' },
   ];
 
-  const hasMedia = mediaUrls && mediaUrls.length > 0;
-  const isVideo = hasMedia && mediaUrls[0].endsWith('.mp4');
-
   return (
-    <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border cursor-pointer">
-      {isPinned && (
-        <div className="flex items-center gap-3 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-2 ml-8">
-          <PinIcon />
-          <span>Pinned Tweet</span>
-        </div>
-      )}
-      <div className="flex gap-4">
+    <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors duration-200">
+      <div className="flex-shrink-0">
         <Avatar src={user.avatarUrl} alt={user.displayName} />
-        <div className="flex-1">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1">
-              <span className="font-bold hover:underline">{user.displayName}</span>
-              {user.verified && <VerifiedIcon />}
-              <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{user.username}</span>
-              <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">·</span>
-              <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text hover:underline">{formatTimestamp(timestamp)}</span>
-            </div>
-            <div className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text"><MoreIcon /></div>
+      </div>
+      <div className="flex-1">
+        {pinned && (
+          <div className="flex items-center gap-2 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-1">
+            <PinIcon />
+            <span>Pinned</span>
           </div>
-          <p className="whitespace-pre-wrap">{content}</p>
-
-          {mediaUrls && mediaUrls.length > 0 && (
-            <div className="mt-2 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border group relative">
-              {isVideo ? (
-                <>
-                  <video src={mediaUrls[0]} autoPlay loop muted={isMuted} playsInline className="w-full h-auto object-cover"/>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
-                    className="absolute bottom-2 right-2 bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-                  </button>
-                </>
-              ) : (
-                <img onClick={(e) => { e.stopPropagation(); onImageClick(mediaUrls[0]); }} src={mediaUrls[0]} alt="Tweet media" className="w-full h-auto object-cover"/>
-              )}
-            </div>
-          )}
-
-          {poll && <PollDisplay poll={poll} />}
-
-          <div className="flex justify-between items-center mt-3 max-w-md text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
-             {actionItems.map((item, index) => (
-               <div key={index} className={`flex items-center gap-1 group ${item.color}`}>
-                 <div className="p-2 rounded-full group-hover:bg-current/10">
-                    {item.icon}
-                 </div>
-                 {item.count !== undefined && <span className="text-sm">{item.count}</span>}
-               </div>
-             ))}
+        )}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="font-bold hover:underline">{user.displayName}</span>
+            {user.verified && <VerifiedIcon />}
+            <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{user.username}</span>
+            <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">·</span>
+            <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text hover:underline">{formatTimestamp(timestamp)}</span>
           </div>
+          <button className="p-2 hover:bg-twitter-blue/10 rounded-full text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text"><MoreIcon /></button>
+        </div>
+        <p className="whitespace-pre-wrap my-1">{content}</p>
+
+        {mediaUrls && mediaUrls.length > 0 && (
+          <div className={`mt-3 grid gap-1 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border ${mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} ${mediaUrls.length === 3 ? '[&>*:first-child]:row-span-2' : ''}`}>
+            {mediaUrls.map((url, index) => (
+              <motion.div key={url} layoutId={url} onClick={(e) => { e.stopPropagation(); onImageClick(url); }} className="cursor-pointer relative overflow-hidden aspect-video">
+                <img src={url} alt={`Tweet media ${index + 1}`} className="w-full h-full object-cover" />
+              </motion.div>
+            ))}
+          </div>
+        )}
+        
+        {poll && <PollDisplay poll={poll} />}
+
+        <div className="flex justify-between items-center mt-3 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+          {actionButtons.map((btn, index) => (
+            <div key={index} className={`flex items-center gap-1 group transition-colors duration-200 ${btn.color}`}>
+              <button onClick={(e) => e.stopPropagation()} className={`p-2 rounded-full group-hover:bg-current group-hover:bg-opacity-10`}>{btn.icon}</button>
+              {btn.count !== undefined && <span className="text-sm">{btn.count.toLocaleString()}</span>}
+            </div>
+          ))}
         </div>
       </div>
     </div>

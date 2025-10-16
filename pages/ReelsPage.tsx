@@ -1,52 +1,48 @@
 
-import React, { useMemo, useState } from 'react';
-import { mockTweets } from '../data/mockData';
+import React, { useRef, useEffect } from 'react';
+import { mockReels } from '../data/mockData';
 import ReelCard from '../components/ReelCard';
-import ReelComments from '../components/ReelComments';
-import { AnimatePresence } from 'framer-motion';
 
 const ReelsPage: React.FC = () => {
-  const [commentsReelId, setCommentsReelId] = useState<string | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-  const videoReels = useMemo(
-    () => mockTweets.filter(t => t.mediaUrls && t.mediaUrls.some(url => url.endsWith('.mp4'))),
-    []
-  );
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    const video = entry.target.querySelector('video');
+                    if (video) {
+                        if (entry.isIntersecting) {
+                            video.play();
+                        } else {
+                            video.pause();
+                        }
+                    }
+                });
+            },
+            { threshold: 0.5 }
+        );
 
-  const handleOpenComments = (reelId: string) => {
-    setCommentsReelId(reelId);
-  };
-  
-  const handleCloseComments = () => {
-    setCommentsReelId(null);
-  };
-  
-  const selectedReel = videoReels.find(r => r.id === commentsReelId);
+        const reels = containerRef.current?.querySelectorAll('.reel-card-container');
+        reels?.forEach((reel) => observer.observe(reel));
 
-  return (
-    <div className="relative h-screen w-full flex justify-center bg-black overflow-hidden">
-      <div className="absolute top-0 left-0 p-4 z-20">
-          <h1 className="text-xl font-bold text-white drop-shadow-lg">Reels</h1>
-      </div>
-      <div className="h-screen w-full max-w-[480px] overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar">
-        {videoReels.map(reel => (
-          <ReelCard 
-            key={reel.id} 
-            reel={reel}
-            onCommentClick={() => handleOpenComments(reel.id)} 
-          />
-        ))}
-      </div>
-      <AnimatePresence>
-        {commentsReelId && selectedReel && (
-          <ReelComments
-            reel={selectedReel}
-            onClose={handleCloseComments}
-          />
-        )}
-      </AnimatePresence>
-    </div>
-  );
+        return () => {
+            reels?.forEach((reel) => observer.unobserve(reel));
+        };
+    }, []);
+
+    return (
+        <div 
+            ref={containerRef}
+            className="h-screen w-full snap-y snap-mandatory overflow-y-auto"
+        >
+            {mockReels.map(reel => (
+                <div key={reel.id} className="reel-card-container snap-start h-screen w-full flex items-center justify-center bg-black">
+                    <ReelCard reel={reel} />
+                </div>
+            ))}
+        </div>
+    );
 };
 
 export default ReelsPage;

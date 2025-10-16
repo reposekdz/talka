@@ -7,112 +7,55 @@ import ExplorePage from './pages/ExplorePage';
 import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
 import BookmarksPage from './pages/BookmarksPage';
-import ProfilePage from './pages/ProfilePage';
-import LoginPage from './pages/LoginPage';
 import CommunitiesPage from './pages/CommunitiesPage';
+import ProfilePage from './pages/ProfilePage';
+import ReelsPage from './pages/ReelsPage';
 import CreatorStudioPage from './pages/CreatorStudioPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpCenterPage from './pages/HelpCenterPage';
-import ReelsPage from './pages/ReelsPage';
+import LoginPage from './pages/LoginPage';
 import DisplayModal from './components/DisplayModal';
-import { Page, Theme, User, Message, Conversation } from './types';
-import { mockUser, mockConversations, mockMessages } from './data/mockData';
-import Lightbox from './components/Lightbox';
 import SearchModal from './components/SearchModal';
-import Toast from './components/Toast';
-import { AnimatePresence } from 'framer-motion';
+import Lightbox from './components/Lightbox';
+import StoryViewer from './components/StoryViewer';
+import { userStories } from './data/mockData';
 
-const App: React.FC = () => {
+import { Page, Theme } from './types';
+
+function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>(Page.Home);
   const [theme, setTheme] = useState<Theme>('dark');
+  
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState('');
-  
-  // State for messaging, to be updated by story replies
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
-  const [messages, setMessages] = useState<Record<string, Message[]>>(mockMessages);
-
-  const openLightbox = (url: string) => setLightboxImageUrl(url);
-  const closeLightbox = () => setLightboxImageUrl(null);
-  
-  const openSearchModal = () => setIsSearchModalOpen(true);
-  const closeSearchModal = () => setIsSearchModalOpen(false);
-  
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(''), 3000);
-  };
-
-  const handleSendStoryReply = (recipient: User, messageText: string) => {
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: mockUser.id,
-      text: messageText,
-      timestamp: new Date().toISOString(),
-      type: 'text',
-      isRead: false,
-    };
-
-    let conversation = conversations.find(c => c.participant.id === recipient.id);
-    let conversationId: string;
-
-    if (conversation) {
-      conversationId = conversation.id;
-    } else {
-      // Create a new conversation if one doesn't exist
-      conversationId = `c-${Date.now()}`;
-      const newConversation: Conversation = {
-        id: conversationId,
-        participant: recipient,
-        lastMessage: newMessage,
-        unreadCount: 0,
-      };
-      setConversations(prev => [newConversation, ...prev]);
-      setMessages(prev => ({ ...prev, [conversationId]: [] }));
-    }
-    
-    // Update messages for the conversation
-    setMessages(prev => ({
-      ...prev,
-      [conversationId]: [...(prev[conversationId] || []), newMessage],
-    }));
-
-    // Update the last message in the conversation list
-    setConversations(prev => prev.map(c => 
-      c.id === conversationId ? { ...c, lastMessage: newMessage } : c
-    ));
-
-    showToast("Message sent");
-  };
+  const [storyViewerIndex, setStoryViewerIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    document.documentElement.className = theme;
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark', 'dim');
+    root.classList.add(theme);
   }, [theme]);
-  
-  const handleLogin = () => setIsLoggedIn(true);
-  const handleLogout = () => setIsLoggedIn(false);
 
   const renderPage = () => {
     switch (currentPage) {
       case Page.Home:
-        return <HomePage onImageClick={openLightbox} onSendStoryReply={handleSendStoryReply} />;
+        return <HomePage onImageClick={setLightboxImageUrl} onStoryClick={setStoryViewerIndex} />;
       case Page.Explore:
-        return <ExplorePage openSearchModal={openSearchModal} onImageClick={openLightbox} />;
+        return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications:
         return <NotificationsPage />;
       case Page.Messages:
         return <MessagesPage />;
       case Page.Bookmarks:
-        return <BookmarksPage onImageClick={openLightbox} />;
-      case Page.Reels:
-        return <ReelsPage />;
-      case Page.Profile:
-        return <ProfilePage user={mockUser} onImageClick={openLightbox} />;
+        return <BookmarksPage onImageClick={setLightboxImageUrl} />;
       case Page.Communities:
         return <CommunitiesPage />;
+      case Page.Profile:
+        return <ProfilePage onImageClick={setLightboxImageUrl} />;
+      case Page.Reels:
+        return <ReelsPage />;
       case Page.CreatorStudio:
         return <CreatorStudioPage />;
       case Page.Settings:
@@ -120,15 +63,13 @@ const App: React.FC = () => {
       case Page.HelpCenter:
         return <HelpCenterPage />;
       default:
-        return <HomePage onImageClick={openLightbox} onSendStoryReply={handleSendStoryReply} />;
+        return <HomePage onImageClick={setLightboxImageUrl} onStoryClick={setStoryViewerIndex} />;
     }
   };
-
+  
   if (!isLoggedIn) {
-    return <LoginPage onLogin={handleLogin} />;
+    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
   }
-
-  const isReelsPage = currentPage === Page.Reels;
 
   return (
     <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text min-h-screen">
@@ -136,22 +77,21 @@ const App: React.FC = () => {
         <Sidebar 
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          onLogout={handleLogout}
+          onLogout={() => setIsLoggedIn(false)}
           openDisplayModal={() => setIsDisplayModalOpen(true)}
         />
-        <main className={`w-full min-h-screen ${isReelsPage ? 'max-w-full' : 'max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border'}`}>
+        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border min-h-screen">
           {renderPage()}
         </main>
-        {!isReelsPage && <RightSidebar openSearchModal={openSearchModal} />}
+        <RightSidebar openSearchModal={() => setIsSearchModalOpen(true)} />
       </div>
-      <AnimatePresence>
-        {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-        {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={closeLightbox} />}
-        {isSearchModalOpen && <SearchModal onClose={closeSearchModal} onImageClick={openLightbox} />}
-      </AnimatePresence>
-      <Toast message={toastMessage} isVisible={!!toastMessage} onClose={() => setToastMessage('')} />
+
+      {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
+      {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} />}
+      {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
+      {storyViewerIndex !== null && <StoryViewer stories={userStories} initialUserIndex={storyViewerIndex} onClose={() => setStoryViewerIndex(null)} />}
     </div>
   );
-};
+}
 
 export default App;

@@ -1,186 +1,119 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
-import { User, UserStory } from '../types';
-import Avatar from './Avatar';
-import { PaperPlaneIcon } from './Icon';
-import { mockUser } from '../data/mockData';
+import React, { useState, useEffect, useRef } from 'react';
+import { UserStory } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PauseIcon, PlayIcon } from './Icon';
 
 interface StoryViewerProps {
-  userStories: UserStory[];
+  stories: UserStory[];
   initialUserIndex: number;
   onClose: () => void;
-  onSendReply: (recipient: User, message: string) => void;
 }
 
-const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
-    opacity: 0,
-    scale: 0.9,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-  },
-  exit: (direction: number) => ({
-    x: direction < 0 ? 300 : -300,
-    opacity: 0,
-    scale: 0.9,
-  }),
-};
-
-const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex, onClose, onSendReply }) => {
+const StoryViewer: React.FC<StoryViewerProps> = ({ stories, initialUserIndex, onClose }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState(initialUserIndex);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
-  const [replyText, setReplyText] = useState('');
-  const progressControls = useAnimationControls();
+  const timerRef = useRef<number | null>(null);
 
-  const currentUserStory = userStories[currentUserIndex];
-  const activeStory = currentUserStory.stories[currentStoryIndex];
-  
-  const goToNextStory = useCallback(() => {
-    setDirection(1);
+  const currentUserStory = stories[currentUserIndex];
+  const currentStory = currentUserStory.stories[currentStoryIndex];
+
+  const goToNextStory = () => {
     if (currentStoryIndex < currentUserStory.stories.length - 1) {
-      setCurrentStoryIndex(currentStoryIndex + 1);
-    } else if (currentUserIndex < userStories.length - 1) {
-      setCurrentUserIndex(currentUserIndex + 1);
+      setCurrentStoryIndex(prev => prev + 1);
+    } else {
+      goToNextUser();
+    }
+  };
+
+  const goToPrevStory = () => {
+    if (currentStoryIndex > 0) {
+      setCurrentStoryIndex(prev => prev - 1);
+    } else {
+      goToPrevUser();
+    }
+  };
+
+  const goToNextUser = () => {
+    if (currentUserIndex < stories.length - 1) {
+      setCurrentUserIndex(prev => prev + 1);
       setCurrentStoryIndex(0);
     } else {
       onClose();
     }
-  }, [currentStoryIndex, currentUserIndex, currentUserStory.stories.length, userStories.length, onClose]);
-
-  const goToPrevStory = () => {
-    setDirection(-1);
-    if (currentStoryIndex > 0) {
-      setCurrentStoryIndex(currentStoryIndex - 1);
-    } else if (currentUserIndex > 0) {
-      const prevUserStories = userStories[currentUserIndex - 1].stories;
-      setCurrentUserIndex(currentUserIndex - 1);
-      setCurrentStoryIndex(prevUserStories.length - 1);
-    }
   };
 
+  const goToPrevUser = () => {
+    if (currentUserIndex > 0) {
+      setCurrentUserIndex(prev => prev - 1);
+      setCurrentStoryIndex(0);
+    }
+  };
+  
   useEffect(() => {
-    if (!isPaused) {
-      progressControls.set({ scaleX: 0 });
-      progressControls.start({
-        scaleX: 1,
-        transition: { duration: activeStory.duration / 1000, ease: 'linear' },
-      });
-      const timer = setTimeout(() => {
-        goToNextStory();
-      }, activeStory.duration);
-      return () => clearTimeout(timer);
+    if (isPaused) {
+      if (timerRef.current) clearTimeout(timerRef.current);
     } else {
-        progressControls.stop();
+      timerRef.current = window.setTimeout(goToNextStory, currentStory.duration * 1000);
     }
-  }, [currentStoryIndex, currentUserIndex, isPaused, activeStory.duration, goToNextStory, progressControls]);
-
-  const handlePointerDown = () => setIsPaused(true);
-  const handlePointerUp = () => setIsPaused(false);
-
-  const handleSendReply = () => {
-    if (replyText.trim()) {
-      onSendReply(currentUserStory.user, replyText);
-      setReplyText('');
-    }
-  };
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [currentStoryIndex, currentUserIndex, isPaused]);
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm"
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onMouseLeave={handlePointerUp}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+      onClick={onClose}
     >
+      <div className="relative w-full max-w-sm h-[90vh] bg-gray-900 rounded-lg overflow-hidden" onClick={e => e.stopPropagation()}>
+        <AnimatePresence>
+          <motion.img
+            key={`${currentUserIndex}-${currentStoryIndex}`}
+            src={currentStory.mediaUrl}
+            initial={{ opacity: 0.5, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0.5, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full object-cover"
+          />
+        </AnimatePresence>
+
+        <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent">
+          <div className="flex gap-1">
+            {currentUserStory.stories.map((story, index) => (
+              <div key={story.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                {index < currentStoryIndex && <div className="h-full bg-white"></div>}
+                {index === currentStoryIndex && (
+                  <motion.div
+                    className="h-full bg-white"
+                    initial={{ width: '0%' }}
+                    animate={isPaused ? { width: '0%' } : { width: '100%' }}
+                    transition={{ duration: isPaused ? 0 : currentStory.duration, ease: 'linear' }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 mt-3">
+            <img src={currentUserStory.user.avatarUrl} alt={currentUserStory.user.displayName} className="w-10 h-10 rounded-full" />
+            <span className="text-white font-bold">{currentUserStory.user.displayName}</span>
+            <button onClick={() => setIsPaused(!isPaused)} className="text-white ml-auto">
+                {isPaused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+          </div>
+        </div>
+
+        <div onClick={goToPrevStory} className="absolute left-0 top-0 bottom-0 w-1/3" />
+        <div onClick={goToNextStory} className="absolute right-0 top-0 bottom-0 w-1/3" />
+        
         <button onClick={onClose} className="absolute top-4 right-4 text-white text-3xl z-20 font-light hover:scale-110 transition-transform">✕</button>
-      
-        <AnimatePresence initial={false} custom={direction}>
-            <motion.div
-            key={currentUserIndex}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: 'spring', stiffness: 300, damping: 30, duration: 0.3 }}
-            className="relative w-[360px] h-[640px] bg-neutral-800 rounded-2xl overflow-hidden shadow-2xl"
-            >
-                {/* Media */}
-                 <AnimatePresence>
-                    <motion.div
-                        key={`${currentUserIndex}-${currentStoryIndex}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute inset-0"
-                    >
-                        {activeStory.type === 'video' ? (
-                            <video src={activeStory.mediaUrl} autoPlay muted playsInline className="w-full h-full object-cover" />
-                        ) : (
-                            <img src={activeStory.mediaUrl} alt="story content" className="w-full h-full object-cover" />
-                        )}
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40"></div>
-                
-                {/* Progress Bars */}
-                <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
-                    {currentUserStory.stories.map((_, index) => (
-                    <div key={index} className="h-1 flex-1 bg-white/40 rounded-full overflow-hidden">
-                        {index === currentStoryIndex && (
-                           <motion.div
-                                className="h-full bg-white origin-left"
-                                initial={{ scaleX: 0 }}
-                                animate={progressControls}
-                            />
-                        )}
-                        {index < currentStoryIndex && <div className="h-full bg-white"></div>}
-                    </div>
-                    ))}
-                </div>
-
-                {/* Header */}
-                <div className="absolute top-5 left-4 flex items-center gap-3 z-10">
-                    <Avatar src={currentUserStory.user.avatarUrl} alt={currentUserStory.user.displayName} size="small" />
-                    <span className="text-white font-bold text-sm drop-shadow-md">{currentUserStory.user.displayName}</span>
-                </div>
-
-                {/* Footer */}
-                <div 
-                    className="absolute bottom-4 left-4 right-4 z-10 flex items-center gap-2"
-                    onPointerDown={e => e.stopPropagation()}
-                >
-                    <div className="flex-shrink-0">
-                        <Avatar src={mockUser.avatarUrl} alt={mockUser.displayName} size="small" />
-                    </div>
-                    <input
-                        type="text"
-                        placeholder={`Reply to ${currentUserStory.user.displayName}...`}
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleSendReply(); }}
-                        className="w-full bg-black/30 border border-white/30 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/50"
-                    />
-                     <button onClick={handleSendReply} className="p-2.5 text-white hover:bg-white/20 rounded-full disabled:opacity-50" disabled={!replyText.trim()}>
-                        <PaperPlaneIcon />
-                    </button>
-                </div>
-            </motion.div>
-      </AnimatePresence>
-
-      {/* Navigation Areas */}
-      <div className="absolute left-0 top-0 h-full w-1/3 z-10" onClick={goToPrevStory}></div>
-      <div className="absolute right-0 top-0 h-full w-1/3 z-10" onClick={goToNextStory}></div>
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
