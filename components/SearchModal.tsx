@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
@@ -67,7 +68,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -50, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-        className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full max-w-[600px] h-[90vh] mt-4 rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+        className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full h-full sm:max-w-[600px] sm:h-[90vh] sm:mt-4 sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="p-2 pr-4 flex items-center gap-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HomeIcon, ExploreIcon, MessagesIcon, ReelsIcon, NotificationsIcon, PlusIcon } from './Icon';
 import { Page, User } from '../types';
@@ -9,6 +10,7 @@ interface BottomNavProps {
   currentUser: User;
   activeChatCount: number;
   notificationCount: number;
+  onOpenComposer: () => void;
 }
 
 const NavItem: React.FC<{
@@ -35,7 +37,7 @@ const NavItem: React.FC<{
 );
 
 
-const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, currentUser, activeChatCount, notificationCount }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, currentUser, activeChatCount, notificationCount, onOpenComposer }) => {
   const navItems = [
     { page: Page.Home, icon: <HomeIcon isActive={currentPage === Page.Home} /> },
     { page: Page.Explore, icon: <ExploreIcon isActive={currentPage === Page.Explore}/> },
@@ -51,7 +53,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, curr
             if (item.page === 'POST') {
                 return (
                      <div key="post-fab" className="w-16 h-16 -translate-y-6">
-                        <button className="w-full h-full bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-transform">
+                        <button onClick={onOpenComposer} className="w-full h-full bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-transform">
                            <PlusIcon className="w-7 h-7"/>
                         </button>
                     </div>

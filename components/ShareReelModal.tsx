@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Reel, Conversation } from '../types';
@@ -15,7 +16,7 @@ const ShareReelModal: React.FC<ShareReelModalProps> = ({ reel, conversations, on
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-0 sm:p-4"
       onClick={onClose}
     >
       <motion.div
@@ -23,7 +24,7 @@ const ShareReelModal: React.FC<ShareReelModalProps> = ({ reel, conversations, on
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 50, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-        className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full max-w-md rounded-2xl flex flex-col h-[70vh] shadow-2xl"
+        className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full max-w-md h-full sm:h-[70vh] rounded-none sm:rounded-2xl flex flex-col shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="p-2 pr-4 flex items-center justify-between border-b border-light-border dark:border-twitter-border dim:border-dim-border">

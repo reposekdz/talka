@@ -10,6 +10,7 @@ import { Tweet, User, Space } from '../types';
 import { userStories } from '../data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ProtoIcon } from '../components/Icon';
+import Avatar from '../components/Avatar';
 
 interface HomePageProps {
   tweets: Tweet[];
@@ -27,6 +28,7 @@ interface HomePageProps {
   onShowNewTweets: () => void;
   onJoinSpace: (space: Space) => void;
   liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
+  onOpenDrawer: () => void;
 }
 
 const TabButton: React.FC<{
@@ -42,21 +44,8 @@ const TabButton: React.FC<{
     </div>
 );
 
-const MobileTopHeader: React.FC = () => (
-    <div className="sm:hidden sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-2 flex justify-between items-center border-b border-light-border dark:border-twitter-border dim:border-dim-border">
-        <div className="w-10">
-            {/* Potentially add profile avatar here */}
-        </div>
-        <div className="text-current">
-            <ProtoIcon />
-        </div>
-        <div className="w-10 h-10"></div>
-    </div>
-);
-
-
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer } = props;
   const [activeTab, setActiveTab] = useState<'For You' | 'Following'>('For You');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -74,10 +63,18 @@ const HomePage: React.FC<HomePageProps> = (props) => {
 
   return (
     <div className="relative">
-      <MobileTopHeader />
-      <div className="hidden sm:block sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
-        <div className="flex justify-between items-center p-4">
-            <h1 className="text-xl font-bold">Home</h1>
+      <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
+        <div className="flex justify-between items-center px-4 h-14">
+            <div className="sm:hidden">
+                <button onClick={onOpenDrawer}>
+                    <Avatar src={currentUser.avatarUrl} alt={currentUser.displayName} size="small" />
+                </button>
+            </div>
+            <div className="absolute left-1/2 -translate-x-1/2 sm:hidden">
+                 <ProtoIcon />
+            </div>
+            <h1 className="text-xl font-bold hidden sm:block">Home</h1>
+            <div className="w-10 sm:hidden" /> {/* Spacer */}
         </div>
         <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border">
           <TabButton title="For You" activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -88,7 +85,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
        <AnimatePresence>
         {newTweetsCount > 0 && (
             <motion.div 
-                className="sticky top-16 flex justify-center z-10"
+                className="sticky top-[113px] sm:top-16 flex justify-center z-10"
                 initial={{ opacity: 0, y: -40 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -40 }}

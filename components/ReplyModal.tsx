@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tweet, User } from '../types';
@@ -23,7 +24,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ tweet, currentUser, onClose, on
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center pt-10"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center pt-0 sm:pt-10"
       onClick={onClose}
     >
       <motion.div
@@ -31,14 +32,14 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ tweet, currentUser, onClose, on
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -50, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-        className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full max-w-[600px] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+        className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full h-full sm:h-auto sm:max-w-[600px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="p-2 pr-4 flex items-center border-b border-light-border dark:border-twitter-border dim:border-dim-border">
           <button onClick={onClose} className="p-2 text-xl hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full">✕</button>
         </div>
         
-        <div className="p-4 flex gap-4">
+        <div className="p-4 flex gap-4 flex-1 sm:flex-none overflow-y-auto">
             <div className="flex flex-col items-center">
                  <Avatar src={tweet.user.avatarUrl} alt={tweet.user.displayName} />
                  <div className="w-0.5 h-full bg-light-border dark:bg-twitter-border my-2"></div>

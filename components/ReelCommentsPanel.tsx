@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Reel, ReelComment } from '../types';
 import { CloseIcon, HeartFillIcon, LikeIcon, PaperPlaneIcon } from './Icon';
@@ -52,7 +53,7 @@ const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, on
     };
 
   return (
-    <aside className="w-[350px] h-screen bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg border-l border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col">
+    <aside className="w-full h-full bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg sm:border-l border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col">
         <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center h-14">
             <h2 className="text-xl font-bold">Comments ({reel.commentCount.toLocaleString()})</h2>
             <button onClick={onClose} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">

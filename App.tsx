@@ -33,9 +33,12 @@ import IncomingCallModal from './components/IncomingCallModal';
 import AudioCallView from './components/AudioCallView';
 import ShareReelModal from './components/ShareReelModal';
 import AiAssistantModal from './components/AiAssistantModal';
+import ComposerModal from './components/ComposerModal';
+import MobileDrawer from './components/MobileDrawer';
+import ReelOptionsModal from './components/ReelOptionsModal';
 import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call } from './types';
 import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string } | { type: 'reel-share', reelId: string };
 
@@ -76,6 +79,9 @@ function App() {
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
   const [sharingReel, setSharingReel] = useState<Reel | null>(null);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
+  const [isComposerModalOpen, setIsComposerModalOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [reelOptions, setReelOptions] = useState<Reel | null>(null);
 
   // Profile/User List states
   const [profileUser, setProfileUser] = useState<User | null>(null);
@@ -165,6 +171,7 @@ function App() {
     };
     setTweets(prev => [newTweet, ...prev]);
     setQuotingTweet(null);
+    setIsComposerModalOpen(false);
   }, [currentUser]);
 
   const handleShowNewTweets = () => {
@@ -232,11 +239,20 @@ function App() {
   
   const handleFollowToggle = useCallback((userId: string) => {
     const isFollowing = currentUser.followingIds.includes(userId);
+    
+    // Show toast before state update for immediate feedback
+    if (isFollowing) {
+        showToast(`Unfollowed @${otherUsers.find(u => u.id === userId)?.username || 'user'}`);
+    } else {
+        showToast(`Followed @${otherUsers.find(u => u.id === userId)?.username || 'user'}`);
+    }
+
     setCurrentUser(prev => ({
       ...prev,
       followingIds: isFollowing ? prev.followingIds.filter(id => id !== userId) : [...prev.followingIds, userId],
       followingCount: isFollowing ? prev.followingCount - 1 : prev.followingCount + 1,
     }));
+
     setOtherUsers(prev => prev.map(u => {
       if (u.id === userId) {
         return {
@@ -246,7 +262,7 @@ function App() {
       }
       return u;
     }))
-  }, [currentUser]);
+  }, [currentUser, otherUsers]);
 
   const handleViewProfile = (user: User) => {
     setProfileUser(user);
@@ -474,6 +490,14 @@ function App() {
         handleOpenChat(targetUser);
     }
   };
+  
+  const handleDrawerNavigate = (page: Page) => {
+    if (page === Page.Profile) {
+        setProfileUser(currentUser);
+    }
+    setCurrentPage(page);
+  };
+
 
   const renderPage = () => {
     if (userListState && currentPage === Page.UserList) {
@@ -523,6 +547,7 @@ function App() {
         onShowNewTweets={handleShowNewTweets}
         onJoinSpace={handleJoinSpace}
         liveReactions={liveReactions}
+        onOpenDrawer={() => setIsMobileDrawerOpen(true)}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
@@ -542,12 +567,15 @@ function App() {
       case Page.Communities: return <CommunitiesPage />;
       case Page.Reels: return <ReelsPage 
         reels={reels}
+        currentUser={currentUser}
         onOpenComments={setViewingReelComments} 
         settings={settings}
         onLikeReel={handleLikeReel}
         onDislikeReel={handleDislikeReel}
         onBookmarkReel={handleBookmarkReel}
         onShareReel={setSharingReel}
+        onFollowToggle={handleFollowToggle}
+        onOpenOptions={setReelOptions}
         />;
       case Page.CreatorStudio: return <CreatorStudioPage />;
       case Page.Settings: return <SettingsPage settings={settings} onUpdateSettings={(newSettings) => setSettings(prev => ({...prev, ...newSettings}))} openDisplayModal={() => setIsDisplayModalOpen(true)} />;
@@ -584,6 +612,7 @@ function App() {
         onShowNewTweets={handleShowNewTweets}
         onJoinSpace={handleJoinSpace}
         liveReactions={liveReactions}
+        onOpenDrawer={() => setIsMobileDrawerOpen(true)}
       />;
     }
   };
@@ -621,18 +650,27 @@ function App() {
                     otherUsers={otherUsers}
                     openAiAssistant={() => setIsAiAssistantOpen(true)}
                 />
-
-                {viewingReelComments && (
-                    <ReelCommentsPanel 
-                        reel={viewingReelComments} 
-                        onClose={() => setViewingReelComments(null)}
-                        onPostComment={handlePostReelComment}
-                     />
-                )}
             </div>
 
             {/* Modals and Overlays */}
             <AnimatePresence>
+                {viewingReelComments && (
+                    <motion.div
+                        className="fixed inset-0 z-40 sm:absolute sm:top-0 sm:right-0 sm:h-full sm:w-[350px]"
+                        initial={{ x: '100%' }}
+                        animate={{ x: '0%' }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+                    >
+                        <ReelCommentsPanel 
+                            reel={viewingReelComments} 
+                            onClose={() => setViewingReelComments(null)}
+                            onPostComment={handlePostReelComment}
+                         />
+                    </motion.div>
+                )}
+                {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={handleDrawerNavigate} />}
+                {isComposerModalOpen && <ComposerModal onClose={() => setIsComposerModalOpen(false)} onPostTweet={handlePostTweet} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
@@ -642,6 +680,7 @@ function App() {
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={handleEditTweet} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={handlePostTweet} />}
                 {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.initialIndex} onClose={() => setStoryViewerState(null)} showToast={showToast} isHighlight={storyViewerState.isHighlight} />}
+                {reelOptions && <ReelOptionsModal reel={reelOptions} onClose={() => setReelOptions(null)} showToast={showToast} />}
                 
                 {/* Call System */}
                 {activeCall?.status === 'incoming' && <IncomingCallModal call={activeCall} onAccept={() => handleAcceptCall(activeCall)} onDecline={handleDeclineCall} />}
@@ -660,6 +699,7 @@ function App() {
                 onCloseChat={handleCloseChat}
                 onFocusChat={handleFocusChat}
                 onNavigateToMessages={handleNavigateToMessages}
+                // FIX: Corrected prop value from 'onSendMessage' to 'handleSendMessage'.
                 onSendMessage={handleSendMessage}
                 onAddReaction={handleAddReaction}
                 onPinMessage={handlePinMessage}
@@ -694,6 +734,7 @@ function App() {
                 currentUser={currentUser}
                 activeChatCount={unreadMessages}
                 notificationCount={unreadNotifications}
+                onOpenComposer={() => setIsComposerModalOpen(true)}
             />
         </div>
     </div>

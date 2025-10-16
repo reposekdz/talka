@@ -1,26 +1,32 @@
+
 import React, { useState, useRef } from 'react';
-import { Reel } from '../types';
+import { Reel, User } from '../types';
 import Avatar from './Avatar';
-import { HeartFillIcon, LikeIcon, MessagesIcon, ShareIcon, MoreIcon, PlayIcon, PauseIcon, MusicNoteIcon, BookmarkIcon, BookmarkFillIcon, DislikeIcon, DislikeFillIcon } from './Icon';
+import { HeartFillIcon, LikeIcon, MessagesIcon, ShareIcon, MoreIcon, PlayIcon, MusicNoteIcon, BookmarkIcon, BookmarkFillIcon, DislikeIcon, DislikeFillIcon, VolumeUpIcon, VolumeOffIcon } from './Icon';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ReelCardProps {
   reel: Reel;
+  currentUser: User;
   onOpenComments: (reel: Reel) => void;
   onLike: (reelId: string) => void;
   onDislike: (reelId: string) => void;
   onBookmark: (reelId: string) => void;
   onShare: (reel: Reel) => void;
+  onFollowToggle: (userId: string) => void;
+  onOpenOptions: (reel: Reel) => void;
 }
 
 const ReelCard: React.FC<ReelCardProps> = (props) => {
-  const { reel, onOpenComments, onLike, onDislike, onBookmark, onShare } = props;
+  const { reel, currentUser, onOpenComments, onLike, onDislike, onBookmark, onShare, onFollowToggle, onOpenOptions } = props;
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const backgroundVideoRef = useRef<HTMLVideoElement>(null);
   const lastClickTime = useRef(0);
+  const longPressTimeout = useRef<number | null>(null);
 
   const handleLike = () => {
     onLike(reel.id);
@@ -36,6 +42,13 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
   
   const handleShare = () => {
     onShare(reel);
+  };
+  
+  const isFollowingCreator = currentUser.followingIds.includes(reel.user.id);
+
+  const handleFollow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFollowToggle(reel.user.id);
   };
 
   const triggerLikeAnimation = () => {
@@ -64,6 +77,11 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
     }
     lastClickTime.current = now;
   };
+  
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(!isMuted);
+  };
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
@@ -72,8 +90,21 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
     }
   };
 
+  const handlePointerDown = () => {
+    longPressTimeout.current = window.setTimeout(() => {
+        onOpenOptions(reel);
+    }, 500); // 500ms for long press
+  };
+
+  const handlePointerUp = () => {
+    if (longPressTimeout.current) {
+        clearTimeout(longPressTimeout.current);
+    }
+  };
+
+
   return (
-    <div className="relative w-full max-w-[400px] h-[85vh] rounded-2xl overflow-hidden bg-black">
+    <div className="relative w-full max-w-[420px] h-full bg-black select-none">
       <video
         ref={backgroundVideoRef}
         src={reel.videoUrl}
@@ -89,7 +120,7 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
         loop
         autoPlay
         playsInline
-        muted
+        muted={isMuted}
         onTimeUpdate={handleTimeUpdate}
         className="relative z-10 w-full h-full object-contain"
       />
@@ -111,21 +142,48 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
       <div 
         className="absolute inset-0 cursor-pointer z-20"
         onClick={handleVideoClick}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
       >
-        {!isPlaying && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/80 bg-black/50 rounded-full p-4">
-                <PlayIcon />
-            </div>
-        )}
+        <AnimatePresence>
+            {!isPlaying && (
+                <motion.div 
+                    initial={{opacity: 0, scale: 1.5}} 
+                    animate={{opacity: 1, scale: 1}} 
+                    exit={{opacity: 0, scale: 1.5}} 
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/80 bg-black/50 rounded-full p-4"
+                >
+                    <PlayIcon />
+                </motion.div>
+            )}
+        </AnimatePresence>
+      </div>
+
+      <div className="absolute top-16 sm:top-4 right-4 z-30">
+          <button onClick={handleToggleMute} className="p-2 bg-black/40 rounded-full text-white pointer-events-auto">
+              {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+          </button>
       </div>
       
-      <div className="absolute bottom-4 left-4 right-20 p-4 z-30 bg-gradient-to-t from-black/60 to-transparent pointer-events-none rounded-b-2xl">
+      <div className="absolute bottom-0 left-0 right-0 p-4 z-30 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
         <div className="flex items-center gap-2">
           <Avatar src={reel.user.avatarUrl} alt={reel.user.displayName} size="small" />
           <span className="font-bold text-white">@{reel.user.username}</span>
-          <button className="border border-white bg-white text-black px-3 py-1 text-sm rounded-md ml-2 font-semibold pointer-events-auto hover:bg-opacity-80">Follow</button>
+          {currentUser.id !== reel.user.id && (
+            <button
+              onClick={handleFollow}
+              className={`border pointer-events-auto px-3 py-1 text-sm rounded-md ml-2 font-semibold hover:bg-opacity-80 transition-colors ${
+                isFollowingCreator
+                  ? 'bg-transparent border-white/50 text-white/80'
+                  : 'bg-white border-white text-black'
+              }`}
+            >
+              {isFollowingCreator ? 'Following' : 'Follow'}
+            </button>
+          )}
         </div>
-        <p className="mt-2 text-sm text-white truncate">{reel.caption}</p>
+        <p className="mt-2 text-sm text-white">{reel.caption}</p>
         <div className="flex items-center gap-2 mt-2 text-white text-sm">
             <MusicNoteIcon />
             <div className="w-full overflow-hidden">
@@ -140,29 +198,29 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
         </div>
       </div>
 
-      <div className="absolute bottom-4 right-4 flex flex-col items-center gap-5 text-white z-30">
+      <div className="absolute bottom-28 sm:bottom-24 right-2 flex flex-col items-center gap-5 text-white z-30">
         <button onClick={handleLike} className="flex flex-col items-center pointer-events-auto">
-            {reel.isLiked ? <HeartFillIcon /> : <LikeIcon />}
+            {reel.isLiked ? <HeartFillIcon className="w-8 h-8"/> : <LikeIcon className="w-8 h-8"/>}
             <span className="text-xs font-bold">{reel.likeCount.toLocaleString()}</span>
         </button>
         <button onClick={handleDislike} className="flex flex-col items-center pointer-events-auto">
-            {reel.isDisliked ? <DislikeFillIcon /> : <DislikeIcon />}
+            {reel.isDisliked ? <DislikeFillIcon className="w-8 h-8"/> : <DislikeIcon className="w-8 h-8"/>}
             <span className="text-xs font-bold">Dislike</span>
         </button>
         <button onClick={() => onOpenComments(reel)} className="flex flex-col items-center pointer-events-auto">
-            <MessagesIcon />
+            <MessagesIcon className="w-8 h-8"/>
             <span className="text-xs font-bold">{reel.commentCount.toLocaleString()}</span>
         </button>
         <button onClick={handleBookmark} className="flex flex-col items-center pointer-events-auto">
-            {reel.isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
+            {reel.isBookmarked ? <BookmarkFillIcon className="w-8 h-8"/> : <BookmarkIcon className="w-8 h-8"/>}
             <span className="text-xs font-bold">Save</span>
         </button>
          <button onClick={handleShare} className="flex flex-col items-center pointer-events-auto">
-            <ShareIcon />
+            <ShareIcon className="w-8 h-8"/>
             <span className="text-xs font-bold">{reel.shareCount.toLocaleString()}</span>
         </button>
         <button className="pointer-events-auto">
-            <MoreIcon />
+            <img src={reel.user.avatarUrl} alt="user avatar" className="w-8 h-8 rounded-full border-2 border-white"/>
         </button>
       </div>
       
