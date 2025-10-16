@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User } from '../types';
+import { Call } from '../types';
 import { EndCallIcon, MicOffIcon, MicrophoneIcon, VolumeUpIcon } from './Icon';
 
 interface AudioCallViewProps {
-  user: User;
-  status: 'outgoing' | 'active';
+  call: Call;
   onEndCall: () => void;
+  onToggleMic: () => void;
 }
 
-const AudioCallView: React.FC<AudioCallViewProps> = ({ user, status, onEndCall }) => {
-  const [isMicMuted, setIsMicMuted] = useState(false);
+const AudioCallView: React.FC<AudioCallViewProps> = ({ call, onEndCall, onToggleMic }) => {
+  const { user, status, isMicMuted } = call;
   const [callDuration, setCallDuration] = useState(0);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ const AudioCallView: React.FC<AudioCallViewProps> = ({ user, status, onEndCall }
       </div>
 
       <div className="relative z-10 flex items-center gap-6">
-        <button onClick={() => setIsMicMuted(!isMicMuted)} className={`${controlButtonClasses} ${isMicMuted ? 'bg-white text-black' : 'bg-white/20'}`}>
+        <button onClick={onToggleMic} className={`${controlButtonClasses} ${isMicMuted ? 'bg-white text-black' : 'bg-white/20'}`}>
           {isMicMuted ? <MicOffIcon /> : <MicrophoneIcon />}
         </button>
         <button className={`${controlButtonClasses} bg-white/20`}>

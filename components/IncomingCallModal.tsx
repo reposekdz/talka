@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Call } from '../types';
 import { PhoneIcon, VideoCallIcon, MessagesIcon } from './Icon';
@@ -11,32 +11,9 @@ interface IncomingCallModalProps {
 }
 
 const IncomingCallModal: React.FC<IncomingCallModalProps> = ({ call, onAccept, onDecline, onReplyWithMessage }) => {
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const quickReplies = ["I'll call you back.", "Can't talk right now.", "In a meeting."];
   
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-    const getMedia = async () => {
-      if (call.type === 'video') {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          setLocalStream(stream);
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        } catch (err) {
-          console.error("Couldn't access camera for preview:", err);
-        }
-      }
-    };
-    getMedia();
-    return () => {
-      stream?.getTracks().forEach(track => track.stop());
-    };
-  }, [call.type]);
-
   const handleQuickReply = (e: React.MouseEvent) => {
       e.stopPropagation();
       setShowQuickReplies(true);
@@ -53,12 +30,15 @@ const IncomingCallModal: React.FC<IncomingCallModalProps> = ({ call, onAccept, o
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black z-50 flex flex-col justify-between items-center text-center p-8 text-white"
     >
-      <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover blur-xl scale-110" />
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center blur-xl scale-110"
+        style={{ backgroundImage: `url(${call.user.avatarUrl})` }}
+      />
       <div className="absolute inset-0 bg-black/60"></div>
       
       <div className="relative z-10 text-left w-full sm:text-center">
         <p className="font-semibold">{call.user.displayName}</p>
-        <p className="text-sm text-white/80">Proto-Twitter {call.type} call</p>
+        <p className="text-sm text-white/80">Talka {call.type} call</p>
       </div>
 
       <div className="relative z-10 flex flex-col items-center">

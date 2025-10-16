@@ -25,10 +25,9 @@ import EditTweetModal from './components/EditTweetModal';
 import StoryViewer from './components/StoryViewer';
 import FloatingChatManager from './components/FloatingChatManager';
 import InAppNotification from './components/InAppNotification';
-import VideoCallView from './components/VideoCallView';
+// FIX: Removed unused VideoCallView and AudioCallView imports. CallView will handle dispatching.
 import IncomingCallModal from './components/IncomingCallModal';
 import ActiveCallBubble from './components/ActiveCallBubble';
-import AudioCallView from './components/AudioCallView';
 import SpacesPlayer from './components/SpacesPlayer';
 import Toast from './components/Toast';
 import CreatorFlowModal from './components/CreatorFlowModal';
@@ -39,6 +38,8 @@ import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
 import MobileDrawer from './components/MobileDrawer';
 import MobileExploreDrawer from './components/MobileExploreDrawer';
+// FIX: Import CallView to resolve 'Cannot find name' error.
+import CallView from './components/CallView';
 
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment } from './types';
 import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights, mockReels as initialMockReels } from './data/mockData';

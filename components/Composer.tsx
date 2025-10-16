@@ -35,7 +35,8 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet, placeholder = "What is
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+      // FIX: Explicitly cast file to Blob to resolve type error.
+      const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file as Blob));
       setMedia(prev => [...prev, ...urls]);
     }
   };

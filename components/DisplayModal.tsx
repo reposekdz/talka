@@ -38,7 +38,7 @@ const DisplayModal: React.FC<DisplayModalProps> = ({ onClose, currentTheme, setT
       >
         <h2 className="text-2xl font-bold text-center mb-2">Customize your view</h2>
         <p className="text-center text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-6">
-          These settings affect all the Proto-Twitter accounts on this browser.
+          These settings affect all the Talka accounts on this browser.
         </p>
 
         <div className="bg-light-border/50 dark:bg-twitter-light-dark/50 dim:bg-dim-border/50 p-4 rounded-2xl mb-4">

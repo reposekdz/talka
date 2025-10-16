@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
@@ -109,7 +108,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
             {searchTerm.trim() === '' ? (
               <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="text-center p-16 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
                 <h2 className="text-xl font-bold mb-2">Try searching for people or keywords</h2>
-                <p>Find what's happening on Proto-Twitter.</p>
+                <p>Find what's happening on Talka.</p>
               </motion.div>
             ) : results.length > 0 ? (
               results.map(item => {

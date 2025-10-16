@@ -4,6 +4,7 @@ import { User, Call } from '../types';
 import { EndCallIcon, MicOffIcon, MicrophoneIcon, CameraOnIcon, CameraOffIcon, MinimizeIcon, EmojiIcon, ScreenShareIcon, ChatBubbleIcon } from './Icon';
 import FloatingEmojis from './FloatingEmojis';
 import ReactionPicker from './ReactionPicker';
+import AudioCallView from './AudioCallView';
 
 interface CallViewProps {
   call: Call;
@@ -100,6 +101,10 @@ const CallView: React.FC<CallViewProps> = (props) => {
   }
 
   const controlButtonClasses = "p-3 bg-white/10 text-white backdrop-blur-md rounded-full hover:bg-white/20 transition-colors";
+
+  if (call.type === 'audio') {
+      return <AudioCallView call={call} onEndCall={onEndCall} onToggleMic={onToggleMic} />;
+  }
 
   return (
     <motion.div

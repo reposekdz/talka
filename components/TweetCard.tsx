@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tweet, User } from '../types';
 import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon } from './Icon';
@@ -75,13 +74,18 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, currentUser, onImageClick,
                             {user.verified && <VerifiedIcon />}
                             <span className="text-twitter-gray">@{user.username} · {timeAgo(timestamp)}</span>
                         </div>
-                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="relative p-1 rounded-full hover:bg-twitter-blue/10 text-twitter-gray"><MoreIcon /></button>
-                        {isMenuOpen && (
-                             <div className="absolute right-8 mt-8 bg-light-bg dark:bg-twitter-dark rounded-lg shadow-lg z-10 w-48 border border-light-border dark:border-twitter-border">
-                                {user.id === currentUser.id && <button onClick={() => onEdit(tweet)} className="flex items-center gap-2 p-3 hover:bg-light-hover dark:hover:bg-white/10 w-full"><EditIcon /> Edit</button>}
-                                <button className="flex items-center gap-2 p-3 hover:bg-light-hover dark:hover:bg-white/10 w-full"><TranslateIcon /> Translate</button>
-                             </div>
-                        )}
+                        <div className="relative">
+                            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 rounded-full hover:bg-twitter-blue/10 text-twitter-gray"><MoreIcon /></button>
+                            {isMenuOpen && (
+                                <div 
+                                    className="absolute right-0 mt-2 bg-light-bg dark:bg-twitter-dark rounded-lg shadow-lg z-10 w-48 border border-light-border dark:border-twitter-border"
+                                    onMouseLeave={() => setIsMenuOpen(false)}
+                                >
+                                    {user.id === currentUser.id && <button onClick={() => { onEdit(tweet); setIsMenuOpen(false); }} className="flex items-center gap-2 p-3 hover:bg-light-hover dark:hover:bg-white/10 w-full"><EditIcon /> Edit</button>}
+                                    <button onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 p-3 hover:bg-light-hover dark:hover:bg-white/10 w-full"><TranslateIcon /> Translate</button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <p className="whitespace-pre-wrap">{content}</p>
                     {renderMedia()}
