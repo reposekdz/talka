@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -36,6 +35,7 @@ import AiAssistantModal from './components/AiAssistantModal';
 import ComposerModal from './components/ComposerModal';
 import MobileDrawer from './components/MobileDrawer';
 import ReelOptionsModal from './components/ReelOptionsModal';
+import TopRightMenu from './components/TopRightMenu';
 import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call } from './types';
 import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -82,6 +82,7 @@ function App() {
   const [isComposerModalOpen, setIsComposerModalOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [reelOptions, setReelOptions] = useState<Reel | null>(null);
+  const [isTopRightMenuOpen, setIsTopRightMenuOpen] = useState(false);
 
   // Profile/User List states
   const [profileUser, setProfileUser] = useState<User | null>(null);
@@ -496,6 +497,15 @@ function App() {
         setProfileUser(currentUser);
     }
     setCurrentPage(page);
+    setIsMobileDrawerOpen(false);
+  };
+  
+  const handleTopRightMenuNavigate = (page: Page) => {
+    if (page === Page.Profile) {
+        setProfileUser(currentUser);
+    }
+    setCurrentPage(page);
+    setIsTopRightMenuOpen(false);
   };
 
 
@@ -529,6 +539,7 @@ function App() {
         onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
       />;
     }
+    const unreadNotifications = mockNotifications.length;
 
     switch(currentPage) {
       case Page.Home: return <HomePage 
@@ -548,6 +559,9 @@ function App() {
         onJoinSpace={handleJoinSpace}
         liveReactions={liveReactions}
         onOpenDrawer={() => setIsMobileDrawerOpen(true)}
+        notificationCount={unreadNotifications}
+        setCurrentPage={setCurrentPage}
+        onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
@@ -613,6 +627,9 @@ function App() {
         onJoinSpace={handleJoinSpace}
         liveReactions={liveReactions}
         onOpenDrawer={() => setIsMobileDrawerOpen(true)}
+        notificationCount={unreadNotifications}
+        setCurrentPage={setCurrentPage}
+        onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
       />;
     }
   };
@@ -670,6 +687,7 @@ function App() {
                     </motion.div>
                 )}
                 {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={handleDrawerNavigate} />}
+                {isTopRightMenuOpen && <TopRightMenu onDisplayClick={() => {setIsDisplayModalOpen(true); setIsTopRightMenuOpen(false);}} setCurrentPage={handleTopRightMenuNavigate} closeMenu={() => setIsTopRightMenuOpen(false)} />}
                 {isComposerModalOpen && <ComposerModal onClose={() => setIsComposerModalOpen(false)} onPostTweet={handlePostTweet} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
@@ -699,7 +717,6 @@ function App() {
                 onCloseChat={handleCloseChat}
                 onFocusChat={handleFocusChat}
                 onNavigateToMessages={handleNavigateToMessages}
-                // FIX: Corrected prop value from 'onSendMessage' to 'handleSendMessage'.
                 onSendMessage={handleSendMessage}
                 onAddReaction={handleAddReaction}
                 onPinMessage={handlePinMessage}

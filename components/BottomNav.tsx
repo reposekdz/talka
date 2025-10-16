@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { HomeIcon, ExploreIcon, MessagesIcon, ReelsIcon, NotificationsIcon, PlusIcon } from './Icon';
+import { HomeIcon, ExploreIcon, MessagesIcon, PlusIcon, ProfileIcon } from './Icon';
 import { Page, User } from '../types';
 import { motion } from 'framer-motion';
 
@@ -22,9 +21,9 @@ const NavItem: React.FC<{
 }> = ({ page, currentPage, setCurrentPage, icon, notificationCount }) => (
     <button
         onClick={() => setCurrentPage(page)}
-        className="relative flex-1 flex flex-col items-center justify-center gap-1 text-light-secondary-text dark:text-twitter-gray focus:outline-none"
+        className="relative flex-1 flex flex-col items-center justify-center gap-1 text-light-secondary-text dark:text-twitter-gray focus:outline-none h-full"
     >
-        <div className={`w-8 h-8 flex items-center justify-center transition-transform duration-200 ${currentPage === page ? 'text-light-text dark:text-dim-text -translate-y-1' : ''}`}>
+        <div className={`w-8 h-8 flex items-center justify-center transition-all duration-200 ${currentPage === page ? 'text-light-text dark:text-dim-text' : ''}`}>
            {icon}
         </div>
         {notificationCount && notificationCount > 0 && (
@@ -32,36 +31,34 @@ const NavItem: React.FC<{
                 {notificationCount}
             </span>
         )}
-        {currentPage === page && <motion.div layoutId="bottom-nav-indicator" className="h-1 w-1 bg-current rounded-full mt-1"></motion.div>}
     </button>
 );
 
 
-const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, currentUser, activeChatCount, notificationCount, onOpenComposer }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, activeChatCount, onOpenComposer }) => {
   const navItems = [
     { page: Page.Home, icon: <HomeIcon isActive={currentPage === Page.Home} /> },
     { page: Page.Explore, icon: <ExploreIcon isActive={currentPage === Page.Explore}/> },
-    { page: 'POST', icon: null }, // Placeholder for the FAB
-    { page: Page.Notifications, icon: <NotificationsIcon isActive={currentPage === Page.Notifications} />, notificationCount: notificationCount },
     { page: Page.Messages, icon: <MessagesIcon isActive={currentPage === Page.Messages} />, notificationCount: activeChatCount },
+    { page: Page.Profile, icon: <ProfileIcon /> },
   ];
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 h-16 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-30 sm:hidden border-t border-light-border dark:border-twitter-border dim:border-dim-border">
-      <nav className="container mx-auto flex justify-around items-center h-full max-w-[600px] relative">
-        {navItems.map((item, index) => {
-            if (item.page === 'POST') {
-                return (
-                     <div key="post-fab" className="w-16 h-16 -translate-y-6">
-                        <button onClick={onOpenComposer} className="w-full h-full bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-transform">
-                           <PlusIcon className="w-7 h-7"/>
-                        </button>
-                    </div>
-                )
-            }
-          return <NavItem key={item.page} page={item.page as Page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={item.icon} notificationCount={item.notificationCount}/>
-        })}
-      </nav>
+      <div className="container mx-auto h-full max-w-[600px] relative">
+        <nav className="flex justify-around items-center h-full">
+            <NavItem page={navItems[0].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[0].icon} />
+            <NavItem page={navItems[1].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[1].icon} />
+            <div className="w-16" /> {/* Spacer for FAB */}
+            <NavItem page={navItems[2].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[2].icon} notificationCount={navItems[2].notificationCount}/>
+            <NavItem page={navItems[3].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[3].icon} />
+        </nav>
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2">
+            <button onClick={onOpenComposer} className="w-16 h-16 bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 active:scale-95 transition-transform">
+               <PlusIcon className="w-8 h-8"/>
+            </button>
+        </div>
+      </div>
     </footer>
   );
 };
