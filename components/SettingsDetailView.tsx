@@ -62,10 +62,10 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
         case "Privacy and safety":
             return (
                  <div>
-                    <SettingsSection title="Audience and tagging" description="Manage what information you allow other people on Proto-Twitter to see.">
+                    <SettingsSection title="Audience and tagging" description="Manage what information you allow other people on Talka to see.">
                         <SettingsRow
                             title="Protect your Posts"
-                            description="When selected, your Tweets and other account information are only visible to people who follow you."
+                            description="When selected, your Posts and other account information are only visible to people who follow you."
                             control={<ToggleSwitch
                                 labelId="Protect-your-Posts"
                                 isOn={settings.privacyAndSafety.protectPosts}
@@ -132,7 +132,7 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
          case "Accessibility, display, and languages":
             return (
                  <div>
-                    <SettingsSection title="Data usage" description="Control how Proto-Twitter uses your mobile data.">
+                    <SettingsSection title="Data usage" description="Control how Talka uses your mobile data.">
                         <SettingsRow
                             title="Video autoplay"
                             description="Select whether videos should autoplay."

@@ -1,6 +1,6 @@
 {
-  "name": "Proto-Twitter",
-  "description": "A full-featured prototype of a Twitter-like application, built with React and Tailwind CSS. It includes core features like a timeline, tweeting, replies, likes, user profiles, and notifications.",
+  "name": "Talka",
+  "description": "A full-featured prototype of a modern social media application called Talka, built with React and Tailwind CSS. It includes core features like a timeline, posting, replies, user profiles, and advanced settings.",
   "requestFramePermissions": [
     "microphone",
     "camera"

@@ -103,7 +103,7 @@ const AiAssistantModal: React.FC<AiAssistantModalProps> = ({ onClose }) => {
     >
       <header className="p-2 flex items-center justify-between border-b border-light-border dark:border-twitter-border dim:border-dim-border">
         <button onClick={onClose} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
-        <h2 className="font-bold text-lg">Proto-AI Assistant</h2>
+        <h2 className="font-bold text-lg">Talka AI Assistant</h2>
         <div className="w-10"></div>
       </header>
 
@@ -135,7 +135,7 @@ const AiAssistantModal: React.FC<AiAssistantModalProps> = ({ onClose }) => {
         <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark rounded-full px-4 py-2">
             <input
                 type="text"
-                placeholder="Ask Proto-AI..."
+                placeholder="Ask Talka AI..."
                 className="flex-1 bg-transparent focus:outline-none"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}

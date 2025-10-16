@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tweet, User } from '../types';
 import Avatar from './Avatar';
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon, HeartFillIcon, RetweetFillIcon, SparklesIcon } from './Icon';
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon, HeartFillIcon, RetweetFillIcon, SparklesIcon, TranslateIcon } from './Icon';
 import PollDisplay from './PollDisplay';
 import { motion, AnimatePresence } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
@@ -19,6 +19,9 @@ interface TweetCardProps {
   onEdit: (tweet: Tweet) => void;
   liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
   onGrok: (tweet: Tweet) => void;
+  onLikeTweet: (tweetId: string) => void;
+  onTranslateTweet: (tweetId: string) => void;
+  onRevertTranslation: (tweetId: string) => void;
 }
 
 const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => void }> = ({ tweet, onViewProfile }) => {
@@ -41,8 +44,8 @@ const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => 
 }
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions, onGrok } = props;
-  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, shareCount, isEdited, quotedTweet, poll, pinned, isVoiceTweet, audioUrl } = tweet;
+  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions, onGrok, onLikeTweet, onTranslateTweet, onRevertTranslation } = props;
+  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, shareCount, isEdited, quotedTweet, poll, pinned, isVoiceTweet, audioUrl, isLiked, translationInfo } = tweet;
   const [isMoreMenuOpen, setIsMoreMenuOpen] = React.useState(false);
 
   const formatTimestamp = (ts: string) => {
@@ -80,7 +83,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
   const actionButtons = [
     { icon: <ReplyIcon />, count: replyCount, color: 'hover:text-twitter-blue', action: () => onReply(tweet), type: 'reply' },
     { icon: <RetweetIcon />, count: retweetCount, color: 'hover:text-green-500', type: 'retweet' },
-    { icon: <LikeIcon />, count: likeCount, color: 'hover:text-red-500', type: 'like' },
+    { icon: isLiked ? <HeartFillIcon className="text-red-500" /> : <LikeIcon />, count: likeCount, color: 'hover:text-red-500', action: () => onLikeTweet(tweet.id), type: 'like' },
     { icon: <ShareIcon />, count: shareCount, color: 'hover:text-twitter-blue', type: 'share' },
   ];
 
@@ -89,7 +92,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
         layout="position"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer transition-colors duration-200 hover:bg-light-hover/50 dark:hover:bg-white/5"
+        className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer transition-colors duration-200"
     >
       <div className="flex-shrink-0" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>
         <Avatar src={user.avatarUrl} alt={user.displayName} />
@@ -127,6 +130,9 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                      <button onClick={(e) => handleActionClick(e, () => { onGrok(tweet); setIsMoreMenuOpen(false); })} className="flex items-center gap-2 w-full text-left p-3 hover:bg-light-hover dark:hover:bg-white/10">
                         <SparklesIcon className="w-5 h-5"/> Analyze Post
                     </button>
+                    <button onClick={(e) => handleActionClick(e, () => { onTranslateTweet(tweet.id); setIsMoreMenuOpen(false); })} className="flex items-center gap-2 w-full text-left p-3 hover:bg-light-hover dark:hover:bg-white/10">
+                        <TranslateIcon className="w-5 h-5"/> Translate Post
+                    </button>
                 </div>
             )}
           </div>
@@ -139,6 +145,13 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
           </div>
         ) : (
           <p className="whitespace-pre-wrap my-1">{renderContent()}</p>
+        )}
+        
+        {translationInfo && (
+            <div className="text-xs text-light-secondary-text dark:text-twitter-gray mt-2">
+                <span>Translated from {translationInfo.sourceLang} by AI · </span>
+                <button onClick={() => onRevertTranslation(tweet.id)} className="text-twitter-blue hover:underline">Show original</button>
+            </div>
         )}
 
         {quotedTweet && <EmbeddedTweetCard tweet={quotedTweet} onViewProfile={onViewProfile} />}
@@ -163,7 +176,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
 
         <div className="flex justify-between items-center mt-3 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
           {actionButtons.map((btn, index) => (
-            <div key={index} className={`flex items-center gap-1 group transition-colors duration-200 ${btn.color} relative`}>
+            <div key={index} className={`flex items-center gap-1 group transition-colors duration-200 ${btn.color} ${btn.type === 'like' && isLiked ? 'text-red-500' : ''} relative`}>
               <button onClick={(e) => handleActionClick(e, btn.action)} className={`p-2 rounded-full group-hover:bg-current group-hover:bg-opacity-10`}>{btn.icon}</button>
               {btn.count !== undefined && <span className="text-sm">{btn.count.toLocaleString()}</span>}
               <AnimatePresence>

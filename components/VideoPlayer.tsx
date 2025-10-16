@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon } from './Icon';
@@ -124,11 +125,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src }) => {
         {showControls && (
             // FIX: Wrapped framer-motion props to bypass type errors.
             <motion.div 
-                {...{
-                    initial: { opacity: 0 },
-                    animate: { opacity: 1 },
-                    exit: { opacity: 0 },
-                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/40 flex items-center justify-center"
             >
                 <button onClick={handlePlayPause} className="text-white bg-black/50 rounded-full p-3">
@@ -141,11 +140,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src }) => {
         {showControls && (
             // FIX: Wrapped framer-motion props to bypass type errors.
             <motion.div 
-                {...{
-                    initial: { opacity: 0, y: 20 },
-                    animate: { opacity: 1, y: 0 },
-                    exit: { opacity: 0, y: 20 },
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
                 className="absolute bottom-0 left-0 right-0 p-3 text-white bg-gradient-to-t from-black/70 to-transparent"
             >
                 <div className="w-full bg-white/30 h-1 rounded-full cursor-pointer">

@@ -30,7 +30,7 @@ const PremiumCard: React.FC = () => (
 const AiAssistantCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl p-4 text-center">
         <SparklesIcon className="w-10 h-10 mx-auto text-twitter-blue" />
-        <h2 className="text-xl font-extrabold mt-2">Proto-AI Assistant</h2>
+        <h2 className="text-xl font-extrabold mt-2">Talka AI</h2>
         <p className="my-2 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
             Ask questions, summarize threads, and more with the power of AI.
         </p>
@@ -106,7 +106,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProf
           <a href="#" className="hover:underline">Privacy Policy</a>
           <a href="#" className="hover:underline">Cookie Policy</a>
           <a href="#" className="hover:underline">More...</a>
-          <span>© 2024 Proto-Twitter, Inc.</span>
+          <span>© 2024 Talka, Inc.</span>
       </footer>
     </aside>
   );

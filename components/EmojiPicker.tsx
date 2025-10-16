@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
@@ -31,12 +32,10 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
     // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
       ref={pickerRef}
-      {...{
-        initial: { opacity: 0, y: 10 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: 10 },
-        transition: { duration: 0.2 },
-      }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.2 }}
       className="absolute bottom-full mb-2 left-10 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg p-2 rounded-2xl shadow-lg border border-light-border dark:border-twitter-border dim:border-dim-border"
     >
       <div className="grid grid-cols-4 gap-2">

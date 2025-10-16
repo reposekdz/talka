@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { mockTweets, mockTrendingTopics, otherUsers, mockUser } from '../data/mockData';
 import { SearchIcon, RefreshIcon } from '../components/Icon';
@@ -7,18 +6,27 @@ import { Tweet, User } from '../types';
 import WhoToFollow from '../components/WhoToFollow';
 
 interface ExplorePageProps {
+    tweets: Tweet[];
+    currentUser: User;
     openSearchModal: () => void;
     onImageClick: (url: string) => void;
+    onViewProfile: (user: User) => void;
+    onReply: (tweet: Tweet) => void;
+    onToggleBookmark: (tweetId: string) => void;
+    onLikeTweet: (tweetId: string) => void;
+    onTranslateTweet: (tweetId: string) => void;
+    onRevertTranslation: (tweetId: string) => void;
 }
 
-const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal, onImageClick }) => {
+const ExplorePage: React.FC<ExplorePageProps> = (props) => {
+    const { tweets, currentUser, openSearchModal, onImageClick, onViewProfile, onReply, onToggleBookmark, onLikeTweet } = props;
     const [activeTab, setActiveTab] = useState('For You');
     const tabs = ['For You', 'Trending', 'News', 'Sports', 'Entertainment'];
     const [whoToFollowUsers, setWhoToFollowUsers] = useState(() => 
         [...otherUsers].sort(() => 0.5 - Math.random()).slice(0, 3)
     );
     
-    const mediaTweets = useMemo(() => mockTweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0), []);
+    const mediaTweets = useMemo(() => tweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0), [tweets]);
 
     const handleMediaClick = (tweet: Tweet) => {
         if (tweet.mediaUrls && tweet.mediaUrls.length > 0) {
@@ -81,7 +89,15 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal, onImageClick
             
             <div className="p-2 md:p-4 columns-1 md:columns-2 gap-3">
                 {mediaTweets.map(tweet => (
-                    <MediaCard key={tweet.id} tweet={tweet} onMediaClick={handleMediaClick} />
+                    <MediaCard 
+                        key={tweet.id} 
+                        tweet={tweet} 
+                        onMediaClick={handleMediaClick}
+                        onViewProfile={onViewProfile}
+                        onLikeTweet={onLikeTweet}
+                        onReply={onReply}
+                        onToggleBookmark={onToggleBookmark}
+                    />
                 ))}
             </div>
         </div>

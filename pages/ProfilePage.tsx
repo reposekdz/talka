@@ -23,10 +23,13 @@ interface ProfilePageProps {
   onEdit: (tweet: Tweet) => void;
   onHighlightClick: (highlights: Highlight[], index: number) => void;
   onGrok: (tweet: Tweet) => void;
+  onLikeTweet: (tweetId: string) => void;
+  onTranslateTweet: (tweetId: string) => void;
+  onRevertTranslation: (tweetId: string) => void;
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, currentUser, tweets, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick, onGrok } = props;
+  const { user, currentUser, tweets, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick, onGrok, onLikeTweet, onTranslateTweet, onRevertTranslation } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [mediaFilter, setMediaFilter] = useState<'all' | 'photos' | 'videos'>('all');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
@@ -81,11 +84,14 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
   };
   
   const renderContent = () => {
+    const tweetCards = (tweetsToRender: Tweet[]) => 
+      tweetsToRender.map(tweet => (
+        <TweetCard key={tweet.id} tweet={tweet} currentUser={currentUser} onImageClick={onImageClick} onViewProfile={onViewProfile} onReply={onReply} onToggleBookmark={onToggleBookmark} onVote={onVote} onQuote={onQuote} onEdit={onEdit} liveReactions={[]} onGrok={onGrok} onLikeTweet={onLikeTweet} onTranslateTweet={onTranslateTweet} onRevertTranslation={onRevertTranslation} />
+      ));
+
     switch (activeTab) {
       case 'Posts':
-        return userTweets.map(tweet => (
-          <TweetCard key={tweet.id} tweet={tweet} currentUser={currentUser} onImageClick={onImageClick} onViewProfile={onViewProfile} onReply={onReply} onToggleBookmark={onToggleBookmark} onVote={onVote} onQuote={onQuote} onEdit={onEdit} liveReactions={[]} onGrok={onGrok} />
-        ));
+        return tweetCards(userTweets);
       case 'Media':
         return (
           <>
@@ -96,9 +102,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 </button>
               ))}
             </div>
-            {mediaTweets.length > 0 ? mediaTweets.map(tweet => (
-              <TweetCard key={tweet.id} tweet={tweet} currentUser={currentUser} onImageClick={onImageClick} onViewProfile={onViewProfile} onReply={onReply} onToggleBookmark={onToggleBookmark} onVote={onVote} onQuote={onQuote} onEdit={onEdit} liveReactions={[]} onGrok={onGrok} />
-            )) : <div className="p-8 text-center text-twitter-gray">This user hasn't posted any media of this type.</div>}
+            {mediaTweets.length > 0 ? tweetCards(mediaTweets) : <div className="p-8 text-center text-twitter-gray">This user hasn't posted any media of this type.</div>}
           </>
         )
       case 'Highlights':

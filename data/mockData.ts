@@ -31,7 +31,7 @@ export const baseTweets: Tweet[] = [
   {
     id: 't1',
     user: mockUser,
-    content: 'Just launched a new version of Proto-Twitter! It includes a dark mode, dim mode, and a bunch of new features. Check it out and let me know what you think! #React #WebDev',
+    content: 'Just launched a new version of Talka! It includes a dark mode, dim mode, and a bunch of new features. Check it out and let me know what you think! #React #WebDev',
     timestamp: '2024-07-22T10:00:00Z',
     replyCount: 12,
     retweetCount: 45,
@@ -300,7 +300,7 @@ export const initialUserStories: UserStory[] = [
     {
         user: mockUser, hasUnseen: true, stories: [
             { id: 's1', mediaUrl: 'https://picsum.photos/seed/s1/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T10:00:00Z', likeCount: 12, isLiked: false, comments: [] },
-            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T11:00:00Z', likeCount: 5, isLiked: true, comments: [{id: 'sc1', user: otherUsers[0], text: 'Nice!', timestamp: '2h'}] }
+            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T11:00:00Z', likeCount: 5, isLiked: true, comments: [] }
         ]
     },
     {

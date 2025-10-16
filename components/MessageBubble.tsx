@@ -117,13 +117,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
 
   return (
     <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+        layout
+        initial={{ opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.2, type: 'spring', stiffness: 300, damping: 25 }}
         className={`flex items-end gap-2 group ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`relative max-w-xs md:max-w-md ${isOwnMessage ? 'order-2' : 'order-1'}`}>
-        <div className={`${paddingClass} rounded-t-2xl ${isOwnMessage ? `${bubbleThemeClass} rounded-l-2xl` : `${bubbleThemeClass} rounded-r-2xl`}`}>
+        <div className={`${paddingClass} rounded-2xl ${isOwnMessage ? `${bubbleThemeClass} rounded-br-lg` : `${bubbleThemeClass} rounded-bl-lg`}`}>
             {replyTo && (
                 <div className={`border-l-2 ${isOwnMessage ? 'border-white/50' : 'border-twitter-blue'} pl-2 opacity-80 mb-2`}>
                     <p className="text-xs font-bold">

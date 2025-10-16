@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef } from 'react';
 import { motion, PanInfo } from 'framer-motion';
 import { Story, TextOverlay } from '../types';
@@ -32,20 +33,19 @@ const StoryCreator: React.FC<StoryCreatorProps> = ({ onPostStory }) => {
     const handlePost = () => {
         if (!mediaUrl) return;
 
-        // FIX: Add missing properties to match the Story type
         const newStory: Omit<Story, 'id' | 'timestamp'> = {
             mediaUrl,
             type: mediaType,
             duration: 5, // default duration
+            likeCount: 0,
+            isLiked: false,
+            comments: [],
             textOverlays: text ? [{
                 text,
                 color: textColor,
                 style: textStyle,
                 position: textPosition
             }] : [],
-            likeCount: 0,
-            isLiked: false,
-            comments: [],
         };
         onPostStory(newStory);
     };

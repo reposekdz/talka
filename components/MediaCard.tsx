@@ -1,24 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Tweet } from '../types';
-import Avatar from './Avatar';
-import { ReplyIcon, RetweetIcon, LikeIcon, ShareIcon } from './Icon';
+import { Tweet, User } from '../types';
+import { ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon } from './Icon';
 
 interface MediaCardProps {
   tweet: Tweet;
   onMediaClick: (tweet: Tweet) => void;
+  onViewProfile: (user: User) => void;
+  onLikeTweet: (tweetId: string) => void;
+  onReply: (tweet: Tweet) => void;
+  onToggleBookmark: (tweetId: string) => void;
 }
 
-const MediaCard: React.FC<MediaCardProps> = ({ tweet, onMediaClick }) => {
-  const { user, mediaUrls, replyCount, retweetCount, likeCount } = tweet;
+const MediaCard: React.FC<MediaCardProps> = ({ tweet, onMediaClick, onViewProfile, onLikeTweet, onReply, onToggleBookmark }) => {
+  const { user, mediaUrls, replyCount, retweetCount, likeCount, isLiked, isBookmarked } = tweet;
   const isVideo = mediaUrls && mediaUrls[0].endsWith('.mp4');
 
-  const actionItems = [
-    { icon: <ReplyIcon />, count: replyCount },
-    { icon: <RetweetIcon />, count: retweetCount },
-    { icon: <LikeIcon />, count: likeCount },
-    { icon: <ShareIcon />, count: undefined },
-  ];
+  const handleActionClick = (e: React.MouseEvent, action?: () => void) => {
+    e.stopPropagation();
+    action?.();
+  };
 
   return (
     <div 
@@ -31,27 +32,35 @@ const MediaCard: React.FC<MediaCardProps> = ({ tweet, onMediaClick }) => {
         <img src={mediaUrls![0]} alt="Tweet media" className="w-full h-auto object-cover"/>
       )}
       
-      <motion.div 
-        className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent"
-        initial={{ opacity: 0, y: 20 }}
-        whileHover={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+      <div 
+        className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3"
       >
-        <div className="flex items-center justify-between text-white">
-            <div className="flex items-center gap-2">
-                <Avatar src={user.avatarUrl} alt={user.displayName} size="small" />
-                <span className="font-bold text-sm truncate">{user.displayName}</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-                {actionItems.slice(1,3).map((item, index) => (
-                    <div key={index} className="flex items-center gap-1">
-                        {item.icon}
-                        <span>{item.count}</span>
-                    </div>
-                ))}
-            </div>
+        <div 
+            className="flex items-center gap-2 cursor-pointer" 
+            onClick={(e) => handleActionClick(e, () => onViewProfile(user))}
+        >
+            <img src={user.avatarUrl} alt={user.displayName} className="w-8 h-8 rounded-full" />
+            <span className="font-bold text-sm text-white truncate drop-shadow-md">{user.displayName}</span>
         </div>
-      </motion.div>
+        
+        <div className="flex items-center justify-end gap-2 text-white">
+            <button onClick={(e) => handleActionClick(e, () => onReply(tweet))} className="flex items-center gap-1 hover:text-twitter-blue p-2 bg-black/30 rounded-full">
+                <ReplyIcon />
+                <span className="text-xs">{replyCount}</span>
+            </button>
+            <button onClick={(e) => handleActionClick(e)} className="flex items-center gap-1 hover:text-green-500 p-2 bg-black/30 rounded-full">
+                <RetweetIcon />
+                <span className="text-xs">{retweetCount}</span>
+            </button>
+            <button onClick={(e) => handleActionClick(e, () => onLikeTweet(tweet.id))} className={`flex items-center gap-1 ${isLiked ? 'text-red-500' : 'hover:text-red-500'} p-2 bg-black/30 rounded-full`}>
+                {isLiked ? <HeartFillIcon/> : <LikeIcon />}
+                <span className="text-xs">{likeCount}</span>
+            </button>
+            <button onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className={`p-2 bg-black/30 rounded-full ${isBookmarked ? 'text-twitter-blue' : 'hover:text-twitter-blue'}`}>
+                {isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
+            </button>
+        </div>
+      </div>
     </div>
   );
 };

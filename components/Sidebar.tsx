@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProtoIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, CreateIcon, ReelsIcon } from './Icon';
+import { TalkaIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, CreateIcon, ReelsIcon } from './Icon';
 import MoreMenu from './MoreMenu';
 import { Page } from '../types';
 
@@ -16,14 +16,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const navItems = [
-    { icon: <HomeIcon />, text: 'Home', page: Page.Home },
-    { icon: <ExploreIcon />, text: 'Explore', page: Page.Explore },
-    { icon: <NotificationsIcon />, text: 'Notifications', page: Page.Notifications },
-    { icon: <MessagesIcon />, text: 'Messages', page: Page.Messages, notificationCount: activeChatCount },
-    { icon: <ReelsIcon />, text: 'Reels', page: Page.Reels },
+    { icon: <HomeIcon isActive={currentPage === Page.Home} />, text: 'Home', page: Page.Home },
+    { icon: <ExploreIcon isActive={currentPage === Page.Explore} />, text: 'Explore', page: Page.Explore },
+    { icon: <NotificationsIcon isActive={currentPage === Page.Notifications} />, text: 'Notifications', page: Page.Notifications },
+    { icon: <MessagesIcon isActive={currentPage === Page.Messages} />, text: 'Messages', page: Page.Messages, notificationCount: activeChatCount },
+    { icon: <ReelsIcon isActive={currentPage === Page.Reels} />, text: 'Reels', page: Page.Reels },
     { icon: <ListIcon />, text: 'Lists', page: Page.Lists },
-    { icon: <BookmarkIcon />, text: 'Bookmarks', page: Page.Bookmarks },
-    { icon: <ProfileIcon />, text: 'Profile', page: Page.Profile },
+    { icon: <BookmarkIcon isActive={currentPage === Page.Bookmarks} />, text: 'Bookmarks', page: Page.Bookmarks },
+    { icon: <ProfileIcon isActive={currentPage === Page.Profile} />, text: 'Profile', page: Page.Profile },
   ];
   
   const handleDisplayClick = () => {
@@ -36,14 +36,20 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
     <header className="w-[88px] xl:w-[275px] h-screen sticky top-0 px-2 flex-col justify-between items-center xl:items-stretch hidden sm:flex transition-all duration-300">
       <div>
         <div className="p-3 my-2 text-current hover:bg-light-hover dark:hover:bg-twitter-blue/10 rounded-full w-min">
-          <ProtoIcon />
+          <TalkaIcon />
         </div>
         <nav>
           <ul>
             {navItems.map((item) => (
               <li 
                 key={item.text} 
-                onClick={() => setCurrentPage(item.page)} 
+                onClick={() => {
+                    if (item.page === Page.Profile) {
+                        setCurrentPage(Page.Profile);
+                    } else {
+                        setCurrentPage(item.page);
+                    }
+                }} 
                 className={`flex items-center justify-center xl:justify-start gap-4 text-xl p-3 my-1 cursor-pointer hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full transition-colors duration-200 w-auto`}
                 >
                 <div className="relative">

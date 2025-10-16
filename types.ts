@@ -1,21 +1,24 @@
+
 export enum Page {
-  Home = 'Home',
-  Explore = 'Explore',
-  Notifications = 'Notifications',
-  Messages = 'Messages',
-  Bookmarks = 'Bookmarks',
-  Profile = 'Profile',
-  LoginPage = 'LoginPage',
-  Communities = 'Communities',
-  Reels = 'Reels',
-  CreatorStudio = 'CreatorStudio',
-  Settings = 'Settings',
-  HelpCenter = 'HelpCenter',
-  UserList = 'UserList',
-  Lists = 'Lists',
+    Home = 'Home',
+    Explore = 'Explore',
+    Notifications = 'Notifications',
+    Messages = 'Messages',
+    Bookmarks = 'Bookmarks',
+    Profile = 'Profile',
+    LoginPage = 'LoginPage',
+    Communities = 'Communities',
+    Reels = 'Reels',
+    CreatorStudio = 'CreatorStudio',
+    Settings = 'Settings',
+    HelpCenter = 'HelpCenter',
+    UserList = 'UserList',
+    Lists = 'Lists',
 }
 
-export type Theme = 'light' | 'dark' | 'dim';
+export type Theme = 'light' | 'dim' | 'dark';
+
+export type ChatTheme = 'default-blue' | 'sunset-orange' | 'ocean-green' | 'minty-fresh';
 
 export interface AppSettings {
   privacyAndSafety: {
@@ -38,15 +41,15 @@ export interface User {
   displayName: string;
   avatarUrl: string;
   bannerUrl?: string;
-  bio: string;
+  bio?: string;
   location?: string;
   website?: string;
   followingCount: number;
   followerCount: number;
-  verified: boolean;
+  verified?: boolean;
   followingIds: string[];
   followerIds: string[];
-  isOnline?: boolean;
+  isOnline: boolean;
 }
 
 export interface PollOption {
@@ -73,21 +76,49 @@ export interface Tweet {
   shareCount: number;
   viewCount: number;
   isBookmarked?: boolean;
+  isLiked?: boolean;
   pinned?: boolean;
   mediaUrls?: string[];
+  quotedTweet?: Tweet;
   poll?: Poll;
   votedOnPollId?: string | null;
   isVoiceTweet?: boolean;
   audioUrl?: string;
   isEdited?: boolean;
-  quotedTweet?: Tweet;
+  originalContent?: string;
+  translationInfo?: {
+    sourceLang: string;
+    targetLang: string;
+  };
 }
 
-export interface StoryComment {
+export interface ReelComment {
   id: string;
   user: User;
   text: string;
   timestamp: string;
+  likeCount: number;
+  isLiked: boolean;
+  replyToUsername?: string;
+}
+
+export interface TextOverlay {
+    text: string;
+    color: string;
+    style: 'classic' | 'neon';
+    position: { x: number; y: number };
+}
+
+export interface Story {
+    id: string;
+    mediaUrl: string;
+    type: 'image' | 'video';
+    duration: number;
+    timestamp: string;
+    likeCount: number;
+    isLiked: boolean;
+    comments: ReelComment[];
+    textOverlays?: TextOverlay[];
 }
 
 export interface Notification {
@@ -100,25 +131,28 @@ export interface Notification {
   timestamp: string;
 }
 
+export interface MessageReaction {
+    emoji: string;
+    users: string[];
+}
+
 export interface Message {
-  id:string;
+  id: string;
   senderId: string;
+  timestamp: string;
+  isRead: boolean;
+  replyTo?: Message;
+  reactions?: MessageReaction[];
+  isPinned?: boolean;
+  isEdited?: boolean;
   type: 'text' | 'voice' | 'gif' | 'wave' | 'image' | 'reel-share';
   text?: string;
   audioUrl?: string;
   duration?: number;
   gifUrl?: string;
   imageUrl?: string;
-  timestamp: string;
-  isRead: boolean;
-  isEdited?: boolean;
-  replyTo?: Message;
-  reactions?: { emoji: string; users: string[] }[];
-  isPinned?: boolean;
   reelId?: string;
 }
-
-export type ChatTheme = 'default-blue' | 'sunset-orange' | 'ocean-green' | 'minty-fresh';
 
 export interface Conversation {
   id: string;
@@ -126,7 +160,7 @@ export interface Conversation {
   lastMessage: Message;
   unreadCount: number;
   isTyping?: boolean;
-  chatTheme?: ChatTheme;
+  chatTheme: ChatTheme;
 }
 
 export interface Community {
@@ -139,77 +173,48 @@ export interface Community {
   memberIds: string[];
   tags: string[];
 }
-export interface TextOverlay {
-  text: string;
-  color: string;
-  style: 'classic' | 'neon';
-  position: { x: number; y: number };
-}
-
-
-export interface Story {
-  id: string;
-  mediaUrl: string;
-  type: 'image' | 'video';
-  duration: number;
-  timestamp: string;
-  textOverlays?: TextOverlay[];
-  likeCount: number;
-  isLiked: boolean;
-  comments: StoryComment[];
-}
-
-export interface Highlight {
-  id: string;
-  title: string;
-  coverUrl: string;
-  stories: Story[];
-}
 
 export interface UserStory {
-  user: User;
-  hasUnseen: boolean;
-  stories: Story[];
-}
-
-export interface ReelComment {
-  id:string;
-  user: User;
-  text: string;
-  timestamp: string;
-  likeCount: number;
-  isLiked: boolean;
-  replyToUsername?: string;
+    user: User;
+    hasUnseen: boolean;
+    stories: Story[];
 }
 
 export interface Reel {
-  id: string;
-  user: User;
-  videoUrl: string;
-  caption: string;
-  likeCount: number;
-  dislikeCount: number;
-  commentCount: number;
-  shareCount: number;
-  isLiked: boolean;
-  isDisliked: boolean;
-  isBookmarked?: boolean;
-  comments: ReelComment[];
+    id: string;
+    user: User;
+    videoUrl: string;
+    caption: string;
+    likeCount: number;
+    dislikeCount: number;
+    commentCount: number;
+    shareCount: number;
+    isLiked: boolean;
+    isDisliked: boolean;
+    isBookmarked: boolean;
+    comments: ReelComment[];
 }
 
 export interface Space {
-  id: string;
-  title: string;
-  host: User;
-  speakers: User[];
-  listenerCount: number;
-  color: string;
+    id: string;
+    title: string;
+    host: User;
+    speakers: User[];
+    listenerCount: number;
+    color: string;
+}
+
+export interface Highlight {
+    id: string;
+    title: string;
+    coverUrl: string;
+    stories: Story[];
 }
 
 export interface Call {
   user: User;
   type: 'video' | 'audio';
-  status: 'outgoing' | 'incoming' | 'active' | 'minimized';
+  status: 'incoming' | 'outgoing' | 'active' | 'minimized';
   isMicMuted?: boolean;
   isCameraOff?: boolean;
 }

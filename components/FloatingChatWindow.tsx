@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Conversation, Message, User, ChatTheme, Reel } from '../types';
 import { mockUser } from '../data/mockData';
-import { CloseIcon, WaveIcon, VideoCallIcon, PinFillIcon, MoreIcon, PhoneIcon } from './Icon';
+import { CloseIcon, WaveIcon, VideoCallIcon, PinFillIcon, MoreIcon, PhoneIcon, SearchIcon } from './Icon';
 import AvatarWithStatus from './AvatarWithStatus';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
@@ -77,9 +77,16 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [showWave, setShowWave] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const pinnedMessage = useMemo(() => messages.find(m => m.isPinned), [messages]);
+
+  const filteredMessages = useMemo(() => {
+    if (!searchTerm) return messages;
+    return messages.filter(m => m.text && m.text.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [messages, searchTerm]);
 
   useEffect(() => {
     if (!isMinimized) {
@@ -170,20 +177,35 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
           </div>
         </div>
         <div className="flex items-center">
+          <button onClick={() => setIsSearching(!isSearching)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><SearchIcon /></button>
           <button onClick={() => onStartAudioCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><PhoneIcon /></button>
           <button onClick={() => onStartVideoCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><VideoCallIcon /></button>
           <button onClick={() => setIsOptionsOpen(prev => !prev)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon /></button>
           <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
         </div>
         {isOptionsOpen && <ChatOptionsMenu onClose={() => setIsOptionsOpen(false)} onSelectTheme={(theme) => onUpdateChatTheme(conversation.id, theme)} />}
-      </header>
+      </motion.header>
       
+      <AnimatePresence>
+        {isSearching && (
+          <motion.div initial={{ y: -40 }} animate={{ y: 0 }} exit={{ y: -40 }} className="p-2 border-b border-light-border dark:border-twitter-border">
+            <input 
+              type="text"
+              placeholder="Search in conversation"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full bg-light-hover dark:bg-white/5 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-twitter-blue"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex-1 p-2 space-y-2 overflow-y-auto relative">
          <AnimatePresence>
             {showWave && (
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.5, y: 50 }}
-                    animate={{ opacity: 1, scale: 1.5, y: -50 }}
+                    animate={{ opacity: 1, scale: 2.5, y: -50 }}
                     exit={{ opacity: 0, scale: 0, y: -100 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
@@ -207,7 +229,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
             )}
         </AnimatePresence>
 
-        {messages.map(msg => (
+        {filteredMessages.map(msg => (
           <MessageBubble 
             key={msg.id} 
             message={msg} 
@@ -221,6 +243,9 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
             chatTheme={conversation.chatTheme || 'default-blue'}
           />
         ))}
+        {searchTerm && filteredMessages.length === 0 && (
+            <div className="text-center text-sm text-light-secondary-text dark:text-twitter-gray p-4">No results found.</div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       

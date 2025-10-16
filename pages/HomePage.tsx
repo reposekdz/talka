@@ -7,7 +7,7 @@ import TweetSkeleton from '../components/TweetSkeleton';
 import SpacesCard from '../components/SpacesCard';
 import { Tweet, User, Space, Page, UserStory } from '../types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ProtoIcon, NotificationsIcon, MoreIcon } from '../components/Icon';
+import { TalkaIcon, NotificationsIcon, MoreIcon } from '../components/Icon';
 import Avatar from '../components/Avatar';
 
 interface HomePageProps {
@@ -33,6 +33,9 @@ interface HomePageProps {
   onOpenTopRightMenu: () => void;
   onOpenCreator: (mode: 'select' | 'story' | 'reel' | 'post') => void;
   onGrok: (tweet: Tweet) => void;
+  onLikeTweet: (tweetId: string) => void;
+  onTranslateTweet: (tweetId: string) => void;
+  onRevertTranslation: (tweetId: string) => void;
 }
 
 const TabButton: React.FC<{
@@ -49,7 +52,7 @@ const TabButton: React.FC<{
 );
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, userStories, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer, notificationCount, setCurrentPage, onOpenTopRightMenu, onOpenCreator, onGrok } = props;
+  const { tweets, currentUser, userStories, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer, notificationCount, setCurrentPage, onOpenTopRightMenu, onOpenCreator, onGrok, onLikeTweet, onTranslateTweet, onRevertTranslation } = props;
   const [activeTab, setActiveTab] = useState<'For You' | 'Following'>('For You');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -78,7 +81,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             
             {/* Mobile Center: Logo */}
             <div className="absolute left-1/2 -translate-x-1/2 sm:hidden">
-                 <ProtoIcon />
+                 <TalkaIcon />
             </div>
 
             {/* Desktop Title */}
@@ -151,6 +154,9 @@ const HomePage: React.FC<HomePageProps> = (props) => {
                 onEdit={onEdit}
                 liveReactions={liveReactions}
                 onGrok={onGrok}
+                onLikeTweet={onLikeTweet}
+                onTranslateTweet={onTranslateTweet}
+                onRevertTranslation={onRevertTranslation}
                 />
             ))}
           </AnimatePresence>

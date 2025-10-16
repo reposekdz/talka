@@ -51,7 +51,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings,
     {
       icon: <PrivacyIcon />,
       title: "Privacy and safety",
-      subtitle: "Manage what information you see and share on Proto-Twitter.",
+      subtitle: "Manage what information you see and share on Talka.",
       action: () => setActiveSection("Privacy and safety")
     },
     {
@@ -63,7 +63,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings,
     {
       icon: <DisplayIcon />,
       title: "Accessibility, display, and languages",
-      subtitle: "Manage how Proto-Twitter content is displayed to you.",
+      subtitle: "Manage how Talka content is displayed to you.",
       action: () => setActiveSection("Accessibility, display, and languages")
     },
      {

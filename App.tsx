@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -40,12 +39,13 @@ import MobileDrawer from './components/MobileDrawer';
 import ReelOptionsModal from './components/ReelOptionsModal';
 import TopRightMenu from './components/TopRightMenu';
 import GrokAnalysisModal from './components/GrokAnalysisModal';
-import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call, Story, ReelComment } from './types';
+import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call, Story, ReelComment, Poll } from './types';
 import { mockUser, otherUsers as initialOtherUsers, mockTweets, initialUserStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // FIX: Added optional text property to image and reel-share message content types.
 type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string, text?: string };
+type ToastState = { id: number; message: string; duration?: number; actionText?: string; onAction?: () => void; };
 
 const initialSettings: AppSettings = {
   privacyAndSafety: {
@@ -102,7 +102,7 @@ function App() {
   const [focusedChatId, setFocusedChatId] = useState<string | null>(null);
   
   // Toast & Notifications
-  const [toast, setToast] = useState<{ message: string; isVisible: boolean }>({ message: '', isVisible: false });
+  const [toast, setToast] = useState<ToastState | null>(null);
   const [inAppNotification, setInAppNotification] = useState<{ conversation: Conversation, message: Message } | null>(null);
 
   // Live updates
@@ -162,11 +162,14 @@ function App() {
       clearInterval(reactionInterval);
       clearTimeout(callTimeout);
     }
-  }, [tweets, settings.accessibilityDisplayAndLanguages.reduceMotion]);
+  }, [tweets, settings.accessibilityDisplayAndLanguages.reduceMotion, otherUsers]);
 
-  const showToast = (message: string) => {
-    setToast({ message, isVisible: true });
-    setTimeout(() => setToast({ message: '', isVisible: false }), 3000);
+  const showToast = (toastData: Omit<ToastState, 'id'>) => {
+    const newToast = { ...toastData, id: Date.now() };
+    setToast(newToast);
+    if (!newToast.duration) {
+      setTimeout(() => setToast(current => (current?.id === newToast.id ? null : current)), 3000);
+    }
   };
 
   const handleLogin = () => setIsLoggedIn(true);
@@ -192,8 +195,24 @@ function App() {
       isVoiceTweet: tweetContent.isVoiceTweet,
       audioUrl: tweetContent.audioUrl,
       quotedTweet: tweetContent.quotedTweet,
+      poll: tweetContent.poll
     };
-    setTweets(prev => [newTweet, ...prev]);
+    
+    const timeoutId = setTimeout(() => {
+        setTweets(prev => [newTweet, ...prev]);
+    }, 5000);
+
+    showToast({
+        message: 'Your Post was sent.',
+        duration: 5,
+        actionText: 'Undo',
+        onAction: () => {
+            clearTimeout(timeoutId);
+            setToast(null); // Close the undo toast immediately
+            showToast({ message: 'Post undone.' });
+        }
+    });
+
     setQuotingTweet(null);
     setIsCreatorFlowOpen(false);
   }, [currentUser]);
@@ -229,7 +248,7 @@ function App() {
         return updatedStories;
     });
     setIsCreatorFlowOpen(false);
-    showToast('Story posted!');
+    showToast({message: 'Story posted!'});
   };
 
   const handlePostReel = (videoUrl: string, caption: string) => {
@@ -249,7 +268,7 @@ function App() {
       };
       setReels(prev => [newReel, ...prev]);
       setIsCreatorFlowOpen(false);
-      showToast('Reel posted!');
+      showToast({message: 'Reel posted!'});
   };
 
 
@@ -266,7 +285,7 @@ function App() {
         : t
     ));
     setEditingTweet(null);
-    showToast('Your Post was updated.');
+    showToast({message: 'Your Post was updated.'});
   }, []);
   
   const handlePostReply = useCallback((replyContent: string, originalTweet: Tweet) => {
@@ -284,7 +303,7 @@ function App() {
     };
     setTweets(prev => [newTweet, ...prev]);
     setReplyingToTweet(null);
-    showToast('Your reply was sent.');
+    showToast({message: 'Your reply was sent.'});
   }, [currentUser]);
 
   const handleToggleBookmark = useCallback((tweetId: string) => {
@@ -296,7 +315,17 @@ function App() {
         }
         return t;
     }));
-    showToast(bookmarked ? 'Added to your Bookmarks' : 'Removed from your Bookmarks');
+    showToast({message: bookmarked ? 'Added to your Bookmarks' : 'Removed from your Bookmarks'});
+  }, []);
+
+  const handleLikeTweet = useCallback((tweetId: string) => {
+    setTweets(prev => prev.map(t => {
+        if (t.id === tweetId) {
+            const isLiked = !t.isLiked;
+            return { ...t, isLiked, likeCount: isLiked ? t.likeCount + 1 : t.likeCount - 1 };
+        }
+        return t;
+    }));
   }, []);
 
   const handleVote = useCallback((tweetId: string, optionId: string) => {
@@ -321,9 +350,9 @@ function App() {
     
     // Show toast before state update for immediate feedback
     if (isFollowing) {
-        showToast(`Unfollowed @${otherUsers.find(u => u.id === userId)?.username || 'user'}`);
+        showToast({message: `Unfollowed @${otherUsers.find(u => u.id === userId)?.username || 'user'}`});
     } else {
-        showToast(`Followed @${otherUsers.find(u => u.id === userId)?.username || 'user'}`);
+        showToast({message: `Followed @${otherUsers.find(u => u.id === userId)?.username || 'user'}`});
     }
 
     setCurrentUser(prev => ({
@@ -521,7 +550,7 @@ function App() {
   const handleReplyWithMessage = (call: Call) => {
     setActiveCall(null);
     handleOpenChat(call.user);
-    showToast(`Call declined. Opening message with ${call.user.displayName}.`);
+    showToast({message: `Call declined. Opening message with ${call.user.displayName}.`});
   };
   const handleMinimizeCall = () => {
     if (activeCall) setActiveCall({ ...activeCall, status: 'minimized' });
@@ -575,7 +604,7 @@ function App() {
 
   const handleBookmarkReel = (reelId: string) => {
     setReels(prev => prev.map(r => r.id === reelId ? { ...r, isBookmarked: !r.isBookmarked } : r));
-    showToast('Reel saved!');
+    showToast({message: 'Reel saved!'});
   };
 
   const handlePostReelComment = (reelId: string, text: string, replyTo?: ReelComment) => {
@@ -604,6 +633,27 @@ function App() {
       return r;
     }));
   };
+  
+  const handleLikeReelComment = (reelId: string, commentId: string) => {
+    const updatedReels = reels.map(reel => {
+        if (reel.id === reelId) {
+            const updatedComments = reel.comments.map(comment => {
+                if (comment.id === commentId) {
+                    const isLiked = !comment.isLiked;
+                    return { ...comment, isLiked, likeCount: isLiked ? comment.likeCount + 1 : comment.likeCount - 1 };
+                }
+                return comment;
+            });
+            const updatedReel = { ...reel, comments: updatedComments };
+            if (viewingReelComments?.id === reelId) {
+                setViewingReelComments(updatedReel);
+            }
+            return updatedReel;
+        }
+        return reel;
+    });
+    setReels(updatedReels);
+  };
 
   const handleShareReelAsMessage = (reelId: string, conversationIds: string[], message?: string) => {
     conversationIds.forEach(conversationId => {
@@ -614,7 +664,7 @@ function App() {
         }
     });
     setSharingReel(null);
-    showToast(`Reel sent to ${conversationIds.length} chat${conversationIds.length > 1 ? 's' : ''}!`);
+    showToast({message: `Reel sent to ${conversationIds.length} chat${conversationIds.length > 1 ? 's' : ''}!`});
   };
   
   const handleDrawerNavigate = (page: Page) => {
@@ -676,6 +726,9 @@ function App() {
         onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
         tweets={filteredTweets.filter(t => t.user.id === profileUser.id)}
         onGrok={handleGrok}
+        onLikeTweet={handleLikeTweet}
+        onTranslateTweet={() => {}}
+        onRevertTranslation={() => {}}
       />;
     }
     const unreadNotifications = mockNotifications.length;
@@ -704,8 +757,22 @@ function App() {
         onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
         onOpenCreator={handleOpenCreator}
         onGrok={handleGrok}
+        onLikeTweet={handleLikeTweet}
+        onTranslateTweet={() => {}}
+        onRevertTranslation={() => {}}
       />;
-      case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
+      case Page.Explore: return <ExplorePage 
+        tweets={tweets}
+        currentUser={currentUser}
+        openSearchModal={() => setIsSearchModalOpen(true)} 
+        onImageClick={setLightboxImageUrl} 
+        onViewProfile={handleViewProfile}
+        onReply={setReplyingToTweet}
+        onToggleBookmark={handleToggleBookmark}
+        onLikeTweet={handleLikeTweet}
+        onTranslateTweet={() => {}}
+        onRevertTranslation={() => {}}
+      />;
       case Page.Notifications: return <NotificationsPage />;
       case Page.Messages: return <MessagesPage openChat={handleOpenChat} />;
       case Page.Bookmarks: return <BookmarksPage 
@@ -720,6 +787,9 @@ function App() {
         onEdit={setEditingTweet}
         liveReactions={liveReactions}
         onGrok={handleGrok}
+        onLikeTweet={handleLikeTweet}
+        onTranslateTweet={() => {}}
+        onRevertTranslation={() => {}}
       />;
       case Page.Lists: return <ListsPage />;
       case Page.Communities: return <CommunitiesPage />;
@@ -755,6 +825,9 @@ function App() {
         onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
         tweets={filteredTweets.filter(t => t.user.id === currentUser.id)}
         onGrok={handleGrok}
+        onLikeTweet={handleLikeTweet}
+        onTranslateTweet={() => {}}
+        onRevertTranslation={() => {}}
        />;
       default: return <HomePage 
         tweets={filteredTweets} 
@@ -779,6 +852,9 @@ function App() {
         onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
         onOpenCreator={handleOpenCreator}
         onGrok={handleGrok}
+        onLikeTweet={handleLikeTweet}
+        onTranslateTweet={() => {}}
+        onRevertTranslation={() => {}}
       />;
     }
   };
@@ -834,6 +910,7 @@ function App() {
                             reel={viewingReelComments} 
                             onClose={() => setViewingReelComments(null)}
                             onPostComment={handlePostReelComment}
+                            onLikeComment={handleLikeReelComment}
                          />
                     </motion.div>
                 )}
@@ -848,8 +925,8 @@ function App() {
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={handleEditTweet} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={handlePostTweet} />}
-                {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.initialIndex} onClose={() => setStoryViewerState(null)} showToast={showToast} isHighlight={storyViewerState.isHighlight} />}
-                {reelOptions && <ReelOptionsModal reel={reelOptions} onClose={() => setReelOptions(null)} showToast={showToast} />}
+                {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.initialIndex} onClose={() => setStoryViewerState(null)} showToast={(msg) => showToast({message: msg})} isHighlight={storyViewerState.isHighlight} />}
+                {reelOptions && <ReelOptionsModal reel={reelOptions} onClose={() => setReelOptions(null)} showToast={(msg) => showToast({message: msg})} />}
                 {grokkingTweet && <GrokAnalysisModal tweet={grokkingTweet} onClose={() => setGrokkingTweet(null)} />}
                 
                 {/* Call System */}
@@ -911,7 +988,15 @@ function App() {
                     />
                 )}
             </AnimatePresence>
-            <Toast message={toast.message} isVisible={toast.isVisible} onClose={() => setToast(prev => ({...prev, isVisible: false}))} />
+            <AnimatePresence>
+                {toast && (
+                    <Toast
+                        key={toast.id}
+                        {...toast}
+                        onClose={() => setToast(null)}
+                    />
+                )}
+            </AnimatePresence>
             <BottomNav 
                 currentPage={currentPage}
                 setCurrentPage={(p) => {

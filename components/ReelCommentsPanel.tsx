@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Reel, ReelComment } from '../types';
 import { CloseIcon, HeartFillIcon, LikeIcon, PaperPlaneIcon } from './Icon';
@@ -9,17 +8,16 @@ interface ReelCommentsPanelProps {
   reel: Reel;
   onClose: () => void;
   onPostComment: (reelId: string, text: string, replyTo?: ReelComment) => void;
+  onLikeComment: (reelId: string, commentId: string) => void;
 }
 
-const CommentItem: React.FC<{ comment: ReelComment, onReply: (comment: ReelComment) => void }> = ({ comment, onReply }) => {
-    const [isLiked, setIsLiked] = useState(comment.isLiked);
-    const [likeCount, setLikeCount] = useState(comment.likeCount);
+interface CommentItemProps { 
+    comment: ReelComment; 
+    onReply: (comment: ReelComment) => void;
+    onLike: (commentId: string) => void;
+}
 
-    const handleLike = () => {
-        setIsLiked(!isLiked);
-        setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    };
-    
+const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onLike }) => {
     return (
         <div className="flex gap-3 py-3">
             <Avatar src={comment.user.avatarUrl} alt={comment.user.displayName} size="small" />
@@ -37,16 +35,16 @@ const CommentItem: React.FC<{ comment: ReelComment, onReply: (comment: ReelComme
                 </div>
             </div>
             <div className="text-center">
-                <button onClick={handleLike} className={`${isLiked ? 'text-red-500' : 'text-light-secondary-text dark:text-twitter-gray'}`}>
-                    {isLiked ? <HeartFillIcon/> : <LikeIcon />}
+                <button onClick={() => onLike(comment.id)} className={`${comment.isLiked ? 'text-red-500' : 'text-light-secondary-text dark:text-twitter-gray'}`}>
+                    {comment.isLiked ? <HeartFillIcon/> : <LikeIcon />}
                 </button>
-                <span className="text-xs">{likeCount}</span>
+                <span className="text-xs">{comment.likeCount}</span>
             </div>
         </div>
     );
 }
 
-const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, onPostComment }) => {
+const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, onPostComment, onLikeComment }) => {
     const [newComment, setNewComment] = useState('');
     const [replyingTo, setReplyingTo] = useState<ReelComment | null>(null);
 
@@ -76,7 +74,7 @@ const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, on
                     <p className="text-light-text dark:text-dim-text">{reel.caption}</p>
                 </div>
             </div>
-            {reel.comments.map(comment => <CommentItem key={comment.id} comment={comment} onReply={setReplyingTo} />)}
+            {reel.comments.map(comment => <CommentItem key={comment.id} comment={comment} onReply={setReplyingTo} onLike={(commentId) => onLikeComment(reel.id, commentId)} />)}
              {reel.comments.length === 0 && (
                 <div className="text-center text-light-secondary-text dark:text-twitter-gray py-16">
                     <h3 className="font-bold">No comments yet</h3>
