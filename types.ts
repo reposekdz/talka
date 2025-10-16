@@ -1,4 +1,3 @@
-
 export enum Page {
   Home = 'Home',
   Explore = 'Explore',
@@ -77,6 +76,8 @@ export interface Tweet {
   votedOnPollId?: string | null;
   isVoiceTweet?: boolean;
   audioUrl?: string;
+  isEdited?: boolean;
+  quotedTweet?: Tweet;
 }
 
 export interface Notification {
@@ -90,7 +91,7 @@ export interface Notification {
 export interface Message {
   id: string;
   senderId: string;
-  type: 'text' | 'voice' | 'gif';
+  type: 'text' | 'voice' | 'gif' | 'wave';
   text?: string;
   audioUrl?: string;
   duration?: number;
@@ -99,6 +100,7 @@ export interface Message {
   isRead: boolean;
   replyTo?: Message;
   reactions?: { emoji: string; users: string[] }[];
+  isPinned?: boolean;
 }
 
 export interface Conversation {
@@ -146,8 +148,10 @@ export interface Reel {
   videoUrl: string;
   caption: string;
   likeCount: number;
+  dislikeCount: number;
   commentCount: number;
   shareCount: number;
   isLiked: boolean;
+  isDisliked: boolean;
   comments: ReelComment[];
 }

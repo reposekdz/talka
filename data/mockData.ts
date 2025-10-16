@@ -9,29 +9,29 @@ export const mockUser: User = {
   bio: 'Building things for the web with React & TypeScript. This is a frontend prototype. 🚀',
   location: 'The Web',
   website: 'github.com',
-  followingCount: 2,
-  followerCount: 1,
+  followingCount: 5,
+  followerCount: 3,
   verified: true,
-  followingIds: ['u2', 'u4'],
-  followerIds: ['u3'],
-  // FIX: Added isOnline property to match User type and component usage.
+  followingIds: ['u2', 'u4', 'u5', 'u6', 'u7'],
+  followerIds: ['u3', 'u5', 'u8'],
   isOnline: true,
 };
 
 export const otherUsers: User[] = [
-  // FIX: Added isOnline property to match User type and component usage.
   { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'A utility-first CSS framework for rapid UI development.', followingIds: ['u1'], followerIds: [], isOnline: true },
-  // FIX: Added isOnline property to match User type and component usage.
   { id: 'u3', username: 'vercel', displayName: 'Vercel', avatarUrl: 'https://picsum.photos/seed/u3/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Develop. Preview. Ship.', followingIds: ['u1'], followerIds: [], isOnline: false },
-  // FIX: Added isOnline property to match User type and component usage.
   { id: 'u4', username: 'elonmusk', displayName: 'Elon Musk', avatarUrl: 'https://picsum.photos/seed/u4/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'Mars & Cars', followingIds: [], followerIds: ['u1'], isOnline: true },
+  { id: 'u5', username: 'nasa', displayName: 'NASA', avatarUrl: 'https://picsum.photos/seed/u5/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Exploring the universe and our home planet.', followingIds: ['u1'], followerIds: ['u1'], isOnline: true },
+  { id: 'u6', username: 'natgeo', displayName: 'National Geographic', avatarUrl: 'https://picsum.photos/seed/u6/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Experience the world through the eyes of our photographers, explorers, and filmmakers.', followingIds: ['u1'], followerIds: [], isOnline: false },
+  { id: 'u7', username: 'figma', displayName: 'Figma', avatarUrl: 'https://picsum.photos/seed/u7/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'The collaborative interface design tool.', followingIds: ['u1'], followerIds: [], isOnline: true },
+  { id: 'u8', username: 'codepen', displayName: 'CodePen', avatarUrl: 'https://picsum.photos/seed/u8/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'The best place to build, test, and discover front-end code.', followingIds: [], followerIds: ['u1'], isOnline: true },
 ];
 
 export const baseTweets: Tweet[] = [
   {
     id: 't1',
     user: mockUser,
-    content: 'Just launched a new version of Proto-Twitter! It includes a dark mode, dim mode, and a bunch of new features. Check it out and let me know what you think!',
+    content: 'Just launched a new version of Proto-Twitter! It includes a dark mode, dim mode, and a bunch of new features. Check it out and let me know what you think! #React #WebDev',
     timestamp: '2024-07-22T10:00:00Z',
     replyCount: 12,
     retweetCount: 45,
@@ -52,6 +52,17 @@ export const baseTweets: Tweet[] = [
     mediaUrls: ['https://picsum.photos/seed/m1/600/400'],
   },
   {
+    id: 't-nasa-1',
+    user: otherUsers[3],
+    content: 'The James Webb Space Telescope has captured another stunning image of a distant galaxy. Look at the incredible detail! ✨ #JWST #Space',
+    timestamp: '2024-07-23T14:00:00Z',
+    replyCount: 500,
+    retweetCount: 8000,
+    likeCount: 45000,
+    viewCount: 1200000,
+    mediaUrls: ['https://picsum.photos/seed/nasa1/800/600', 'https://picsum.photos/seed/nasa2/800/600'],
+  },
+  {
     id: 't3',
     user: otherUsers[1],
     content: "We're excited to announce support for the new React Compiler in Vercel. Your Next.js apps are about to get even faster, automatically.",
@@ -60,6 +71,26 @@ export const baseTweets: Tweet[] = [
     retweetCount: 950,
     likeCount: 5500,
     viewCount: 180000,
+  },
+  {
+    id: 't-quote-1',
+    user: mockUser,
+    content: 'This is huge news for the React ecosystem!',
+    timestamp: '2024-07-21T19:00:00Z',
+    replyCount: 5,
+    retweetCount: 10,
+    likeCount: 80,
+    viewCount: 2000,
+    quotedTweet: {
+        id: 't3',
+        user: otherUsers[1],
+        content: "We're excited to announce support for the new React Compiler in Vercel. Your Next.js apps are about to get even faster, automatically.",
+        timestamp: '2024-07-21T18:45:00Z',
+        replyCount: 88,
+        retweetCount: 950,
+        likeCount: 5500,
+        viewCount: 180000,
+    }
   },
   {
     id: 't4',
@@ -93,10 +124,51 @@ export const baseTweets: Tweet[] = [
     viewCount: 5000000,
     mediaUrls: ['https://picsum.photos/seed/m2/600/800', 'https://picsum.photos/seed/m3/600/800'],
   },
-  { id: 't6', user: otherUsers[0], content: 'Video test!', timestamp: '2024-07-22T11:30:00Z', replyCount: 1, retweetCount: 2, likeCount: 3, viewCount: 100, mediaUrls: ['http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'] },
+  { 
+    id: 't6', 
+    user: otherUsers[0], 
+    content: 'Check out this awesome video on how utility classes can speed up your workflow.', 
+    timestamp: '2024-07-22T11:30:00Z', 
+    replyCount: 15, 
+    retweetCount: 200, 
+    likeCount: 950, 
+    viewCount: 35000, 
+    mediaUrls: ['http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'] 
+  },
+  {
+    id: 't-natgeo-1',
+    user: otherUsers[4],
+    content: 'A lioness stalks her prey in the Serengeti. The patience and power of these animals is breathtaking. #wildlife #photography',
+    timestamp: '2024-07-23T08:00:00Z',
+    replyCount: 150,
+    retweetCount: 3000,
+    likeCount: 18000,
+    viewCount: 800000,
+    mediaUrls: ['https://picsum.photos/seed/natgeo1/800/500'],
+  },
+  {
+    id: 't-figma-1',
+    user: otherUsers[5],
+    content: 'Collaboration just got easier. Introducing live comments directly in your prototypes. Give feedback in context, instantly. @reactdev what do you think?',
+    timestamp: '2024-07-23T10:00:00Z',
+    replyCount: 200,
+    retweetCount: 1500,
+    likeCount: 9000,
+    viewCount: 400000,
+  },
+  {
+    id: 't-codepen-1',
+    user: otherUsers[6],
+    content: 'We love seeing what you build! Check out this week\'s featured pen - a pure CSS recreation of the solar system. #CSSArt #CodePen',
+    timestamp: '2024-07-23T12:00:00Z',
+    replyCount: 80,
+    retweetCount: 800,
+    likeCount: 4000,
+    viewCount: 250000,
+  },
 ];
 
-export const mockTweets = [...baseTweets, ...Array.from({ length: 10 }, (_, i) => ({ ...baseTweets[i % baseTweets.length], id: `t-more-${i}`}))];
+export const mockTweets = [...baseTweets, ...Array.from({ length: 100 }, (_, i) => ({ ...baseTweets[i % baseTweets.length], id: `t-more-${i}`}))];
 
 
 export const mockTrendingTopics = [
@@ -161,9 +233,11 @@ export const mockReels: Reel[] = [
         videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', 
         caption: 'Having fun with CSS animations!', 
         likeCount: 1200, 
+        dislikeCount: 15,
         commentCount: 45, 
         shareCount: 120, 
         isLiked: false,
+        isDisliked: false,
         comments: [
             { id: 'rc1-1', user: otherUsers[1], text: "So cool!", timestamp: "2h", likeCount: 15, isLiked: false },
             { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h", likeCount: 8, isLiked: true },
@@ -175,9 +249,11 @@ export const mockReels: Reel[] = [
         videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', 
         caption: 'My new setup is finally complete! What do you think? #desksetup #coding', 
         likeCount: 5000, 
+        dislikeCount: 120,
         commentCount: 250, 
         shareCount: 300, 
         isLiked: true,
+        isDisliked: false,
         comments: [
             { id: 'rc2-1', user: otherUsers[2], text: "Clean setup! 🚀", timestamp: "3h", likeCount: 50, isLiked: false },
         ]
@@ -188,9 +264,24 @@ export const mockReels: Reel[] = [
         videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4', 
         caption: 'Shipping a new feature on Vercel!', 
         likeCount: 8000, 
+        dislikeCount: 50,
         commentCount: 400, 
         shareCount: 600, 
         isLiked: false,
+        isDisliked: false,
+        comments: [] 
+    },
+    { 
+        id: 'r4', 
+        user: otherUsers[4], 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', 
+        caption: 'A breathtaking view of the Grand Canyon.', 
+        likeCount: 12000, 
+        dislikeCount: 80,
+        commentCount: 800, 
+        shareCount: 1500, 
+        isLiked: false,
+        isDisliked: false,
         comments: [] 
     },
 ];

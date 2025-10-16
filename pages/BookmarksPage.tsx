@@ -1,6 +1,7 @@
 import React from 'react';
 import TweetCard from '../components/TweetCard';
 import { Tweet, User } from '../types';
+import { mockUser } from '../data/mockData';
 
 interface BookmarksPageProps {
   tweets: Tweet[];
@@ -9,10 +10,12 @@ interface BookmarksPageProps {
   onReply: (tweet: Tweet) => void;
   onToggleBookmark: (tweetId: string) => void;
   onVote: (tweetId: string, optionId: string) => void;
+  onQuote: (tweet: Tweet) => void;
+  onEdit: (tweet: Tweet) => void;
 }
 
 const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
-  const { tweets, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote } = props;
+  const { tweets, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit } = props;
   const bookmarkedTweets = tweets.filter(t => t.isBookmarked);
 
   return (
@@ -27,11 +30,14 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
             <TweetCard 
               key={tweet.id} 
               tweet={tweet} 
+              currentUser={mockUser}
               onImageClick={onImageClick}
               onViewProfile={onViewProfile}
               onReply={onReply}
               onToggleBookmark={onToggleBookmark}
               onVote={onVote}
+              onQuote={onQuote}
+              onEdit={onEdit}
             />
           ))
         ) : (

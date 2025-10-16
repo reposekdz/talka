@@ -26,11 +26,13 @@ import BottomNav from './components/BottomNav';
 import ReelCommentsPanel from './components/ReelCommentsPanel';
 import VideoCallView from './components/VideoCallView';
 import InAppNotification from './components/InAppNotification';
+import EditTweetModal from './components/EditTweetModal';
+import QuoteTweetModal from './components/QuoteTweetModal';
 import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message } from './types';
 import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages } from './data/mockData';
 import { AnimatePresence } from 'framer-motion';
 
-type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string };
+type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' };
 
 const initialSettings: AppSettings = {
   privacyAndSafety: {
@@ -62,6 +64,8 @@ function App() {
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [replyingToTweet, setReplyingToTweet] = useState<Tweet | null>(null);
+  const [editingTweet, setEditingTweet] = useState<Tweet | null>(null);
+  const [quotingTweet, setQuotingTweet] = useState<Tweet | null>(null);
   const [storyViewerState, setStoryViewerState] = useState<{ stories: typeof userStories, index: number } | null>(null);
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
   const [videoCallUser, setVideoCallUser] = useState<User | null>(null);
@@ -104,9 +108,21 @@ function App() {
       viewCount: 0,
       isVoiceTweet: tweetContent.isVoiceTweet,
       audioUrl: tweetContent.audioUrl,
+      quotedTweet: tweetContent.quotedTweet,
     };
     setTweets(prev => [newTweet, ...prev]);
+    setQuotingTweet(null);
   }, [currentUser]);
+
+  const handleEditTweet = useCallback((tweetId: string, newContent: string) => {
+    setTweets(prev => prev.map(t => 
+      t.id === tweetId 
+        ? { ...t, content: newContent, isEdited: true } 
+        : t
+    ));
+    setEditingTweet(null);
+    showToast('Your Post was updated.');
+  }, []);
   
   const handlePostReply = useCallback((replyContent: string, originalTweet: Tweet) => {
     // This just creates a new tweet for simplicity
@@ -273,6 +289,19 @@ function App() {
     });
   };
 
+  const handlePinMessage = (conversationId: string, messageId: string) => {
+      setAllMessages(prev => {
+          const newMessages = (prev[conversationId] || []).map(msg => {
+              // Unpin any previously pinned message
+              if (msg.isPinned) msg.isPinned = false;
+              // Pin the new one
+              if (msg.id === messageId) msg.isPinned = !msg.isPinned; // toggle pin
+              return msg;
+          });
+          return { ...prev, [conversationId]: newMessages };
+      });
+  };
+
   const renderPage = () => {
     if (userListState && currentPage === Page.UserList) {
       return <UserListPage 
@@ -298,6 +327,8 @@ function App() {
         onReply={setReplyingToTweet}
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
+        onQuote={setQuotingTweet}
+        onEdit={setEditingTweet}
       />;
     }
 
@@ -312,6 +343,8 @@ function App() {
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
         onStoryClick={(index) => setStoryViewerState({ stories: userStories, index })}
+        onQuote={setQuotingTweet}
+        onEdit={setEditingTweet}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
@@ -323,6 +356,8 @@ function App() {
         onReply={setReplyingToTweet}
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
+        onQuote={setQuotingTweet}
+        onEdit={setEditingTweet}
       />;
       case Page.Communities: return <CommunitiesPage />;
       case Page.Reels: return <ReelsPage onOpenComments={setViewingReelComments} settings={settings} />;
@@ -341,6 +376,8 @@ function App() {
         onReply={setReplyingToTweet}
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
+        onQuote={setQuotingTweet}
+        onEdit={setEditingTweet}
        />;
       default: return <HomePage 
         tweets={tweets} 
@@ -352,6 +389,8 @@ function App() {
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
         onStoryClick={(index) => setStoryViewerState({ stories: userStories, index })}
+        onQuote={setQuotingTweet}
+        onEdit={setEditingTweet}
       />;
     }
   };
@@ -402,6 +441,8 @@ function App() {
             {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
             {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
             {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
+            {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={handleEditTweet} />}
+            {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={handlePostTweet} />}
             {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.index} onClose={() => setStoryViewerState(null)} />}
             {videoCallUser && <VideoCallView user={videoCallUser} onEndCall={() => setVideoCallUser(null)} />}
 
@@ -415,6 +456,7 @@ function App() {
                 onNavigateToMessages={handleNavigateToMessages}
                 onSendMessage={handleSendMessage}
                 onAddReaction={handleAddReaction}
+                onPinMessage={handlePinMessage}
                 onStartVideoCall={setVideoCallUser}
             />
 

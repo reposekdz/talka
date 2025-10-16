@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { mockUser, baseTweets } from '../data/mockData';
 import TweetCard from '../components/TweetCard';
 import { MoreIcon, CalendarIcon, ChevronLeftIcon, MessagesIcon } from '../components/Icon';
-import { User } from '../types';
+import { Tweet, User } from '../types';
 
 interface ProfilePageProps {
   user: User;
@@ -13,13 +13,15 @@ interface ProfilePageProps {
   onFollowToggle: (userId: string) => void;
   onViewUserList: (user: User, type: 'followers' | 'following') => void;
   onOpenChat: (user: User) => void;
-  onReply: (tweet: any) => void;
+  onReply: (tweet: Tweet) => void;
   onToggleBookmark: (tweetId: string) => void;
   onVote: (tweetId: string, optionId: string) => void;
+  onQuote: (tweet: Tweet) => void;
+  onEdit: (tweet: Tweet) => void;
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote } = props;
+  const { user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
   const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(false);
@@ -170,11 +172,14 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
           <TweetCard 
             key={tweet.id} 
             tweet={tweet} 
+            currentUser={currentUser}
             onImageClick={onImageClick} 
             onViewProfile={onViewProfile}
             onReply={onReply}
             onToggleBookmark={onToggleBookmark}
             onVote={onVote}
+            onQuote={onQuote}
+            onEdit={onEdit}
           />
         ))}
         {activeTab === 'Monetization' && renderMonetizationTab()}

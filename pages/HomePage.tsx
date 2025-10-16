@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
 import StoryReel from '../components/StoryReel';
 import LiveCard from '../components/LiveCard';
+import TweetSkeleton from '../components/TweetSkeleton';
 import { Tweet, User } from '../types';
 import { userStories } from '../data/mockData';
 
@@ -16,6 +17,8 @@ interface HomePageProps {
   onToggleBookmark: (tweetId: string) => void;
   onVote: (tweetId: string, optionId: string) => void;
   onStoryClick: (userIndex: number) => void;
+  onQuote: (tweet: Tweet) => void;
+  onEdit: (tweet: Tweet) => void;
 }
 
 const TabButton: React.FC<{
@@ -32,8 +35,15 @@ const TabButton: React.FC<{
 );
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit } = props;
   const [activeTab, setActiveTab] = useState<'For You' | 'Following'>('For You');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   const followingTweets = tweets.filter(tweet => 
     currentUser.followingIds.includes(tweet.user.id) || tweet.user.id === currentUser.id
@@ -59,17 +69,24 @@ const HomePage: React.FC<HomePageProps> = (props) => {
       <LiveCard />
       
       <div>
-        {displayedTweets.map(tweet => (
-          <TweetCard 
-            key={tweet.id} 
-            tweet={tweet} 
-            onImageClick={onImageClick}
-            onViewProfile={onViewProfile}
-            onReply={onReply}
-            onToggleBookmark={onToggleBookmark}
-            onVote={onVote}
-          />
-        ))}
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, index) => <TweetSkeleton key={index} />)
+        ) : (
+          displayedTweets.map(tweet => (
+            <TweetCard 
+              key={tweet.id} 
+              tweet={tweet}
+              currentUser={currentUser}
+              onImageClick={onImageClick}
+              onViewProfile={onViewProfile}
+              onReply={onReply}
+              onToggleBookmark={onToggleBookmark}
+              onVote={onVote}
+              onQuote={onQuote}
+              onEdit={onEdit}
+            />
+          ))
+        )}
       </div>
     </div>
   );

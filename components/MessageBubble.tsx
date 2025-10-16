@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Message } from '../types';
-import { ReplyIcon, AddReactionIcon, ReadReceiptIcon } from './Icon';
+import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon } from './Icon';
 import AudioPlayer from './AudioPlayer';
 import { motion } from 'framer-motion';
 import ReactionPicker from './ReactionPicker';
@@ -10,14 +10,17 @@ interface MessageBubbleProps {
   isOwnMessage: boolean;
   onReply: (message: Message) => void;
   onAddReaction: (messageId: string, emoji: string) => void;
+  onPinMessage: (messageId: string) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, onReply, onAddReaction }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, onReply, onAddReaction, onPinMessage }) => {
   const { text, type, replyTo, reactions, audioUrl, duration, gifUrl, isRead } = message;
   const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
 
   const renderContent = () => {
     switch(type) {
+        case 'wave':
+            return <motion.div initial={{scale:0.5, rotate:-20}} animate={{scale:1, rotate:0}} transition={{type: 'spring', stiffness: 300, damping:10}} className="text-6xl p-2">👋</motion.div>;
         case 'voice':
             return <AudioPlayer src={audioUrl!} duration={duration!} isOwnMessage={isOwnMessage} />;
         case 'gif':
@@ -68,6 +71,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, on
       </div>
 
        <div className={`relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'order-1' : 'order-2'}`}>
+            <button onClick={() => onPinMessage(message.id)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><PinIcon /></button>
             <button onClick={() => setIsReactionPickerOpen(true)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><AddReactionIcon /></button>
             <button onClick={() => onReply(message)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><ReplyIcon /></button>
             {isReactionPickerOpen && (

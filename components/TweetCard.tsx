@@ -1,22 +1,47 @@
 import React from 'react';
 import { Tweet, User } from '../types';
 import Avatar from './Avatar';
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon } from './Icon';
+// FIX: Import TrashIcon to fix 'Cannot find name 'TrashIcon'' error.
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon } from './Icon';
 import PollDisplay from './PollDisplay';
 import { motion } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
 
 interface TweetCardProps {
   tweet: Tweet;
+  currentUser: User;
   onImageClick: (url: string) => void;
   onViewProfile: (user: User) => void;
   onReply: (tweet: Tweet) => void;
   onToggleBookmark: (tweetId: string) => void;
   onVote: (tweetId: string, optionId: string) => void;
+  onQuote: (tweet: Tweet) => void;
+  onEdit: (tweet: Tweet) => void;
 }
 
-const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote }) => {
-  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, viewCount, poll, pinned, isVoiceTweet, audioUrl } = tweet;
+const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => void }> = ({ tweet, onViewProfile }) => {
+  const { user, content, timestamp, mediaUrls } = tweet;
+  return (
+    <div className="mt-2 border border-light-border dark:border-twitter-border dim:border-dim-border rounded-2xl p-3">
+        <div className="flex items-center gap-2 mb-1" onClick={(e) => { e.stopPropagation(); onViewProfile(user); }}>
+            <img src={user.avatarUrl} alt={user.displayName} className="w-5 h-5 rounded-full" />
+            <span className="font-bold text-sm">{user.displayName}</span>
+            <span className="text-light-secondary-text dark:text-twitter-gray text-sm">@{user.username}</span>
+        </div>
+        <p className="text-sm">{content}</p>
+        {mediaUrls && mediaUrls.length > 0 && (
+            <div className="mt-2 rounded-lg overflow-hidden aspect-video">
+                <img src={mediaUrls[0]} alt="Quoted tweet media" className="w-full h-full object-cover"/>
+            </div>
+        )}
+    </div>
+  )
+}
+
+const TweetCard: React.FC<TweetCardProps> = (props) => {
+  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit } = props;
+  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, isEdited, quotedTweet, poll, pinned, isVoiceTweet, audioUrl } = tweet;
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = React.useState(false);
 
   const formatTimestamp = (ts: string) => {
     const date = new Date(ts);
@@ -34,10 +59,24 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick, onViewProfil
     e.stopPropagation();
     action?.();
   };
+  
+  const renderContent = () => {
+    const parts = content.split(/([#@]\w+)/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('@')) {
+            return <a key={index} href="#" className="text-twitter-blue hover:underline" onClick={(e) => e.stopPropagation()}>{part}</a>
+        }
+        if (part.startsWith('#')) {
+             return <a key={index} href="#" className="text-twitter-blue hover:underline" onClick={(e) => e.stopPropagation()}>{part}</a>
+        }
+        return part;
+    });
+  }
 
   const actionButtons = [
     { icon: <ReplyIcon />, count: replyCount, color: 'hover:text-twitter-blue', action: () => onReply(tweet) },
     { icon: <RetweetIcon />, count: retweetCount, color: 'hover:text-green-500' },
+    { icon: <QuoteIcon />, count: undefined, color: 'hover:text-twitter-blue', action: () => onQuote(tweet) },
     { icon: <LikeIcon />, count: likeCount, color: 'hover:text-red-500' },
   ];
 
@@ -60,19 +99,35 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick, onViewProfil
             <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{user.username}</span>
             <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">·</span>
             <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text hover:underline">{formatTimestamp(timestamp)}</span>
+            {isEdited && <span className="text-light-secondary-text dark:text-twitter-gray text-xs dim:text-dim-secondary-text ml-1">(edited)</span>}
           </div>
-          <button onClick={(e) => handleActionClick(e)} className="p-2 hover:bg-twitter-blue/10 rounded-full text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text"><MoreIcon /></button>
+          <div className="relative">
+            <button onClick={(e) => handleActionClick(e, () => setIsMoreMenuOpen(prev => !prev))} className="p-2 hover:bg-twitter-blue/10 rounded-full text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text"><MoreIcon /></button>
+            {isMoreMenuOpen && (
+                <div onMouseLeave={() => setIsMoreMenuOpen(false)} className="absolute top-8 right-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg border border-light-border dark:border-twitter-border dim:border-dim-border z-10 w-48">
+                    {currentUser.id === tweet.user.id && (
+                        <button onClick={(e) => handleActionClick(e, () => { onEdit(tweet); setIsMoreMenuOpen(false); })} className="flex items-center gap-2 w-full text-left p-3 hover:bg-light-hover dark:hover:bg-white/10">
+                            <EditIcon/> Edit Post
+                        </button>
+                    )}
+                     <button onClick={(e) => handleActionClick(e)} className="flex items-center gap-2 w-full text-left p-3 text-red-500 hover:bg-red-500/10">
+                        <TrashIcon/> Delete
+                    </button>
+                </div>
+            )}
+          </div>
         </div>
         
         {isVoiceTweet && audioUrl ? (
           <div className="my-2 border border-light-border dark:border-twitter-border dim:border-dim-border p-3 rounded-2xl">
               <AudioPlayer src={audioUrl} duration={0} isOwnMessage={false} isTweetPlayer={true} />
-              {content && <p className="whitespace-pre-wrap mt-2 text-sm">{content}</p>}
+              {content && <p className="whitespace-pre-wrap mt-2 text-sm">{renderContent()}</p>}
           </div>
         ) : (
-          <p className="whitespace-pre-wrap my-1">{content}</p>
+          <p className="whitespace-pre-wrap my-1">{renderContent()}</p>
         )}
 
+        {quotedTweet && <EmbeddedTweetCard tweet={quotedTweet} onViewProfile={onViewProfile} />}
 
         {mediaUrls && mediaUrls.length > 0 && (
           <div className={`mt-3 grid gap-1 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border ${mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} ${mediaUrls.length === 3 ? '[&>*:first-child]:row-span-2' : ''}`}>

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Reel } from '../types';
 import Avatar from './Avatar';
-import { HeartFillIcon, LikeIcon, MessagesIcon, ShareIcon, MoreIcon, PlayIcon, PauseIcon, MusicNoteIcon, BookmarkIcon, BookmarkFillIcon } from './Icon';
+import { HeartFillIcon, LikeIcon, MessagesIcon, ShareIcon, MoreIcon, PlayIcon, PauseIcon, MusicNoteIcon, BookmarkIcon, BookmarkFillIcon, DislikeIcon, DislikeFillIcon } from './Icon';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ReelCardProps {
@@ -11,6 +11,7 @@ interface ReelCardProps {
 
 const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
   const [isLiked, setIsLiked] = useState(reel.isLiked);
+  const [isDisliked, setIsDisliked] = useState(reel.isDisliked);
   const [likeCount, setLikeCount] = useState(reel.likeCount);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
@@ -21,8 +22,20 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
   const lastClickTime = useRef(0);
 
   const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    const newLikedState = !isLiked;
+    setIsLiked(newLikedState);
+    setLikeCount(prev => newLikedState ? prev + 1 : prev - 1);
+    if (newLikedState && isDisliked) {
+      setIsDisliked(false);
+    }
+  };
+
+  const handleDislike = () => {
+    const newDislikedState = !isDisliked;
+    setIsDisliked(newDislikedState);
+    if (newDislikedState && isLiked) {
+      handleLike(); // This will toggle like off
+    }
   };
   
   const handleBookmark = () => {
@@ -110,16 +123,16 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
         )}
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 p-4 z-30 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
+      <div className="absolute bottom-4 left-4 right-20 p-4 z-30 bg-gradient-to-t from-black/60 to-transparent pointer-events-none rounded-b-2xl">
         <div className="flex items-center gap-2">
           <Avatar src={reel.user.avatarUrl} alt={reel.user.displayName} size="small" />
-          <span className="font-bold text-white">{reel.user.displayName}</span>
-          <button className="border border-white text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold pointer-events-auto">Follow</button>
+          <span className="font-bold text-white">@{reel.user.username}</span>
+          <button className="border border-white bg-white text-black px-3 py-1 text-sm rounded-md ml-2 font-semibold pointer-events-auto hover:bg-opacity-80">Follow</button>
         </div>
         <p className="mt-2 text-sm text-white truncate">{reel.caption}</p>
         <div className="flex items-center gap-2 mt-2 text-white text-sm">
             <MusicNoteIcon />
-            <div className="w-1/2 overflow-hidden">
+            <div className="w-full overflow-hidden">
                 <motion.p 
                     className="whitespace-nowrap"
                     animate={{ x: ['0%', '-100%'] }}
@@ -131,29 +144,29 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
         </div>
       </div>
 
-      <div className="absolute bottom-16 sm:bottom-4 right-4 flex flex-col items-center gap-4 text-white z-30">
-        <button onClick={handleLike} className="flex flex-col items-center">
+      <div className="absolute bottom-4 right-4 flex flex-col items-center gap-5 text-white z-30">
+        <button onClick={handleLike} className="flex flex-col items-center pointer-events-auto">
             {isLiked ? <HeartFillIcon /> : <LikeIcon />}
-            <span className="text-sm font-bold">{likeCount.toLocaleString()}</span>
+            <span className="text-xs font-bold">{likeCount.toLocaleString()}</span>
         </button>
-        <button onClick={() => onOpenComments(reel)} className="flex flex-col items-center">
+        <button onClick={handleDislike} className="flex flex-col items-center pointer-events-auto">
+            {isDisliked ? <DislikeFillIcon /> : <DislikeIcon />}
+            <span className="text-xs font-bold">Dislike</span>
+        </button>
+        <button onClick={() => onOpenComments(reel)} className="flex flex-col items-center pointer-events-auto">
             <MessagesIcon />
-            <span className="text-sm font-bold">{reel.commentCount.toLocaleString()}</span>
+            <span className="text-xs font-bold">{reel.commentCount.toLocaleString()}</span>
         </button>
-        <button onClick={handleBookmark} className="flex flex-col items-center">
+        <button onClick={handleBookmark} className="flex flex-col items-center pointer-events-auto">
             {isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
-            <span className="text-sm font-bold">Save</span>
+            <span className="text-xs font-bold">Save</span>
         </button>
-        <button className="flex flex-col items-center">
-            <ShareIcon />
-            <span className="text-sm font-bold">{reel.shareCount.toLocaleString()}</span>
-        </button>
-        <button>
+        <button className="pointer-events-auto">
             <MoreIcon />
         </button>
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-30">
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-30 pointer-events-none">
         <div className="h-full bg-white" style={{ width: `${progress}%` }} />
       </div>
     </div>
