@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -11,6 +10,8 @@ export interface User {
   followingCount: number;
   followerCount: number;
   verified?: boolean;
+  followerIds: string[];
+  followingIds: string[];
 }
 
 export interface Poll {
@@ -35,6 +36,8 @@ export interface Tweet {
   mediaUrls?: string[];
   poll?: Poll;
   pinned?: boolean;
+  isVoiceTweet?: boolean;
+  audioUrl?: string;
 }
 
 export interface Notification {
@@ -111,7 +114,8 @@ export enum Page {
     Profile = 'Profile',
     CreatorStudio = 'CreatorStudio',
     Settings = 'Settings',
-    HelpCenter = 'HelpCenter'
+    HelpCenter = 'HelpCenter',
+    UserList = 'UserList',
 }
 
 export type Theme = 'light' | 'dim' | 'dark';

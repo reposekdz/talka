@@ -17,18 +17,28 @@ import DisplayModal from './components/DisplayModal';
 import SearchModal from './components/SearchModal';
 import Lightbox from './components/Lightbox';
 import StoryViewer from './components/StoryViewer';
-import { userStories, mockUser } from './data/mockData';
+import UserListPage from './pages/UserListPage';
+import { userStories, mockUser as initialUser, otherUsers as initialOtherUsers, mockTweets as initialTweets } from './data/mockData';
 import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
 import MobileMenu from './components/MobileMenu';
-
-import { Page, Theme } from './types';
+import { Page, Theme, User, Tweet } from './types';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentPage, setCurrentPage] = useState<Page>(Page.Home);
+  const [pageHistory, setPageHistory] = useState<Page[]>([Page.Home]);
+  const currentPage = pageHistory[pageHistory.length - 1];
+
   const [theme, setTheme] = useState<Theme>('dark');
+  const [currentUser, setCurrentUser] = useState<User>(initialUser);
+  const [otherUsers, setOtherUsers] = useState<User[]>(initialOtherUsers);
+  const [tweets, setTweets] = useState<Tweet[]>(initialTweets);
   
+  const [viewingProfileFor, setViewingProfileFor] = useState<User | null>(null);
+  const [userListInfo, setUserListInfo] = useState<{ user: User; type: 'followers' | 'following' } | null>(null);
+
+  const allUsers = [currentUser, ...otherUsers];
+
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,34 +51,112 @@ function App() {
     root.classList.add(theme);
   }, [theme]);
 
-  const handleSetCurrentPage = (page: Page) => {
-    setCurrentPage(page);
-    setIsMobileMenuOpen(false); // Close menu on navigation
+  const navigateTo = (page: Page) => {
+    setPageHistory(prev => [...prev, page]);
+    setIsMobileMenuOpen(false);
   };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
+  
+  const handleSetCurrentPage = (page: Page) => {
+    setViewingProfileFor(null);
+    setUserListInfo(null);
+    setPageHistory([page]);
     setIsMobileMenuOpen(false);
   };
 
+  const handleBack = () => {
+    if (pageHistory.length > 1) {
+        if (currentPage === Page.Profile && viewingProfileFor) setViewingProfileFor(null);
+        if (currentPage === Page.UserList && userListInfo) setUserListInfo(null);
+        setPageHistory(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleLogout = () => setIsLoggedIn(false);
+
+  const handleViewProfile = (user: User) => {
+    setViewingProfileFor(user);
+    navigateTo(Page.Profile);
+  };
+  
+  const handleViewUserList = (user: User, type: 'followers' | 'following') => {
+    setUserListInfo({ user, type });
+    navigateTo(Page.UserList);
+  };
+
+  const handleFollowToggle = (userIdToToggle: string) => {
+    const isFollowing = currentUser.followingIds.includes(userIdToToggle);
+    
+    // Update current user's state
+    setCurrentUser(prevUser => ({
+      ...prevUser,
+      followingIds: isFollowing
+        ? prevUser.followingIds.filter(id => id !== userIdToToggle)
+        : [...prevUser.followingIds, userIdToToggle],
+      followingCount: isFollowing ? prevUser.followingCount - 1 : prevUser.followingCount + 1,
+    }));
+
+    // Update the other user's state (either in otherUsers or viewingProfileFor)
+    const updateUser = (user: User) => {
+        if (user.id === userIdToToggle) {
+            return {
+                ...user,
+                followerIds: isFollowing
+                    ? user.followerIds.filter(id => id !== currentUser.id)
+                    : [...user.followerIds, currentUser.id],
+                followerCount: isFollowing ? user.followerCount - 1 : user.followerCount + 1,
+            };
+        }
+        return user;
+    };
+
+    setOtherUsers(prevUsers => prevUsers.map(updateUser));
+    if (viewingProfileFor) setViewingProfileFor(prev => prev ? updateUser(prev) : null);
+    if (userListInfo) setUserListInfo(prev => prev ? { ...prev, user: updateUser(prev.user) } : null);
+  };
+  
+  const handlePostTweet = (newTweetContent: Partial<Tweet>) => {
+    const newTweet: Tweet = {
+      id: `t-${Date.now()}`,
+      user: currentUser,
+      timestamp: new Date().toISOString(),
+      replyCount: 0,
+      retweetCount: 0,
+      likeCount: 0,
+      viewCount: 0,
+      content: '',
+      ...newTweetContent,
+    };
+    setTweets(prev => [newTweet, ...prev]);
+  };
+
   const renderPage = () => {
+    const pageProps = {
+      currentUser,
+      onViewProfile: handleViewProfile,
+      onFollowToggle: handleFollowToggle,
+      onImageClick: setLightboxImageUrl,
+      onPostTweet: handlePostTweet,
+    };
+    
     switch (currentPage) {
       case Page.Home:
-        return <HomePage onImageClick={setLightboxImageUrl} onStoryClick={setStoryViewerIndex} />;
+        return <HomePage {...pageProps} tweets={tweets} onStoryClick={setStoryViewerIndex} />;
       case Page.Explore:
-        return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
+        return <ExplorePage {...pageProps} openSearchModal={() => setIsSearchModalOpen(true)} />;
       case Page.Notifications:
-        return <NotificationsPage />;
+        return <NotificationsPage {...pageProps} />;
       case Page.Messages:
-        return <MessagesPage />;
+        return <MessagesPage {...pageProps} />;
       case Page.Bookmarks:
-        return <BookmarksPage onImageClick={setLightboxImageUrl} />;
+        return <BookmarksPage {...pageProps} />;
       case Page.Communities:
         return <CommunitiesPage />;
       case Page.Profile:
-        return <ProfilePage onImageClick={setLightboxImageUrl} />;
+        return <ProfilePage {...pageProps} user={viewingProfileFor || currentUser} onBack={handleBack} onViewUserList={handleViewUserList} />;
+       case Page.UserList:
+        return userListInfo ? <UserListPage {...pageProps} allUsers={allUsers} user={userListInfo.user} listType={userListInfo.type} onBack={handleBack} /> : <HomePage {...pageProps} tweets={tweets} onStoryClick={setStoryViewerIndex} />;
       case Page.Reels:
-        return <ReelsPage />;
+        return <ReelsPage {...pageProps} />;
       case Page.CreatorStudio:
         return <CreatorStudioPage />;
       case Page.Settings:
@@ -76,7 +164,7 @@ function App() {
       case Page.HelpCenter:
         return <HelpCenterPage />;
       default:
-        return <HomePage onImageClick={setLightboxImageUrl} onStoryClick={setStoryViewerIndex} />;
+        return <HomePage {...pageProps} tweets={tweets} onStoryClick={setStoryViewerIndex} />;
     }
   };
   
@@ -85,11 +173,11 @@ function App() {
   }
 
   return (
-    <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text min-h-screen">
-      <div className="container mx-auto flex justify-center">
+    <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text h-screen">
+      <div className="container mx-auto flex justify-center h-full">
         
         <MobileHeader 
-          user={mockUser}
+          user={currentUser}
           setCurrentPage={handleSetCurrentPage}
           onMenuClick={() => setIsMobileMenuOpen(true)}
         />
@@ -101,17 +189,22 @@ function App() {
           openDisplayModal={() => setIsDisplayModalOpen(true)}
         />
         
-        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border min-h-screen pt-14 pb-16 sm:pt-0 sm:pb-0">
-          {renderPage()}
+        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border h-full overflow-y-auto">
+          <div className="pt-14 pb-16 sm:pt-0 sm:pb-0 min-h-full">
+            {renderPage()}
+          </div>
         </main>
         
-        <RightSidebar openSearchModal={() => setIsSearchModalOpen(true)} />
+        <RightSidebar 
+          {...{currentUser, onFollowToggle: handleFollowToggle, onViewProfile: handleViewProfile}}
+          openSearchModal={() => setIsSearchModalOpen(true)} 
+        />
 
         <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} />
       </div>
 
       {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-      {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} />}
+      {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
       {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
       {storyViewerIndex !== null && <StoryViewer stories={userStories} initialUserIndex={storyViewerIndex} onClose={() => setStoryViewerIndex(null)} />}
       {isMobileMenuOpen && (

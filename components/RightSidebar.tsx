@@ -1,15 +1,18 @@
-
 import React from 'react';
 import { mockTrendingTopics, otherUsers } from '../data/mockData';
 import TrendingTopic from './TrendingTopic';
 import WhoToFollow from './WhoToFollow';
 import { SearchIcon } from './Icon';
+import { User } from '../types';
 
 interface RightSidebarProps {
   openSearchModal: () => void;
+  currentUser: User;
+  onFollowToggle: (userId: string) => void;
+  onViewProfile: (user: User) => void;
 }
 
-const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal }) => {
+const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, currentUser, onFollowToggle, onViewProfile }) => {
   return (
     <aside className="w-[350px] h-screen sticky top-0 py-2 px-4 hidden lg:flex flex-col gap-4">
         <div
@@ -41,14 +44,20 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal }) => {
         <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl">
             <h2 className="text-xl font-bold p-4">Who to follow</h2>
             {otherUsers.slice(0, 3).map(user => (
-                <WhoToFollow key={user.id} user={user} />
+                <WhoToFollow 
+                  key={user.id} 
+                  user={user} 
+                  currentUser={currentUser}
+                  onFollowToggle={onFollowToggle}
+                  onViewProfile={onViewProfile}
+                />
             ))}
             <div className="p-4 hover:bg-white/10 cursor-pointer transition-colors duration-200">
                 <a href="#" className="text-twitter-blue">Show more</a>
             </div>
         </div>
         
-        <footer className="text-xs text-twitter-gray space-x-2">
+        <footer className="text-xs text-twitter-gray space-x-2 mt-auto">
             <a href="#" className="hover:underline">Terms of Service</a>
             <a href="#" className="hover:underline">Privacy Policy</a>
             <a href="#" className="hover:underline">Cookie Policy</a>

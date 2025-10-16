@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockTweets, otherUsers } from '../data/mockData';
+import { mockTweets, otherUsers, mockUser } from '../data/mockData';
 import TweetCard from './TweetCard';
 import WhoToFollow from './WhoToFollow';
 import { Tweet, User } from '../types';
@@ -9,15 +9,21 @@ import { SearchIcon } from './Icon';
 interface SearchModalProps {
   onClose: () => void;
   onImageClick: (url: string) => void;
+  onViewProfile: (user: User) => void;
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
   const tabs = ['Top', 'Latest', 'People', 'Photos', 'Videos'];
+
+  const handleProfileClick = (user: User) => {
+    onViewProfile(user);
+    onClose();
+  };
 
   const results = useMemo((): SearchResult[] => {
     if (!searchTerm.trim()) return [];
@@ -46,6 +52,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick }) => {
         return tweetResults.filter(t => t.mediaUrls && t.mediaUrls.some(url => url.endsWith('.mp4')));
       case 'Top':
       default:
+        // A real implementation would have a better sorting algorithm
         return [...userResults, ...tweetResults];
     }
   }, [searchTerm, activeTab]);
@@ -105,9 +112,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick }) => {
             ) : results.length > 0 ? (
               results.map(item => {
                 if ('content' in item) { 
-                  return <TweetCard key={`tweet-${item.id}`} tweet={item} onImageClick={onImageClick} />;
+                  return <TweetCard key={`tweet-${item.id}`} tweet={item} onImageClick={onImageClick} onViewProfile={handleProfileClick} />;
                 } else {
-                  return <WhoToFollow key={`user-${item.id}`} user={item} />;
+                  // This part is not fully functional in the prototype; needs follow state management
+                  return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={mockUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;
                 }
               })
             ) : (

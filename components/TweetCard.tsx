@@ -1,18 +1,19 @@
-
 import React from 'react';
-import { Tweet } from '../types';
+import { Tweet, User } from '../types';
 import Avatar from './Avatar';
 import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, AnalyticsIcon, MoreIcon, PinIcon } from './Icon';
 import PollDisplay from './PollDisplay';
 import { motion } from 'framer-motion';
+import AudioPlayer from './AudioPlayer';
 
 interface TweetCardProps {
   tweet: Tweet;
   onImageClick: (url: string) => void;
+  onViewProfile: (user: User) => void;
 }
 
-const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick }) => {
-  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, viewCount, poll, pinned } = tweet;
+const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick, onViewProfile }) => {
+  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, viewCount, poll, pinned, isVoiceTweet, audioUrl } = tweet;
 
   const formatTimestamp = (ts: string) => {
     const date = new Date(ts);
@@ -36,7 +37,7 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick }) => {
 
   return (
     <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors duration-200">
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0" onClick={(e) => { e.stopPropagation(); onViewProfile(user); }}>
         <Avatar src={user.avatarUrl} alt={user.displayName} />
       </div>
       <div className="flex-1">
@@ -47,7 +48,7 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick }) => {
           </div>
         )}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center gap-1 flex-wrap" onClick={(e) => { e.stopPropagation(); onViewProfile(user); }}>
             <span className="font-bold hover:underline">{user.displayName}</span>
             {user.verified && <VerifiedIcon />}
             <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{user.username}</span>
@@ -56,7 +57,16 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, onImageClick }) => {
           </div>
           <button className="p-2 hover:bg-twitter-blue/10 rounded-full text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text"><MoreIcon /></button>
         </div>
-        <p className="whitespace-pre-wrap my-1">{content}</p>
+        
+        {isVoiceTweet && audioUrl ? (
+          <div className="my-2 border border-light-border dark:border-twitter-border dim:border-dim-border p-3 rounded-2xl">
+              <AudioPlayer src={audioUrl} duration={0} isOwnMessage={false} isTweetPlayer={true} />
+              {content && <p className="whitespace-pre-wrap mt-2 text-sm">{content}</p>}
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap my-1">{content}</p>
+        )}
+
 
         {mediaUrls && mediaUrls.length > 0 && (
           <div className={`mt-3 grid gap-1 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border ${mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} ${mediaUrls.length === 3 ? '[&>*:first-child]:row-span-2' : ''}`}>

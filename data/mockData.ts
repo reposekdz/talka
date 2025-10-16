@@ -1,4 +1,3 @@
-
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel } from '../types';
 
 export const mockUser: User = {
@@ -10,15 +9,17 @@ export const mockUser: User = {
   bio: 'Building things for the web with React & TypeScript. This is a frontend prototype. 🚀',
   location: 'The Web',
   website: 'github.com',
-  followingCount: 150,
-  followerCount: 2500,
+  followingCount: 2,
+  followerCount: 1,
   verified: true,
+  followingIds: ['u2', 'u4'],
+  followerIds: ['u3'],
 };
 
 export const otherUsers: User[] = [
-  { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 500000, verified: true, bio: 'A utility-first CSS framework for rapid UI development.' },
-  { id: 'u3', username: 'vercel', displayName: 'Vercel', avatarUrl: 'https://picsum.photos/seed/u3/200/200', followingCount: 100, followerCount: 300000, verified: true, bio: 'Develop. Preview. Ship.' },
-  { id: 'u4', username: 'elonmusk', displayName: 'Elon Musk', avatarUrl: 'https://picsum.photos/seed/u4/200/200', followingCount: 120, followerCount: 150000000, verified: true, bio: 'Mars & Cars' },
+  { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'A utility-first CSS framework for rapid UI development.', followingIds: ['u1'], followerIds: [] },
+  { id: 'u3', username: 'vercel', displayName: 'Vercel', avatarUrl: 'https://picsum.photos/seed/u3/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Develop. Preview. Ship.', followingIds: ['u1'], followerIds: [] },
+  { id: 'u4', username: 'elonmusk', displayName: 'Elon Musk', avatarUrl: 'https://picsum.photos/seed/u4/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'Mars & Cars', followingIds: [], followerIds: ['u1'] },
 ];
 
 export const baseTweets: Tweet[] = [
