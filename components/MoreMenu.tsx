@@ -1,5 +1,5 @@
 import React from 'react';
-import { SettingsIcon, CreatorStudioIcon, DisplayIcon, HelpIcon, MonetizationIcon } from './Icon';
+import { SettingsIcon, CreatorStudioIcon, DisplayIcon, HelpIcon, MonetizationIcon, CommunityIcon } from './Icon';
 import { Page } from '../types';
 
 interface MoreMenuProps {
@@ -10,6 +10,7 @@ interface MoreMenuProps {
 
 const MoreMenu: React.FC<MoreMenuProps> = ({ onDisplayClick, closeMenu, setCurrentPage }) => {
   const menuItems = [
+    { icon: <CommunityIcon />, text: 'Communities', action: () => setCurrentPage(Page.Communities) },
     { icon: <MonetizationIcon />, text: 'Monetization', action: () => setCurrentPage(Page.CreatorStudio) },
     { icon: <CreatorStudioIcon />, text: 'Creator Studio', action: () => setCurrentPage(Page.CreatorStudio) },
     { icon: <SettingsIcon />, text: 'Settings and privacy', action: () => setCurrentPage(Page.Settings) },

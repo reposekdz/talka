@@ -12,6 +12,7 @@ export enum Page {
   Settings = 'Settings',
   HelpCenter = 'HelpCenter',
   UserList = 'UserList',
+  Lists = 'Lists',
 }
 
 export type Theme = 'light' | 'dark' | 'dim';
@@ -208,5 +209,7 @@ export interface Space {
 export interface Call {
   user: User;
   type: 'video' | 'audio';
-  status: 'outgoing' | 'incoming' | 'active';
+  status: 'outgoing' | 'incoming' | 'active' | 'minimized';
+  isMicMuted?: boolean;
+  isCameraOff?: boolean;
 }

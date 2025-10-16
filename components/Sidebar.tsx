@@ -21,8 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
     { icon: <NotificationsIcon />, text: 'Notifications', page: Page.Notifications },
     { icon: <MessagesIcon />, text: 'Messages', page: Page.Messages, notificationCount: activeChatCount },
     { icon: <ReelsIcon />, text: 'Reels', page: Page.Reels },
+    { icon: <ListIcon />, text: 'Lists', page: Page.Lists },
     { icon: <BookmarkIcon />, text: 'Bookmarks', page: Page.Bookmarks },
-    { icon: <CommunityIcon />, text: 'Communities', page: Page.Communities },
     { icon: <ProfileIcon />, text: 'Profile', page: Page.Profile },
   ];
   

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -15,6 +16,7 @@ import CreatorStudioPage from './pages/CreatorStudioPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpCenterPage from './pages/HelpCenterPage';
 import UserListPage from './pages/UserListPage';
+import ListsPage from './pages/ListsPage';
 import DisplayModal from './components/DisplayModal';
 import Lightbox from './components/Lightbox';
 import SearchModal from './components/SearchModal';
@@ -24,13 +26,13 @@ import Toast from './components/Toast';
 import StoryViewer from './components/StoryViewer';
 import BottomNav from './components/BottomNav';
 import ReelCommentsPanel from './components/ReelCommentsPanel';
-import VideoCallView from './components/VideoCallView';
+import CallView from './components/CallView';
+import ActiveCallBubble from './components/ActiveCallBubble';
 import InAppNotification from './components/InAppNotification';
 import EditTweetModal from './components/EditTweetModal';
 import QuoteTweetModal from './components/QuoteTweetModal';
 import SpacesPlayer from './components/SpacesPlayer';
 import IncomingCallModal from './components/IncomingCallModal';
-import AudioCallView from './components/AudioCallView';
 import ShareReelModal from './components/ShareReelModal';
 import AiAssistantModal from './components/AiAssistantModal';
 import CreatorFlowModal from './components/CreatorFlowModal';
@@ -111,6 +113,7 @@ function App() {
   // Advanced Features
   const [activeSpace, setActiveSpace] = useState<Space | null>(null);
   const [activeCall, setActiveCall] = useState<Call | null>(null);
+  const [callReactions, setCallReactions] = useState<{ id: number; emoji: string }[]>([]);
 
 
   useEffect(() => {
@@ -520,6 +523,22 @@ function App() {
     handleOpenChat(call.user);
     showToast(`Call declined. Opening message with ${call.user.displayName}.`);
   };
+  const handleMinimizeCall = () => {
+    if (activeCall) setActiveCall({ ...activeCall, status: 'minimized' });
+  };
+  const handleMaximizeCall = () => {
+    if (activeCall) setActiveCall({ ...activeCall, status: 'active' });
+  };
+  const handleToggleCallMic = () => {
+      if(activeCall) setActiveCall(prev => ({...prev!, isMicMuted: !prev?.isMicMuted }));
+  };
+  const handleToggleCallCamera = () => {
+      if(activeCall) setActiveCall(prev => ({...prev!, isCameraOff: !prev?.isCameraOff }));
+  };
+  const handleSendCallReaction = (emoji: string) => {
+    setCallReactions(prev => [...prev, { id: Date.now(), emoji }]);
+  };
+
 
   // Reel Handlers
   const handleLikeReel = (reelId: string) => {
@@ -702,6 +721,7 @@ function App() {
         liveReactions={liveReactions}
         onGrok={handleGrok}
       />;
+      case Page.Lists: return <ListsPage />;
       case Page.Communities: return <CommunitiesPage />;
       case Page.Reels: return <ReelsPage 
         reels={reels}
@@ -779,6 +799,7 @@ function App() {
                     currentPage={currentPage} 
                     setCurrentPage={(p) => {
                         if (p === Page.Profile) setProfileUser(currentUser);
+                        if (p === Page.Lists) {}
                         setCurrentPage(p);
                     }}
                     onLogout={handleLogout} 
@@ -833,11 +854,27 @@ function App() {
                 
                 {/* Call System */}
                 {activeCall?.status === 'incoming' && <IncomingCallModal call={activeCall} onAccept={() => handleAcceptCall(activeCall)} onDecline={handleDeclineCall} onReplyWithMessage={() => handleReplyWithMessage(activeCall)} />}
-                {activeCall?.status === 'active' && activeCall.type === 'video' && <VideoCallView user={activeCall.user} status="active" onEndCall={handleEndCall} />}
-                {activeCall?.status === 'outgoing' && activeCall.type === 'video' && <VideoCallView user={activeCall.user} status="outgoing" onEndCall={handleEndCall} />}
-                {activeCall?.status === 'active' && activeCall.type === 'audio' && <AudioCallView user={activeCall.user} status="active" onEndCall={handleEndCall} />}
-                {activeCall?.status === 'outgoing' && activeCall.type === 'audio' && <AudioCallView user={activeCall.user} status="outgoing" onEndCall={handleEndCall} />}
+                {(activeCall?.status === 'active' || activeCall?.status === 'outgoing') && (
+                    <CallView
+                        call={activeCall}
+                        onEndCall={handleEndCall}
+                        onMinimize={handleMinimizeCall}
+                        onToggleMic={handleToggleCallMic}
+                        onToggleCamera={handleToggleCallCamera}
+                        onSendReaction={handleSendCallReaction}
+                        reactions={callReactions}
+                        setReactions={setCallReactions}
+                    />
+                )}
             </AnimatePresence>
+            
+            {activeCall?.status === 'minimized' && (
+                <ActiveCallBubble
+                    call={activeCall}
+                    onMaximize={handleMaximizeCall}
+                    onEndCall={handleEndCall}
+                />
+            )}
 
 
             {/* Floating UI */}
