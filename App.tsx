@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -18,7 +17,10 @@ import DisplayModal from './components/DisplayModal';
 import SearchModal from './components/SearchModal';
 import Lightbox from './components/Lightbox';
 import StoryViewer from './components/StoryViewer';
-import { userStories } from './data/mockData';
+import { userStories, mockUser } from './data/mockData';
+import MobileHeader from './components/MobileHeader';
+import BottomNav from './components/BottomNav';
+import MobileMenu from './components/MobileMenu';
 
 import { Page, Theme } from './types';
 
@@ -29,6 +31,7 @@ function App() {
   
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
   const [storyViewerIndex, setStoryViewerIndex] = useState<number | null>(null);
 
@@ -37,6 +40,16 @@ function App() {
     root.classList.remove('light', 'dark', 'dim');
     root.classList.add(theme);
   }, [theme]);
+
+  const handleSetCurrentPage = (page: Page) => {
+    setCurrentPage(page);
+    setIsMobileMenuOpen(false); // Close menu on navigation
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setIsMobileMenuOpen(false);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -74,22 +87,41 @@ function App() {
   return (
     <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text min-h-screen">
       <div className="container mx-auto flex justify-center">
+        
+        <MobileHeader 
+          user={mockUser}
+          setCurrentPage={handleSetCurrentPage}
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+        />
+        
         <Sidebar 
           currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          onLogout={() => setIsLoggedIn(false)}
+          setCurrentPage={handleSetCurrentPage}
+          onLogout={handleLogout}
           openDisplayModal={() => setIsDisplayModalOpen(true)}
         />
-        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border min-h-screen">
+        
+        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border min-h-screen pt-14 pb-16 sm:pt-0 sm:pb-0">
           {renderPage()}
         </main>
+        
         <RightSidebar openSearchModal={() => setIsSearchModalOpen(true)} />
+
+        <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} />
       </div>
 
       {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
       {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} />}
       {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
       {storyViewerIndex !== null && <StoryViewer stories={userStories} initialUserIndex={storyViewerIndex} onClose={() => setStoryViewerIndex(null)} />}
+      {isMobileMenuOpen && (
+        <MobileMenu 
+          onClose={() => setIsMobileMenuOpen(false)}
+          setCurrentPage={handleSetCurrentPage}
+          onLogout={handleLogout}
+          openDisplayModal={() => setIsDisplayModalOpen(true)}
+        />
+      )}
     </div>
   );
 }
