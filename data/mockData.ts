@@ -1,3 +1,4 @@
+
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
 
 export const mockUser: User = {
@@ -297,12 +298,6 @@ export const mockCommunities: Community[] = [
 ];
 
 export const initialUserStories: UserStory[] = [
-    {
-        user: mockUser, hasUnseen: true, stories: [
-            { id: 's1', mediaUrl: 'https://picsum.photos/seed/s1/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T10:00:00Z', likeCount: 12, isLiked: false, comments: [] },
-            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T11:00:00Z', likeCount: 5, isLiked: true, comments: [] }
-        ]
-    },
     {
         user: otherUsers[0], hasUnseen: true, stories: [
             { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z', likeCount: 25, isLiked: false, comments: [] },
