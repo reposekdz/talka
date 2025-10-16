@@ -4,12 +4,14 @@ import Composer from '../components/Composer';
 import { mockTweets, mockUserStories } from '../data/mockData';
 import StoryReel from '../components/StoryReel';
 import StoryViewer from '../components/StoryViewer';
+import { User } from '../types';
 
 interface HomePageProps {
   onImageClick: (url: string) => void;
+  onSendStoryReply: (recipient: User, message: string) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onImageClick }) => {
+const HomePage: React.FC<HomePageProps> = ({ onImageClick, onSendStoryReply }) => {
   const [activeTab, setActiveTab] = useState('For You');
   const [storyViewerState, setStoryViewerState] = useState<{ isOpen: boolean; userIndex: number }>({ isOpen: false, userIndex: 0 });
 
@@ -57,7 +59,8 @@ const HomePage: React.FC<HomePageProps> = ({ onImageClick }) => {
         <StoryViewer 
           userStories={mockUserStories} 
           initialUserIndex={storyViewerState.userIndex} 
-          onClose={closeStoryViewer} 
+          onClose={closeStoryViewer}
+          onSendReply={onSendStoryReply}
         />
       )}
     </div>

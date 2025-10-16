@@ -1,9 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Message } from '../types';
 import { PhotoIcon, GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, StopIcon } from './Icon';
+import EmojiPicker from './EmojiPicker';
+import GifPickerModal from './GifPickerModal';
+import { AnimatePresence } from 'framer-motion';
+
+type MessageContent = 
+    | { type: 'text'; text: string }
+    | { type: 'voice'; audioUrl: string; duration: number }
+    | { type: 'gif'; gifUrl: string };
 
 interface MessageInputProps {
-  onSendMessage: (content: { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number }, replyTo?: Message) => void;
+  onSendMessage: (content: MessageContent, replyTo?: Message) => void;
   replyingTo: Message | null;
   onCancelReply: () => void;
 }
@@ -12,6 +20,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [isGifModalOpen, setIsGifModalOpen] = useState(false);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingIntervalRef = useRef<number | null>(null);
 
@@ -21,6 +32,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       setInputText('');
     }
   };
+  
+  const handleSelectGif = (url: string) => {
+    onSendMessage({ type: 'gif', gifUrl: url }, replyingTo || undefined);
+    setIsGifModalOpen(false);
+  };
 
   const startRecording = async () => {
     try {
@@ -29,23 +45,19 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       mediaRecorderRef.current = recorder;
       
       const audioChunks: Blob[] = [];
-      recorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-      };
+      recorder.ondataavailable = event => audioChunks.push(event.data);
 
       recorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
         onSendMessage({ type: 'voice', audioUrl, duration: recordingTime }, replyingTo || undefined);
-        stream.getTracks().forEach(track => track.stop()); // Stop microphone access
+        stream.getTracks().forEach(track => track.stop());
       };
 
       recorder.start();
       setIsRecording(true);
       setRecordingTime(0);
-      recordingIntervalRef.current = window.setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
+      recordingIntervalRef.current = window.setInterval(() => setRecordingTime(prev => prev + 1), 1000);
     } catch (err) {
       console.error("Microphone access denied:", err);
       alert("Microphone access is required to send voice notes.");
@@ -56,22 +68,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
+      if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
     }
   };
 
   const cancelRecording = () => {
-      if (mediaRecorderRef.current) {
-        // Stop without saving
+    if (mediaRecorderRef.current) {
         mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
         mediaRecorderRef.current = null;
     }
     setIsRecording(false);
-    if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-    }
+    if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
     setRecordingTime(0);
   };
   
@@ -82,7 +89,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   };
 
   return (
-    <div className="p-2 border-t border-light-border dark:border-twitter-border dim:border-dim-border">
+    <div className="p-2 border-t border-light-border dark:border-twitter-border dim:border-dim-border relative">
       {replyingTo && (
         <div className="bg-light-hover dark:bg-white/5 dim:bg-dim-hover p-2 rounded-t-lg mx-2 flex justify-between items-center">
           <div className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
@@ -93,11 +100,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
         </div>
       )}
       {!isRecording ? (
-        <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-4 py-1 mx-2">
+        <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1 mx-2">
           <div className="flex gap-1 text-twitter-blue">
             <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><PhotoIcon /></button>
-            <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
-            <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
+            <button onClick={() => setIsGifModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
+            <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
           </div>
           <input
             type="text"
@@ -123,6 +130,23 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
            <button onClick={stopRecording} className="p-2 text-twitter-blue bg-twitter-blue/20 rounded-full"><StopIcon /></button>
         </div>
       )}
+      
+      {isEmojiPickerOpen && (
+          <EmojiPicker 
+            onSelect={(emoji) => setInputText(inputText + emoji)}
+            onClose={() => setIsEmojiPickerOpen(false)}
+          />
+      )}
+
+      <AnimatePresence>
+        {isGifModalOpen && (
+          <GifPickerModal 
+            onClose={() => setIsGifModalOpen(false)}
+            onSelectGif={handleSelectGif}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

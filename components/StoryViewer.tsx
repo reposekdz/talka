@@ -1,14 +1,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
-import { UserStory } from '../types';
+import { User, UserStory } from '../types';
 import Avatar from './Avatar';
-import { LikeIcon, ReplyIcon, ShareIcon, SendIcon } from './Icon';
+import { PaperPlaneIcon } from './Icon';
+import { mockUser } from '../data/mockData';
 
 interface StoryViewerProps {
   userStories: UserStory[];
   initialUserIndex: number;
   onClose: () => void;
+  onSendReply: (recipient: User, message: string) => void;
 }
 
 const slideVariants = {
@@ -29,11 +31,12 @@ const slideVariants = {
   }),
 };
 
-const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex, onClose }) => {
+const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex, onClose, onSendReply }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState(initialUserIndex);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
+  const [replyText, setReplyText] = useState('');
   const progressControls = useAnimationControls();
 
   const currentUserStory = userStories[currentUserIndex];
@@ -80,6 +83,13 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex
 
   const handlePointerDown = () => setIsPaused(true);
   const handlePointerUp = () => setIsPaused(false);
+
+  const handleSendReply = () => {
+    if (replyText.trim()) {
+      onSendReply(currentUserStory.user, replyText);
+      setReplyText('');
+    }
+  };
 
   return (
     <div
@@ -149,13 +159,20 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex
                     className="absolute bottom-4 left-4 right-4 z-10 flex items-center gap-2"
                     onPointerDown={e => e.stopPropagation()}
                 >
+                    <div className="flex-shrink-0">
+                        <Avatar src={mockUser.avatarUrl} alt={mockUser.displayName} size="small" />
+                    </div>
                     <input
                         type="text"
-                        placeholder="Send message"
-                        className="w-full bg-black/30 border border-white/30 rounded-full px-4 py-2 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/50"
+                        placeholder={`Reply to ${currentUserStory.user.displayName}...`}
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleSendReply(); }}
+                        className="w-full bg-black/30 border border-white/30 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/50"
                     />
-                    <button className="p-2 text-white hover:bg-white/20 rounded-full"><LikeIcon /></button>
-                    <button className="p-2 text-white hover:bg-white/20 rounded-full"><ShareIcon /></button>
+                     <button onClick={handleSendReply} className="p-2.5 text-white hover:bg-white/20 rounded-full disabled:opacity-50" disabled={!replyText.trim()}>
+                        <PaperPlaneIcon />
+                    </button>
                 </div>
             </motion.div>
       </AnimatePresence>

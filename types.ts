@@ -1,17 +1,4 @@
-
-export interface User {
-  id: string;
-  username: string;
-  displayName: string;
-  avatarUrl: string;
-  verified: boolean;
-  bio?: string;
-  location?: string;
-  website?: string;
-  joinDate: string;
-  followers: number;
-  following: number;
-}
+import { User } from './User';
 
 export interface PollOption {
     id: string;
@@ -23,6 +10,13 @@ export interface Poll {
     options: PollOption[];
     totalVotes: number;
     endsAt: string;
+}
+
+export interface Comment {
+    id: string;
+    user: User;
+    text: string;
+    timestamp: string;
 }
 
 export interface Tweet {
@@ -39,6 +33,7 @@ export interface Tweet {
   isRetweeted: boolean;
   isBookmarked: boolean;
   isPinned?: boolean;
+  comments?: Comment[];
 }
 
 export interface Notification {
@@ -66,16 +61,17 @@ export interface Message {
     senderId: string;
     text?: string;
     timestamp: string;
-    type: 'text' | 'voice';
+    type: 'text' | 'voice' | 'gif';
     replyTo?: Message;
     reactions?: Reaction[];
     audioUrl?: string;
     duration?: number; // in seconds
+    gifUrl?: string;
     isRead: boolean;
 }
 
 export interface Conversation {
-    id: string;
+    id:string;
     participant: User;
     lastMessage: Message;
     unreadCount: number;
@@ -118,4 +114,19 @@ export interface UserStory {
     user: User;
     stories: Story[];
     hasUnseen: boolean;
+}
+
+// Separate User type to avoid circular dependencies if needed elsewhere
+export interface User {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  verified: boolean;
+  bio?: string;
+  location?: string;
+  website?: string;
+  joinDate: string;
+  followers: number;
+  following: number;
 }

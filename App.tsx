@@ -15,10 +15,11 @@ import SettingsPage from './pages/SettingsPage';
 import HelpCenterPage from './pages/HelpCenterPage';
 import ReelsPage from './pages/ReelsPage';
 import DisplayModal from './components/DisplayModal';
-import { Page, Theme } from './types';
-import { mockUser } from './data/mockData';
+import { Page, Theme, User, Message, Conversation } from './types';
+import { mockUser, mockConversations, mockMessages } from './data/mockData';
 import Lightbox from './components/Lightbox';
 import SearchModal from './components/SearchModal';
+import Toast from './components/Toast';
 import { AnimatePresence } from 'framer-motion';
 
 const App: React.FC = () => {
@@ -28,12 +29,64 @@ const App: React.FC = () => {
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+  
+  // State for messaging, to be updated by story replies
+  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [messages, setMessages] = useState<Record<string, Message[]>>(mockMessages);
 
   const openLightbox = (url: string) => setLightboxImageUrl(url);
   const closeLightbox = () => setLightboxImageUrl(null);
   
   const openSearchModal = () => setIsSearchModalOpen(true);
   const closeSearchModal = () => setIsSearchModalOpen(false);
+  
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const handleSendStoryReply = (recipient: User, messageText: string) => {
+    const newMessage: Message = {
+      id: `msg-${Date.now()}`,
+      senderId: mockUser.id,
+      text: messageText,
+      timestamp: new Date().toISOString(),
+      type: 'text',
+      isRead: false,
+    };
+
+    let conversation = conversations.find(c => c.participant.id === recipient.id);
+    let conversationId: string;
+
+    if (conversation) {
+      conversationId = conversation.id;
+    } else {
+      // Create a new conversation if one doesn't exist
+      conversationId = `c-${Date.now()}`;
+      const newConversation: Conversation = {
+        id: conversationId,
+        participant: recipient,
+        lastMessage: newMessage,
+        unreadCount: 0,
+      };
+      setConversations(prev => [newConversation, ...prev]);
+      setMessages(prev => ({ ...prev, [conversationId]: [] }));
+    }
+    
+    // Update messages for the conversation
+    setMessages(prev => ({
+      ...prev,
+      [conversationId]: [...(prev[conversationId] || []), newMessage],
+    }));
+
+    // Update the last message in the conversation list
+    setConversations(prev => prev.map(c => 
+      c.id === conversationId ? { ...c, lastMessage: newMessage } : c
+    ));
+
+    showToast("Message sent");
+  };
 
   useEffect(() => {
     document.documentElement.className = theme;
@@ -45,7 +98,7 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case Page.Home:
-        return <HomePage onImageClick={openLightbox} />;
+        return <HomePage onImageClick={openLightbox} onSendStoryReply={handleSendStoryReply} />;
       case Page.Explore:
         return <ExplorePage openSearchModal={openSearchModal} onImageClick={openLightbox} />;
       case Page.Notifications:
@@ -67,7 +120,7 @@ const App: React.FC = () => {
       case Page.HelpCenter:
         return <HelpCenterPage />;
       default:
-        return <HomePage onImageClick={openLightbox} />;
+        return <HomePage onImageClick={openLightbox} onSendStoryReply={handleSendStoryReply} />;
     }
   };
 
@@ -96,6 +149,7 @@ const App: React.FC = () => {
         {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={closeLightbox} />}
         {isSearchModalOpen && <SearchModal onClose={closeSearchModal} onImageClick={openLightbox} />}
       </AnimatePresence>
+      <Toast message={toastMessage} isVisible={!!toastMessage} onClose={() => setToastMessage('')} />
     </div>
   );
 };

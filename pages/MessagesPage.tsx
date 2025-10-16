@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { mockConversations, mockMessages, mockUser } from '../data/mockData';
+import { mockConversations, mockMessages, mockUser, otherUsers } from '../data/mockData';
 import { Conversation, Message, User } from '../types';
 import Avatar from '../components/Avatar';
 import { VerifiedIcon, MoreIcon, InfoIcon, VideoCallIcon, AudioCallIcon, ChevronLeftIcon } from '../components/Icon';
 import MessageBubble from '../components/MessageBubble';
 import MessageInput from '../components/MessageInput';
 import { motion, AnimatePresence } from 'framer-motion';
+import GifPickerModal from '../components/GifPickerModal';
 
 const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boolean, onClick: () => void }> = ({ conversation, isSelected, onClick }) => {
     const { participant, lastMessage, unreadCount } = conversation;
@@ -21,6 +22,12 @@ const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boole
             return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         }
     };
+    
+    const getLastMessageText = () => {
+        if (lastMessage.type === 'voice') return '🎤 Voice message';
+        if (lastMessage.type === 'gif') return '🖼️ GIF';
+        return lastMessage.text;
+    }
 
     return (
         <div onClick={onClick} className={`p-4 flex gap-3 cursor-pointer ${isSelected ? 'bg-light-hover dark:bg-white/10 dim:bg-dim-hover' : 'hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50'}`}>
@@ -36,7 +43,7 @@ const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boole
                 </div>
                 <div className="flex justify-between items-start mt-1">
                     <p className={`text-sm truncate ${unreadCount > 0 ? 'font-bold text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}`}>
-                        {lastMessage.type === 'voice' ? 'Voice message' : lastMessage.text}
+                        {getLastMessageText()}
                     </p>
                     {unreadCount > 0 && (
                         <span className="bg-twitter-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{unreadCount}</span>
@@ -58,10 +65,10 @@ const ChatView: React.FC<{
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView();
     }, [messages]);
 
-    const handleSendMessage = (content: { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number }, replyTo?: Message) => {
+    const handleSendMessage = (content: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId' | 'replyTo'>, replyTo?: Message) => {
         onSendMessage(conversation.id, {
             ...content,
             replyTo: replyTo ?? undefined
@@ -71,7 +78,7 @@ const ChatView: React.FC<{
     
     return (
         <div className="flex flex-col h-full bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">
-            <div className="p-2 md:p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
+            <div className="p-2 md:p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
                 <div className="flex items-center gap-2">
                     <button onClick={onBack} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full md:hidden"><ChevronLeftIcon /></button>
                     <Avatar src={conversation.participant.avatarUrl} alt={conversation.participant.displayName} size="small" />
@@ -96,9 +103,9 @@ const ChatView: React.FC<{
                 ))}
                 {conversation.isTyping && (
                     <div className="flex justify-start">
-                        <div className="bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray px-4 py-2 rounded-t-xl rounded-br-xl">
+                        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray px-4 py-2 rounded-t-xl rounded-br-xl">
                             <span className="italic">typing...</span>
-                        </div>
+                        </motion.div>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
@@ -144,6 +151,22 @@ const MessagesPage: React.FC = () => {
             ...prev,
             [convId]: [...prev[convId], newMessage]
         }));
+
+        // Simulate a reply
+        setTimeout(() => {
+             const replyMessage: Message = {
+                id: `m-${Date.now()}-reply`,
+                senderId: otherUsers[0].id,
+                timestamp: new Date().toISOString(),
+                isRead: true,
+                type: 'text',
+                text: 'Got it!'
+            };
+             setMessages(prev => ({
+                ...prev,
+                [convId]: [...prev[convId], replyMessage]
+            }));
+        }, 1500);
     };
 
     return (
@@ -153,7 +176,7 @@ const MessagesPage: React.FC = () => {
                 animate={{ x: mobileView === 'chat' ? '-100%' : '0%' }}
                 transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
             >
-                <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
+                <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
                     <h1 className="text-xl font-bold">Messages</h1>
                     <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon/></button>
                 </div>

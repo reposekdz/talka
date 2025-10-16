@@ -1,4 +1,4 @@
-import { User, Tweet, TrendingTopic, Notification, Conversation, Message, Community, UserStory } from '../types';
+import { User, Tweet, TrendingTopic, Notification, Conversation, Message, Community, UserStory, Comment } from '../types';
 
 // Mock Users
 export const mockUser: User = {
@@ -49,6 +49,23 @@ export const otherUsers: User[] = [
     followers: 500000,
     following: 10,
   },
+   {
+    id: 'u5',
+    username: 'JaneDoe',
+    displayName: 'Jane Doe',
+    avatarUrl: 'https://picsum.photos/seed/u5/200/200',
+    verified: false,
+    bio: 'Just another user.',
+    joinDate: '2023-01-15T00:00:00.000Z',
+    followers: 150,
+    following: 300,
+  },
+];
+
+const mockReelComments: Comment[] = [
+    { id: 'c1-1', user: otherUsers[4], text: 'This is amazing!', timestamp: '2024-07-22T12:01:00.000Z' },
+    { id: 'c1-2', user: otherUsers[1], text: 'Great work on the animation.', timestamp: '2024-07-22T12:02:00.000Z' },
+    { id: 'c1-3', user: mockUser, text: 'Thanks everyone!', timestamp: '2024-07-22T12:03:00.000Z' },
 ];
 
 // Base Tweets (can be used for profiles, bookmarks, etc.)
@@ -125,6 +142,7 @@ export const baseTweets: Tweet[] = [
     isRetweeted: false,
     isBookmarked: false,
     mediaUrls: ['https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'],
+    comments: mockReelComments,
   },
   {
     id: 't6',
