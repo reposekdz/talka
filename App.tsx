@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CreatorStudioPage from './pages/CreatorStudioPage';
 import SettingsPage from './pages/SettingsPage';
+import HelpCenterPage from './pages/HelpCenterPage';
 import DisplayModal from './components/DisplayModal';
 import { Page, Theme } from './types';
 import { mockUser } from './data/mockData';
@@ -44,7 +45,7 @@ const App: React.FC = () => {
       case Page.Home:
         return <HomePage onImageClick={openLightbox} />;
       case Page.Explore:
-        return <ExplorePage openSearchModal={openSearchModal} />;
+        return <ExplorePage openSearchModal={openSearchModal} onImageClick={openLightbox} />;
       case Page.Notifications:
         return <NotificationsPage />;
       case Page.Messages:
@@ -59,6 +60,8 @@ const App: React.FC = () => {
         return <CreatorStudioPage />;
       case Page.Settings:
         return <SettingsPage />;
+      case Page.HelpCenter:
+        return <HelpCenterPage />;
       default:
         return <HomePage onImageClick={openLightbox} />;
     }

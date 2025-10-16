@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { mockConversations, mockMessages, mockUser } from '../data/mockData';
 import { Conversation, Message, User } from '../types';
 import Avatar from '../components/Avatar';
-import { VerifiedIcon, MoreIcon, InfoIcon, VideoCallIcon, AudioCallIcon } from '../components/Icon';
+import { VerifiedIcon, MoreIcon, InfoIcon, VideoCallIcon, AudioCallIcon, ChevronLeftIcon } from '../components/Icon';
 import MessageBubble from '../components/MessageBubble';
 import MessageInput from '../components/MessageInput';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boolean, onClick: () => void }> = ({ conversation, isSelected, onClick }) => {
     const { participant, lastMessage, unreadCount } = conversation;
@@ -51,7 +52,8 @@ const ChatView: React.FC<{
     messages: Message[];
     currentUser: User;
     onSendMessage: (convId: string, msg: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId'>) => void;
-}> = ({ conversation, messages, currentUser, onSendMessage }) => {
+    onBack: () => void;
+}> = ({ conversation, messages, currentUser, onSendMessage, onBack }) => {
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -69,8 +71,9 @@ const ChatView: React.FC<{
     
     return (
         <div className="flex flex-col h-full bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">
-            <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
-                <div className="flex items-center gap-3">
+            <div className="p-2 md:p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
+                <div className="flex items-center gap-2">
+                    <button onClick={onBack} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full md:hidden"><ChevronLeftIcon /></button>
                     <Avatar src={conversation.participant.avatarUrl} alt={conversation.participant.displayName} size="small" />
                     <div>
                         <div className="flex items-center">
@@ -114,6 +117,16 @@ const MessagesPage: React.FC = () => {
     const [conversations, setConversations] = useState(mockConversations);
     const [messages, setMessages] = useState(mockMessages);
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(mockConversations[0]?.id || null);
+    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+
+    const handleSelectConversation = (id: string) => {
+        setSelectedConversationId(id);
+        setMobileView('chat');
+    };
+
+    const handleBackToList = () => {
+        setMobileView('list');
+    };
     
     const selectedConversation = conversations.find(c => c.id === selectedConversationId);
     const selectedMessages = selectedConversationId ? messages[selectedConversationId] : [];
@@ -134,8 +147,12 @@ const MessagesPage: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen">
-            <div className="w-full md:w-2/5 border-r border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col">
+        <div className="flex h-screen relative overflow-hidden">
+            <motion.div
+                className="w-full md:w-2/5 md:static absolute top-0 left-0 h-full border-r border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg z-20"
+                animate={{ x: mobileView === 'chat' ? '-100%' : '0%' }}
+                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+            >
                 <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
                     <h1 className="text-xl font-bold">Messages</h1>
                     <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon/></button>
@@ -146,18 +163,40 @@ const MessagesPage: React.FC = () => {
                             key={conv.id}
                             conversation={conv}
                             isSelected={selectedConversationId === conv.id}
-                            onClick={() => setSelectedConversationId(conv.id)}
+                            onClick={() => handleSelectConversation(conv.id)}
                         />
                     ))}
                 </div>
-            </div>
-            <div className="hidden md:flex flex-1 flex-col">
-                {selectedConversation ? (
+            </motion.div>
+           
+            <AnimatePresence>
+            {mobileView === 'chat' && selectedConversation && (
+                 <motion.div
+                    className="md:hidden absolute top-0 left-0 w-full h-full z-30"
+                    initial={{ x: '100%' }}
+                    animate={{ x: '0%' }}
+                    exit={{ x: '100%' }}
+                    transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+                >
                     <ChatView
                         conversation={selectedConversation}
                         messages={selectedMessages}
                         currentUser={mockUser}
                         onSendMessage={handleSendMessage}
+                        onBack={handleBackToList}
+                    />
+                </motion.div>
+            )}
+            </AnimatePresence>
+            
+            <div className="hidden md:flex flex-1 flex-col">
+                {selectedConversation ? (
+                     <ChatView
+                        conversation={selectedConversation}
+                        messages={selectedMessages}
+                        currentUser={mockUser}
+                        onSendMessage={handleSendMessage}
+                        onBack={() => {}}
                     />
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">

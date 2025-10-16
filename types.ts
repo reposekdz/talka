@@ -101,6 +101,7 @@ export enum Page {
     Profile = 'Profile',
     CreatorStudio = 'CreatorStudio',
     Settings = 'Settings',
+    HelpCenter = 'HelpCenter',
 }
 
 export type Theme = 'light' | 'dim' | 'dark';

@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
-import TrendingTopic from '../components/TrendingTopic';
-import { mockTrendingTopics, mockTweets } from '../data/mockData';
+import React, { useState, useMemo } from 'react';
+import { mockTweets } from '../data/mockData';
 import { SearchIcon } from '../components/Icon';
+import MediaCard from '../components/MediaCard';
+import { Tweet } from '../types';
 
 interface ExplorePageProps {
     openSearchModal: () => void;
+    onImageClick: (url: string) => void;
 }
 
-const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal }) => {
+const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal, onImageClick }) => {
     const [activeTab, setActiveTab] = useState('For You');
     const tabs = ['For You', 'Trending', 'News', 'Sports', 'Entertainment'];
+    
+    const mediaTweets = useMemo(() => mockTweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0), []);
+
+    const handleMediaClick = (tweet: Tweet) => {
+        if (tweet.mediaUrls && tweet.mediaUrls.length > 0) {
+            onImageClick(tweet.mediaUrls[0]);
+        }
+    };
 
     return (
         <div>
@@ -20,7 +30,7 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal }) => {
                         className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray rounded-full px-4 py-2 cursor-pointer flex items-center gap-3 hover:bg-light-hover/80 dark:hover:bg-white/5 dim:hover:bg-dim-hover/80 transition-colors"
                     >
                         <SearchIcon />
-                        <span>Search Proto-Twitter</span>
+                        <span>Search</span>
                     </div>
                 </div>
                 <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border overflow-x-auto">
@@ -35,23 +45,10 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal }) => {
                 </div>
             </div>
             
-            <div className="border-b border-light-border dark:border-twitter-border dim:border-dim-border">
-                <img src="https://picsum.photos/seed/explore/600/300" alt="Explore header" className="w-full h-auto object-cover"/>
-            </div>
-
-            <div>
-                <h1 className="text-xl font-bold p-4">Trends for you</h1>
-                {mockTrendingTopics.map((trend, index) => (
-                    <TrendingTopic
-                    key={index}
-                    category={trend.category}
-                    topic={trend.topic}
-                    tweets={trend.tweets}
-                    />
+            <div className="p-2 md:p-4" style={{ columnCount: 2, columnGap: '0.75rem' }}>
+                {mediaTweets.map(tweet => (
+                    <MediaCard key={tweet.id} tweet={tweet} onMediaClick={handleMediaClick} />
                 ))}
-                <div className="p-4 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover cursor-pointer">
-                    <a href="#" className="text-twitter-blue">Show more</a>
-                </div>
             </div>
         </div>
     );

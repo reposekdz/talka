@@ -13,7 +13,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ onDisplayClick, closeMenu, setCurre
     { icon: <MonetizationIcon />, text: 'Monetization', action: () => setCurrentPage(Page.CreatorStudio) },
     { icon: <CreatorStudioIcon />, text: 'Creator Studio', action: () => setCurrentPage(Page.CreatorStudio) },
     { icon: <SettingsIcon />, text: 'Settings and privacy', action: () => setCurrentPage(Page.Settings) },
-    { icon: <HelpIcon />, text: 'Help Center', action: () => {} },
+    { icon: <HelpIcon />, text: 'Help Center', action: () => setCurrentPage(Page.HelpCenter) },
     { icon: <DisplayIcon />, text: 'Display', action: onDisplayClick },
   ];
 
