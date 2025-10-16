@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { User } from '../types';
@@ -6,10 +5,11 @@ import { EndCallIcon, MicOffIcon, MicrophoneIcon, CameraOnIcon, CameraOffIcon } 
 
 interface VideoCallViewProps {
   user: User;
+  status: 'outgoing' | 'active';
   onEndCall: () => void;
 }
 
-const VideoCallView: React.FC<VideoCallViewProps> = ({ user, onEndCall }) => {
+const VideoCallView: React.FC<VideoCallViewProps> = ({ user, status, onEndCall }) => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
@@ -34,7 +34,6 @@ const VideoCallView: React.FC<VideoCallViewProps> = ({ user, onEndCall }) => {
     startCall();
 
     return () => {
-      // Cleanup: stop all tracks on unmount
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
@@ -74,17 +73,25 @@ const VideoCallView: React.FC<VideoCallViewProps> = ({ user, onEndCall }) => {
       <video ref={remoteVideoRef} autoPlay playsInline className="absolute top-0 left-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-black/20"></div>
 
-      <motion.div
-        drag
-        dragConstraints={{ left: 0, right: window.innerWidth - 160, top: 0, bottom: window.innerHeight - 120 }}
-        className="absolute top-4 right-4 w-40 h-30 rounded-lg overflow-hidden shadow-lg cursor-grab active:cursor-grabbing z-20"
-      >
-        <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-      </motion.div>
+      {status === 'outgoing' ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-20">
+            <img src={user.avatarUrl} alt={user.displayName} className="w-24 h-24 rounded-full border-4 border-white mb-4"/>
+            <h2 className="text-3xl font-bold">Calling {user.displayName}...</h2>
+        </div>
+      ) : (
+        <motion.div
+            drag
+            dragConstraints={{ left: 0, right: window.innerWidth - 160, top: 0, bottom: window.innerHeight - 120 }}
+            className="absolute top-4 right-4 w-40 h-30 rounded-lg overflow-hidden shadow-lg cursor-grab active:cursor-grabbing z-20"
+        >
+            <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+        </motion.div>
+      )}
+
 
       <div className="absolute top-4 left-4 z-10 text-white">
         <h2 className="text-2xl font-bold">Video call with {user.displayName}</h2>
-        <p>Connecting...</p>
+        <p>{status === 'outgoing' ? 'Ringing...' : 'Connected'}</p>
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">

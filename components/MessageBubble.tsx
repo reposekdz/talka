@@ -1,20 +1,49 @@
 import React, { useState } from 'react';
-import { Message } from '../types';
-import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon } from './Icon';
+import { Message, ChatTheme, Reel } from '../types';
+import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon, PlayIcon } from './Icon';
 import AudioPlayer from './AudioPlayer';
 import { motion } from 'framer-motion';
 import ReactionPicker from './ReactionPicker';
 
 interface MessageBubbleProps {
   message: Message;
+  reels: Reel[];
   isOwnMessage: boolean;
   onReply: (message: Message) => void;
   onAddReaction: (messageId: string, emoji: string) => void;
   onPinMessage: (messageId: string) => void;
+  chatTheme: ChatTheme;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, onReply, onAddReaction, onPinMessage }) => {
-  const { text, type, replyTo, reactions, audioUrl, duration, gifUrl, isRead } = message;
+const themeClasses: Record<ChatTheme, string> = {
+    'default-blue': 'bg-twitter-blue text-white',
+    'sunset-orange': 'bg-gradient-to-br from-orange-500 to-red-500 text-white',
+    'ocean-green': 'bg-gradient-to-br from-green-400 to-teal-500 text-white',
+    'minty-fresh': 'bg-gradient-to-br from-emerald-400 to-lime-400 text-black',
+};
+
+const ReelShareContent: React.FC<{ reel: Reel }> = ({ reel }) => (
+    <div className="w-56 cursor-pointer group">
+        <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-black">
+            <video src={reel.videoUrl} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <PlayIcon className="w-8 h-8 text-white/80" />
+            </div>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+            <img src={reel.user.avatarUrl} alt={reel.user.displayName} className="w-6 h-6 rounded-full" />
+            <div>
+                <p className="text-xs font-bold leading-tight">{reel.user.displayName}</p>
+                <p className="text-xs opacity-80 leading-tight truncate">{reel.caption}</p>
+            </div>
+        </div>
+    </div>
+);
+
+
+const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
+  const { message, reels, isOwnMessage, onReply, onAddReaction, onPinMessage, chatTheme } = props;
+  const { text, type, replyTo, reactions, audioUrl, duration, gifUrl, imageUrl, isRead, reelId } = message;
   const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
 
   const renderContent = () => {
@@ -25,6 +54,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, on
             return <AudioPlayer src={audioUrl!} duration={duration!} isOwnMessage={isOwnMessage} />;
         case 'gif':
             return <img src={gifUrl} alt="gif" className="rounded-lg max-w-sm h-auto" />;
+        case 'image':
+            return (
+                <div className="max-w-xs">
+                    <img src={imageUrl} alt="attached" className="rounded-lg max-w-full h-auto" />
+                    {text && <p className="whitespace-pre-wrap break-words mt-2">{text}</p>}
+                </div>
+            );
+        case 'reel-share':
+            const reel = reels.find(r => r.id === reelId);
+            if (!reel) return <p className="italic text-sm opacity-80">This reel is unavailable.</p>;
+            return <ReelShareContent reel={reel} />;
         case 'text':
         default:
             return <p className="whitespace-pre-wrap break-words">{text}</p>;
@@ -36,6 +76,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, on
     setIsReactionPickerOpen(false);
   }
 
+  const bubbleThemeClass = isOwnMessage 
+    ? themeClasses[chatTheme] || themeClasses['default-blue']
+    : 'bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border';
+
+  const paddingClass = (type === 'wave' || type === 'reel-share') ? 'p-2' : 'p-3';
+
   return (
     <motion.div
         initial={{ opacity: 0, y: 10, scale: 0.9 }}
@@ -44,14 +90,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, on
         className={`flex items-end gap-2 group ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`relative max-w-xs md:max-w-md p-1 ${isOwnMessage ? 'order-2' : 'order-1'}`}>
-        <div className={`p-3 rounded-t-2xl ${isOwnMessage ? 'bg-twitter-blue text-white rounded-l-2xl' : 'bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-r-2xl'}`}>
+        <div className={`${paddingClass} rounded-t-2xl ${isOwnMessage ? `${bubbleThemeClass} rounded-l-2xl` : `${bubbleThemeClass} rounded-r-2xl`}`}>
             {replyTo && (
                 <div className={`border-l-2 ${isOwnMessage ? 'border-white/50' : 'border-twitter-blue'} pl-2 opacity-80 mb-2`}>
                     <p className="text-xs font-bold">
                         {replyTo.senderId === 'u1' ? 'You' : 'Them'}
                     </p>
                     <p className="text-sm italic truncate">
-                        {replyTo.type === 'text' ? replyTo.text : 'Voice message'}
+                        {replyTo.type === 'text' ? replyTo.text : 'Media message'}
                     </p>
                 </div>
             )}

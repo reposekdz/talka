@@ -7,13 +7,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ReelCardProps {
   reel: Reel;
   onOpenComments: (reel: Reel) => void;
+  onLike: (reelId: string) => void;
+  onDislike: (reelId: string) => void;
+  onBookmark: (reelId: string) => void;
+  onShare: (reel: Reel) => void;
 }
 
-const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
-  const [isLiked, setIsLiked] = useState(reel.isLiked);
-  const [isDisliked, setIsDisliked] = useState(reel.isDisliked);
-  const [likeCount, setLikeCount] = useState(reel.likeCount);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+const ReelCard: React.FC<ReelCardProps> = (props) => {
+  const { reel, onOpenComments, onLike, onDislike, onBookmark, onShare } = props;
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -22,28 +23,23 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
   const lastClickTime = useRef(0);
 
   const handleLike = () => {
-    const newLikedState = !isLiked;
-    setIsLiked(newLikedState);
-    setLikeCount(prev => newLikedState ? prev + 1 : prev - 1);
-    if (newLikedState && isDisliked) {
-      setIsDisliked(false);
-    }
-  };
-
-  const handleDislike = () => {
-    const newDislikedState = !isDisliked;
-    setIsDisliked(newDislikedState);
-    if (newDislikedState && isLiked) {
-      handleLike(); // This will toggle like off
-    }
+    onLike(reel.id);
   };
   
+  const handleDislike = () => {
+    onDislike(reel.id);
+  };
+
   const handleBookmark = () => {
-    setIsBookmarked(prev => !prev);
+    onBookmark(reel.id);
+  };
+  
+  const handleShare = () => {
+    onShare(reel);
   };
 
   const triggerLikeAnimation = () => {
-    if (!isLiked) {
+    if (!reel.isLiked) {
         handleLike();
     }
     setShowLikeAnimation(true);
@@ -146,11 +142,11 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
 
       <div className="absolute bottom-4 right-4 flex flex-col items-center gap-5 text-white z-30">
         <button onClick={handleLike} className="flex flex-col items-center pointer-events-auto">
-            {isLiked ? <HeartFillIcon /> : <LikeIcon />}
-            <span className="text-xs font-bold">{likeCount.toLocaleString()}</span>
+            {reel.isLiked ? <HeartFillIcon /> : <LikeIcon />}
+            <span className="text-xs font-bold">{reel.likeCount.toLocaleString()}</span>
         </button>
         <button onClick={handleDislike} className="flex flex-col items-center pointer-events-auto">
-            {isDisliked ? <DislikeFillIcon /> : <DislikeIcon />}
+            {reel.isDisliked ? <DislikeFillIcon /> : <DislikeIcon />}
             <span className="text-xs font-bold">Dislike</span>
         </button>
         <button onClick={() => onOpenComments(reel)} className="flex flex-col items-center pointer-events-auto">
@@ -158,8 +154,12 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
             <span className="text-xs font-bold">{reel.commentCount.toLocaleString()}</span>
         </button>
         <button onClick={handleBookmark} className="flex flex-col items-center pointer-events-auto">
-            {isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
+            {reel.isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
             <span className="text-xs font-bold">Save</span>
+        </button>
+         <button onClick={handleShare} className="flex flex-col items-center pointer-events-auto">
+            <ShareIcon />
+            <span className="text-xs font-bold">{reel.shareCount.toLocaleString()}</span>
         </button>
         <button className="pointer-events-auto">
             <MoreIcon />

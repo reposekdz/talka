@@ -1,11 +1,11 @@
 import React from 'react';
 import { Tweet, User } from '../types';
 import Avatar from './Avatar';
-// FIX: Import TrashIcon to fix 'Cannot find name 'TrashIcon'' error.
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon } from './Icon';
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon, HeartFillIcon, RetweetFillIcon } from './Icon';
 import PollDisplay from './PollDisplay';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
+import VideoPlayer from './VideoPlayer';
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -17,13 +17,14 @@ interface TweetCardProps {
   onVote: (tweetId: string, optionId: string) => void;
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
+  liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
 }
 
 const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => void }> = ({ tweet, onViewProfile }) => {
   const { user, content, timestamp, mediaUrls } = tweet;
   return (
-    <div className="mt-2 border border-light-border dark:border-twitter-border dim:border-dim-border rounded-2xl p-3">
-        <div className="flex items-center gap-2 mb-1" onClick={(e) => { e.stopPropagation(); onViewProfile(user); }}>
+    <div className="mt-2 border border-light-border dark:border-twitter-border dim:border-dim-border rounded-2xl p-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); onViewProfile(user); }}>
+        <div className="flex items-center gap-2 mb-1">
             <img src={user.avatarUrl} alt={user.displayName} className="w-5 h-5 rounded-full" />
             <span className="font-bold text-sm">{user.displayName}</span>
             <span className="text-light-secondary-text dark:text-twitter-gray text-sm">@{user.username}</span>
@@ -39,8 +40,8 @@ const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => 
 }
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit } = props;
-  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, isEdited, quotedTweet, poll, pinned, isVoiceTweet, audioUrl } = tweet;
+  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions } = props;
+  const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, shareCount, isEdited, quotedTweet, poll, pinned, isVoiceTweet, audioUrl } = tweet;
   const [isMoreMenuOpen, setIsMoreMenuOpen] = React.useState(false);
 
   const formatTimestamp = (ts: string) => {
@@ -72,16 +73,23 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
         return part;
     });
   }
+  
+  const relevantReactions = liveReactions.filter(r => r.tweetId === tweet.id);
 
   const actionButtons = [
-    { icon: <ReplyIcon />, count: replyCount, color: 'hover:text-twitter-blue', action: () => onReply(tweet) },
-    { icon: <RetweetIcon />, count: retweetCount, color: 'hover:text-green-500' },
-    { icon: <QuoteIcon />, count: undefined, color: 'hover:text-twitter-blue', action: () => onQuote(tweet) },
-    { icon: <LikeIcon />, count: likeCount, color: 'hover:text-red-500' },
+    { icon: <ReplyIcon />, count: replyCount, color: 'hover:text-twitter-blue', action: () => onReply(tweet), type: 'reply' },
+    { icon: <RetweetIcon />, count: retweetCount, color: 'hover:text-green-500', type: 'retweet' },
+    { icon: <LikeIcon />, count: likeCount, color: 'hover:text-red-500', type: 'like' },
+    { icon: <ShareIcon />, count: shareCount, color: 'hover:text-twitter-blue', type: 'share' },
   ];
 
   return (
-    <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors duration-200">
+    <motion.div 
+        layout="position"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer transition-colors duration-200 hover:bg-light-hover/50 dark:hover:bg-white/5"
+    >
       <div className="flex-shrink-0" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>
         <Avatar src={user.avatarUrl} alt={user.displayName} />
       </div>
@@ -93,10 +101,10 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
           </div>
         )}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1 flex-wrap" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>
-            <span className="font-bold hover:underline">{user.displayName}</span>
+          <div className="flex items-center gap-1 flex-wrap" >
+            <span className="font-bold hover:underline" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>{user.displayName}</span>
             {user.verified && <VerifiedIcon />}
-            <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{user.username}</span>
+            <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>@{user.username}</span>
             <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">·</span>
             <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text hover:underline">{formatTimestamp(timestamp)}</span>
             {isEdited && <span className="text-light-secondary-text dark:text-twitter-gray text-xs dim:text-dim-secondary-text ml-1">(edited)</span>}
@@ -131,11 +139,17 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
 
         {mediaUrls && mediaUrls.length > 0 && (
           <div className={`mt-3 grid gap-1 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border ${mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} ${mediaUrls.length === 3 ? '[&>*:first-child]:row-span-2' : ''}`}>
-            {mediaUrls.map((url, index) => (
-              <motion.div key={url} layoutId={url} onClick={(e) => handleActionClick(e, () => onImageClick(url))} className="cursor-pointer relative overflow-hidden aspect-video">
-                <img src={url} alt={`Tweet media ${index + 1}`} className="w-full h-full object-cover" />
-              </motion.div>
-            ))}
+            {mediaUrls.map((url, index) => {
+              const isVideo = url.endsWith('.mp4');
+              if (isVideo) {
+                return <VideoPlayer key={url} src={url} />;
+              }
+              return (
+                 <motion.div key={url} layoutId={url} onClick={(e) => handleActionClick(e, () => onImageClick(url))} className="cursor-pointer relative overflow-hidden aspect-video">
+                  <img src={url} alt={`Tweet media ${index + 1}`} className="w-full h-full object-cover" />
+                </motion.div>
+              )
+            })}
           </div>
         )}
         
@@ -143,22 +157,35 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
 
         <div className="flex justify-between items-center mt-3 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
           {actionButtons.map((btn, index) => (
-            <div key={index} className={`flex items-center gap-1 group transition-colors duration-200 ${btn.color}`}>
+            <div key={index} className={`flex items-center gap-1 group transition-colors duration-200 ${btn.color} relative`}>
               <button onClick={(e) => handleActionClick(e, btn.action)} className={`p-2 rounded-full group-hover:bg-current group-hover:bg-opacity-10`}>{btn.icon}</button>
               {btn.count !== undefined && <span className="text-sm">{btn.count.toLocaleString()}</span>}
+              <AnimatePresence>
+                {relevantReactions.filter(r => r.type === btn.type).map(reaction => (
+                    <motion.div
+                        key={reaction.id}
+                        initial={{ opacity: 1, y: 0, scale: 0.5 }}
+                        animate={{ opacity: 0, y: -30, scale: 1 }}
+                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                        className="absolute -top-2 left-2 pointer-events-none"
+                    >
+                        {reaction.type === 'like' ? <HeartFillIcon className="w-5 h-5"/> : <RetweetFillIcon className="w-5 h-5"/>}
+                    </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           ))}
           <div className="flex items-center gap-2 group hover:text-twitter-blue">
             <button onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
               {tweet.isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
             </button>
-            <button onClick={(e) => handleActionClick(e)} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
-              <ShareIcon />
+            <button onClick={(e) => handleActionClick(e, () => onQuote(tweet))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
+              <QuoteIcon />
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

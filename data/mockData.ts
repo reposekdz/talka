@@ -1,4 +1,4 @@
-import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel } from '../types';
+import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
@@ -10,19 +10,19 @@ export const mockUser: User = {
   location: 'The Web',
   website: 'github.com',
   followingCount: 5,
-  followerCount: 3,
+  followerCount: 5,
   verified: true,
   followingIds: ['u2', 'u4', 'u5', 'u6', 'u7'],
-  followerIds: ['u3', 'u5', 'u8'],
+  followerIds: ['u2', 'u3', 'u5', 'u8', 'u6'],
   isOnline: true,
 };
 
 export const otherUsers: User[] = [
-  { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'A utility-first CSS framework for rapid UI development.', followingIds: ['u1'], followerIds: [], isOnline: true },
+  { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'A utility-first CSS framework for rapid UI development.', followingIds: ['u1'], followerIds: ['u1'], isOnline: true },
   { id: 'u3', username: 'vercel', displayName: 'Vercel', avatarUrl: 'https://picsum.photos/seed/u3/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Develop. Preview. Ship.', followingIds: ['u1'], followerIds: [], isOnline: false },
   { id: 'u4', username: 'elonmusk', displayName: 'Elon Musk', avatarUrl: 'https://picsum.photos/seed/u4/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'Mars & Cars', followingIds: [], followerIds: ['u1'], isOnline: true },
   { id: 'u5', username: 'nasa', displayName: 'NASA', avatarUrl: 'https://picsum.photos/seed/u5/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Exploring the universe and our home planet.', followingIds: ['u1'], followerIds: ['u1'], isOnline: true },
-  { id: 'u6', username: 'natgeo', displayName: 'National Geographic', avatarUrl: 'https://picsum.photos/seed/u6/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Experience the world through the eyes of our photographers, explorers, and filmmakers.', followingIds: ['u1'], followerIds: [], isOnline: false },
+  { id: 'u6', username: 'natgeo', displayName: 'National Geographic', avatarUrl: 'https://picsum.photos/seed/u6/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Experience the world through the eyes of our photographers, explorers, and filmmakers.', followingIds: ['u1'], followerIds: ['u1'], isOnline: false },
   { id: 'u7', username: 'figma', displayName: 'Figma', avatarUrl: 'https://picsum.photos/seed/u7/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'The collaborative interface design tool.', followingIds: ['u1'], followerIds: [], isOnline: true },
   { id: 'u8', username: 'codepen', displayName: 'CodePen', avatarUrl: 'https://picsum.photos/seed/u8/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'The best place to build, test, and discover front-end code.', followingIds: [], followerIds: ['u1'], isOnline: true },
 ];
@@ -36,6 +36,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 12,
     retweetCount: 45,
     likeCount: 250,
+    shareCount: 18,
     viewCount: 15000,
     isBookmarked: true,
     pinned: true,
@@ -48,8 +49,21 @@ export const baseTweets: Tweet[] = [
     replyCount: 50,
     retweetCount: 1200,
     likeCount: 8000,
+    shareCount: 550,
     viewCount: 250000,
     mediaUrls: ['https://picsum.photos/seed/m1/600/400'],
+  },
+    {
+    id: 't-new-video',
+    user: otherUsers[6],
+    content: 'Mind-blowing CSS animation techniques you can use today. This Pen shows how to create a liquid loader. #CSS #CodePen',
+    timestamp: '2024-07-24T18:00:00Z',
+    replyCount: 33,
+    retweetCount: 410,
+    likeCount: 2100,
+    shareCount: 150,
+    viewCount: 95000,
+    mediaUrls: ['http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4']
   },
   {
     id: 't-nasa-1',
@@ -59,6 +73,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 500,
     retweetCount: 8000,
     likeCount: 45000,
+    shareCount: 2000,
     viewCount: 1200000,
     mediaUrls: ['https://picsum.photos/seed/nasa1/800/600', 'https://picsum.photos/seed/nasa2/800/600'],
   },
@@ -70,6 +85,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 88,
     retweetCount: 950,
     likeCount: 5500,
+    shareCount: 300,
     viewCount: 180000,
   },
   {
@@ -80,6 +96,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 5,
     retweetCount: 10,
     likeCount: 80,
+    shareCount: 3,
     viewCount: 2000,
     quotedTweet: {
         id: 't3',
@@ -89,8 +106,26 @@ export const baseTweets: Tweet[] = [
         replyCount: 88,
         retweetCount: 950,
         likeCount: 5500,
+        shareCount: 300,
         viewCount: 180000,
     }
+  },
+  {
+    id: 't-new-4grid',
+    user: otherUsers[4],
+    content: 'A few highlights from our recent expedition to the Amazon rainforest. The biodiversity is simply astounding. #NatGeo #Wildlife',
+    timestamp: '2024-07-24T16:00:00Z',
+    replyCount: 210,
+    retweetCount: 4500,
+    likeCount: 22000,
+    shareCount: 1800,
+    viewCount: 950000,
+    mediaUrls: [
+        'https://picsum.photos/seed/ng1/400/300',
+        'https://picsum.photos/seed/ng2/400/300',
+        'https://picsum.photos/seed/ng3/400/300',
+        'https://picsum.photos/seed/ng4/400/300',
+    ],
   },
   {
     id: 't4',
@@ -100,6 +135,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 300,
     retweetCount: 50,
     likeCount: 600,
+    shareCount: 25,
     viewCount: 22000,
     isBookmarked: true,
     poll: {
@@ -121,6 +157,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 10000,
     retweetCount: 25000,
     likeCount: 200000,
+    shareCount: 12000,
     viewCount: 5000000,
     mediaUrls: ['https://picsum.photos/seed/m2/600/800', 'https://picsum.photos/seed/m3/600/800'],
   },
@@ -132,8 +169,22 @@ export const baseTweets: Tweet[] = [
     replyCount: 15, 
     retweetCount: 200, 
     likeCount: 950, 
+    shareCount: 80,
     viewCount: 35000, 
     mediaUrls: ['http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'] 
+  },
+    {
+    id: 't-new-voice',
+    user: mockUser,
+    content: 'Just sharing some quick thoughts on the new browser APIs coming in 2025. Very exciting stuff!',
+    timestamp: '2024-07-24T14:30:00Z',
+    replyCount: 8,
+    retweetCount: 15,
+    likeCount: 95,
+    shareCount: 5,
+    viewCount: 4500,
+    isVoiceTweet: true,
+    audioUrl: '/mock-audio.mp3'
   },
   {
     id: 't-natgeo-1',
@@ -143,6 +194,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 150,
     retweetCount: 3000,
     likeCount: 18000,
+    shareCount: 1500,
     viewCount: 800000,
     mediaUrls: ['https://picsum.photos/seed/natgeo1/800/500'],
   },
@@ -154,7 +206,20 @@ export const baseTweets: Tweet[] = [
     replyCount: 200,
     retweetCount: 1500,
     likeCount: 9000,
+    shareCount: 700,
     viewCount: 400000,
+  },
+  {
+    id: 't-new-lifestyle',
+    user: otherUsers[1],
+    content: 'Weekend vibes. Time to disconnect and recharge. ☀️',
+    timestamp: '2024-07-24T12:00:00Z',
+    replyCount: 10,
+    retweetCount: 5,
+    likeCount: 150,
+    shareCount: 3,
+    viewCount: 8000,
+    mediaUrls: ['https://picsum.photos/seed/lv1/500/500'],
   },
   {
     id: 't-codepen-1',
@@ -164,6 +229,7 @@ export const baseTweets: Tweet[] = [
     replyCount: 80,
     retweetCount: 800,
     likeCount: 4000,
+    shareCount: 450,
     viewCount: 250000,
   },
 ];
@@ -202,9 +268,9 @@ export const mockMessages: Record<string, Message[]> = {
 };
 
 export const mockConversations: Conversation[] = [
-    { id: 'c1', participant: otherUsers[0], lastMessage: mockMessages.c1[mockMessages.c1.length - 1], unreadCount: 2, isTyping: true },
-    { id: 'c2', participant: otherUsers[1], lastMessage: mockMessages.c2[0], unreadCount: 0 },
-    { id: 'c3', participant: otherUsers[2], lastMessage: mockMessages.c3[0], unreadCount: 0 },
+    { id: 'c1', participant: otherUsers[0], lastMessage: mockMessages.c1[mockMessages.c1.length - 1], unreadCount: 2, isTyping: true, chatTheme: 'default-blue' },
+    { id: 'c2', participant: otherUsers[1], lastMessage: mockMessages.c2[0], unreadCount: 0, chatTheme: 'sunset-orange' },
+    { id: 'c3', participant: otherUsers[2], lastMessage: mockMessages.c3[0], unreadCount: 0, chatTheme: 'ocean-green' },
 ];
 
 export const mockCommunities: Community[] = [
@@ -219,11 +285,54 @@ export const userStories: UserStory[] = [
             { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', duration: 5, timestamp: '2024-07-22T11:00:00Z' }
         ]
     },
-    ...otherUsers.map((user, i) => ({
+    {
+        user: otherUsers[0], hasUnseen: true, stories: [
+            { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, duration: 7, timestamp: '2024-07-24T12:00:00Z' },
+            { id: 's-u2-2', mediaUrl: `https://picsum.photos/seed/s-u2-2/400/700`, duration: 5, timestamp: '2024-07-24T13:00:00Z' }
+        ]
+    },
+     {
+        user: otherUsers[1], hasUnseen: false, stories: [ // Seen story
+            { id: 's-u3-1', mediaUrl: `https://picsum.photos/seed/s-u3-1/400/700`, duration: 6, timestamp: '2024-07-23T09:00:00Z' }
+        ]
+    },
+    {
+        user: otherUsers[2], hasUnseen: true, stories: [
+            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, duration: 5, timestamp: '2024-07-24T15:00:00Z' }
+        ]
+    },
+    {
+        user: otherUsers[3], hasUnseen: true, stories: [
+            { id: 's-u5-1', mediaUrl: `https://picsum.photos/seed/s-u5-1/400/700`, duration: 8, timestamp: '2024-07-24T11:00:00Z' },
+            { id: 's-u5-2', mediaUrl: `https://picsum.photos/seed/s-u5-2/400/700`, duration: 4, timestamp: '2024-07-24T11:30:00Z' },
+            { id: 's-u5-3', mediaUrl: `https://picsum.photos/seed/s-u5-3/400/700`, duration: 6, timestamp: '2024-07-24T12:30:00Z' }
+        ]
+    },
+    ...otherUsers.slice(4).map((user, i) => ({ // Remaining users
         user, hasUnseen: true, stories: [
-            { id: `s${i+3}`, mediaUrl: `https://picsum.photos/seed/s${i+3}/400/700`, duration: 5, timestamp: '2024-07-22T12:00:00Z' }
+            { id: `s${i+6}`, mediaUrl: `https://picsum.photos/seed/s${i+6}/400/700`, duration: 5, timestamp: '2024-07-22T12:00:00Z' }
         ]
     }))
+];
+
+export const mockHighlights: Highlight[] = [
+  {
+    id: 'h1',
+    title: 'Projects',
+    coverUrl: 'https://picsum.photos/seed/h1/200/200',
+    stories: [
+      { id: 's-h1-1', mediaUrl: 'https://picsum.photos/seed/s-h1-1/400/700', duration: 5, timestamp: '' },
+      { id: 's-h1-2', mediaUrl: 'https://picsum.photos/seed/s-h1-2/400/700', duration: 5, timestamp: '' },
+    ]
+  },
+  {
+    id: 'h2',
+    title: 'Travel',
+    coverUrl: 'https://picsum.photos/seed/h2/200/200',
+    stories: [
+       { id: 's-h2-1', mediaUrl: 'https://picsum.photos/seed/s-h2-1/400/700', duration: 5, timestamp: '' },
+    ]
+  },
 ];
 
 export const mockReels: Reel[] = [
@@ -231,13 +340,14 @@ export const mockReels: Reel[] = [
         id: 'r1', 
         user: otherUsers[0], 
         videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', 
-        caption: 'Having fun with CSS animations!', 
+        caption: 'Having fun with CSS animations! #css #webdev', 
         likeCount: 1200, 
         dislikeCount: 15,
         commentCount: 45, 
         shareCount: 120, 
         isLiked: false,
         isDisliked: false,
+        isBookmarked: false,
         comments: [
             { id: 'rc1-1', user: otherUsers[1], text: "So cool!", timestamp: "2h", likeCount: 15, isLiked: false },
             { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h", likeCount: 8, isLiked: true },
@@ -254,6 +364,7 @@ export const mockReels: Reel[] = [
         shareCount: 300, 
         isLiked: true,
         isDisliked: false,
+        isBookmarked: true,
         comments: [
             { id: 'rc2-1', user: otherUsers[2], text: "Clean setup! 🚀", timestamp: "3h", likeCount: 50, isLiked: false },
         ]
@@ -269,19 +380,127 @@ export const mockReels: Reel[] = [
         shareCount: 600, 
         isLiked: false,
         isDisliked: false,
-        comments: [] 
+        isBookmarked: false,
+        comments: [
+            { id: 'rc3-1', user: mockUser, text: "Can't wait to try this out!", timestamp: "1d", likeCount: 150, isLiked: true },
+            { id: 'rc3-2', user: otherUsers[0], text: "Game changer!", timestamp: "1d", likeCount: 120, isLiked: false },
+        ] 
     },
     { 
         id: 'r4', 
         user: otherUsers[4], 
         videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', 
-        caption: 'A breathtaking view of the Grand Canyon.', 
+        caption: 'A breathtaking view of the Grand Canyon. #nature #travel', 
         likeCount: 12000, 
         dislikeCount: 80,
         commentCount: 800, 
         shareCount: 1500, 
         isLiked: false,
         isDisliked: false,
+        isBookmarked: false,
         comments: [] 
     },
+    { 
+        id: 'r5', 
+        user: otherUsers[3], 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 
+        caption: 'Exploring the cosmos, one star at a time. #space #nasa', 
+        likeCount: 25000, 
+        dislikeCount: 100,
+        commentCount: 1200, 
+        shareCount: 3000, 
+        isLiked: false,
+        isDisliked: false,
+        isBookmarked: true,
+        comments: [] 
+    },
+    { 
+        id: 'r6', 
+        user: otherUsers[5], 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', 
+        caption: 'The art of design is the art of communication. #design #figma', 
+        likeCount: 9500, 
+        dislikeCount: 40,
+        commentCount: 600, 
+        shareCount: 800, 
+        isLiked: true,
+        isDisliked: false,
+        isBookmarked: false,
+        comments: [] 
+    },
+    {
+      id: 'r7',
+      user: otherUsers[6],
+      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+      caption: 'Code is poetry. #coding #developer',
+      likeCount: 7800,
+      dislikeCount: 30,
+      commentCount: 550,
+      shareCount: 700,
+      isLiked: false,
+      isDisliked: false,
+      isBookmarked: false,
+      comments: [],
+    },
+    {
+      id: 'r8',
+      user: otherUsers[7],
+      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      caption: 'A day in the life of a frontend developer. #codepen',
+      likeCount: 6200,
+      dislikeCount: 25,
+      commentCount: 450,
+      shareCount: 500,
+      isLiked: false,
+      isDisliked: false,
+      isBookmarked: false,
+      comments: [],
+    },
+    {
+      id: 'r9',
+      user: mockUser,
+      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      caption: 'Working on some new animations for Proto-Twitter! #react #framer-motion',
+      likeCount: 11000,
+      dislikeCount: 90,
+      commentCount: 900,
+      shareCount: 1200,
+      isLiked: true,
+      isDisliked: false,
+      isBookmarked: true,
+      comments: [],
+    },
+    {
+      id: 'r10',
+      user: otherUsers[0],
+      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+      caption: 'Just look at how easy it is to create this layout with Tailwind. #tailwindcss',
+      likeCount: 15000,
+      dislikeCount: 60,
+      commentCount: 1100,
+      shareCount: 1800,
+      isLiked: false,
+      isDisliked: false,
+      isBookmarked: false,
+      comments: [],
+    },
+];
+
+export const mockSpaces: Space[] = [
+    {
+        id: 'sp1',
+        title: 'Frontend Friday: React 19 and the Compiler',
+        host: otherUsers[1],
+        speakers: [otherUsers[1], mockUser, otherUsers[0]],
+        listenerCount: 1250,
+        color: 'bg-blue-500'
+    },
+    {
+        id: 'sp2',
+        title: 'Tech Talk: The Future of AI',
+        host: otherUsers[2],
+        speakers: [otherUsers[2], otherUsers[3]],
+        listenerCount: 890,
+        color: 'bg-green-500'
+    }
 ];

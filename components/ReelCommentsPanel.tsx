@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Reel, ReelComment, User } from '../types';
+import { Reel, ReelComment } from '../types';
 import { CloseIcon, HeartFillIcon, LikeIcon, PaperPlaneIcon } from './Icon';
 import Avatar from './Avatar';
 import { mockUser } from '../data/mockData';
@@ -7,6 +7,7 @@ import { mockUser } from '../data/mockData';
 interface ReelCommentsPanelProps {
   reel: Reel;
   onClose: () => void;
+  onPostComment: (reelId: string, text: string) => void;
 }
 
 const CommentItem: React.FC<{ comment: ReelComment }> = ({ comment }) => {
@@ -41,28 +42,19 @@ const CommentItem: React.FC<{ comment: ReelComment }> = ({ comment }) => {
     );
 }
 
-const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose }) => {
-    const [comments, setComments] = useState(reel.comments);
+const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, onPostComment }) => {
     const [newComment, setNewComment] = useState('');
 
     const handlePostComment = () => {
         if (!newComment.trim()) return;
-        const comment: ReelComment = {
-            id: `rc-new-${Date.now()}`,
-            user: mockUser,
-            text: newComment.trim(),
-            timestamp: 'Now',
-            likeCount: 0,
-            isLiked: false,
-        };
-        setComments(prev => [comment, ...prev]);
+        onPostComment(reel.id, newComment.trim());
         setNewComment('');
     };
 
   return (
     <aside className="w-[350px] h-screen bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg border-l border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col">
         <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center h-14">
-            <h2 className="text-xl font-bold">Comments</h2>
+            <h2 className="text-xl font-bold">Comments ({reel.commentCount.toLocaleString()})</h2>
             <button onClick={onClose} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">
                 <CloseIcon />
             </button>
@@ -78,8 +70,8 @@ const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose }) 
                     <p className="text-light-text dark:text-dim-text">{reel.caption}</p>
                 </div>
             </div>
-            {comments.map(comment => <CommentItem key={comment.id} comment={comment} />)}
-             {comments.length === 0 && (
+            {reel.comments.map(comment => <CommentItem key={comment.id} comment={comment} />)}
+             {reel.comments.length === 0 && (
                 <div className="text-center text-light-secondary-text dark:text-twitter-gray py-16">
                     <h3 className="font-bold">No comments yet</h3>
                     <p>Be the first to comment.</p>

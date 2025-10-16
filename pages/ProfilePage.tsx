@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { mockUser, baseTweets } from '../data/mockData';
+import { mockHighlights, baseTweets } from '../data/mockData';
 import TweetCard from '../components/TweetCard';
 import { MoreIcon, CalendarIcon, ChevronLeftIcon, MessagesIcon } from '../components/Icon';
-import { Tweet, User } from '../types';
+import ProfileHighlights from '../components/ProfileHighlights';
+import { Tweet, User, Highlight } from '../types';
 
 interface ProfilePageProps {
   user: User;
@@ -18,10 +19,11 @@ interface ProfilePageProps {
   onVote: (tweetId: string, optionId: string) => void;
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
+  onHighlightClick: (highlights: Highlight[], index: number) => void;
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit } = props;
+  const { user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
   const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(false);
@@ -30,8 +32,9 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
   const userTweets = baseTweets.filter(t => t.user.id === user.id);
   const isCurrentUserProfile = user.id === currentUser.id;
   const isFollowing = currentUser.followingIds.includes(user.id);
+  const isFollowedBy = user.followingIds.includes(currentUser.id);
   
-  const tabs = isCurrentUserProfile ? ['Posts', 'Replies', 'Media', 'Likes', 'Monetization'] : ['Posts', 'Replies', 'Media', 'Likes'];
+  const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
   
   const handleFollowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,54 +63,6 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
     );
   };
   
-  const renderMonetizationTab = () => (
-    <div className="p-8 text-center">
-        <h2 className="text-3xl font-extrabold mb-2">You haven't earned any money yet</h2>
-        <p className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text max-w-md mx-auto mb-6">
-            When you do, it'll show up here. Explore monetization options to start earning.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-            <div className="bg-light-hover dark:bg-white/5 p-4 rounded-lg">
-                <h3 className="font-bold">Subscriptions</h3>
-                <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mt-1">
-                    {subscriptionsEnabled
-                        ? 'Manage your subscription offerings and view your monthly earnings.'
-                        : 'Offer monthly subscriptions to your most engaged followers for exclusive content.'
-                    }
-                </p>
-                {subscriptionsEnabled ? (
-                    <div className="mt-4">
-                        <p className="text-lg font-bold">Status: <span className="text-green-400">Active</span></p>
-                        <p className="text-sm">Monthly Price: $4.99</p>
-                         <button onClick={() => setSubscriptionsEnabled(false)} className="mt-2 bg-red-500/80 text-white font-bold py-2 px-4 rounded-full text-sm w-full">Disable Subscriptions</button>
-                    </div>
-                ) : (
-                    <button onClick={() => setSubscriptionsEnabled(true)} className="mt-4 bg-twitter-blue text-white font-bold py-2 px-4 rounded-full text-sm">Set up Subscriptions</button>
-                )}
-            </div>
-            <div className="bg-light-hover dark:bg-white/5 p-4 rounded-lg">
-                <h3 className="font-bold">Tips</h3>
-                <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mt-1">
-                    {tipsEnabled
-                        ? 'Your tips are enabled. Followers can now send you money directly.'
-                        : 'Allow your followers to show their support by sending you one-time tips.'
-                    }
-                </p>
-                 {tipsEnabled ? (
-                     <div className="mt-4">
-                        <p className="text-lg font-bold">Status: <span className="text-green-400">Active</span></p>
-                        <p className="text-sm">Total Tipped: $125.00</p>
-                         <button onClick={() => setTipsEnabled(false)} className="mt-2 bg-red-500/80 text-white font-bold py-2 px-4 rounded-full text-sm w-full">Disable Tips</button>
-                    </div>
-                 ) : (
-                    <button onClick={() => setTipsEnabled(true)} className="mt-4 bg-twitter-blue text-white font-bold py-2 px-4 rounded-full text-sm">Enable Tips</button>
-                 )}
-            </div>
-        </div>
-    </div>
-  );
-
-
   return (
     <div>
       <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-2 flex items-center gap-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
@@ -137,7 +92,10 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
         </div>
         <div className="mt-8">
           <h2 className="text-xl font-bold">{user.displayName}</h2>
-          <p className="text-twitter-gray">@{user.username}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-twitter-gray">@{user.username}</p>
+            {!isCurrentUserProfile && isFollowedBy && <span className="bg-light-hover dark:bg-white/10 text-xs px-2 py-0.5 rounded-md text-light-secondary-text dark:text-dim-secondary-text">Follows you</span>}
+          </div>
           <p className="my-2">{user.bio}</p>
           <div className="flex items-center text-twitter-gray text-sm gap-2">
             <CalendarIcon />
@@ -180,10 +138,17 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
             onVote={onVote}
             onQuote={onQuote}
             onEdit={onEdit}
+            liveReactions={[]}
           />
         ))}
-        {activeTab === 'Monetization' && renderMonetizationTab()}
-        {activeTab !== 'Posts' && activeTab !== 'Monetization' && (
+        {activeTab === 'Highlights' && (
+            <ProfileHighlights 
+                highlights={mockHighlights} 
+                isOwnProfile={isCurrentUserProfile}
+                onHighlightClick={(index) => onHighlightClick(mockHighlights, index)}
+            />
+        )}
+        {activeTab !== 'Posts' && activeTab !== 'Highlights' && (
             <div className="p-8 text-center text-twitter-gray">
                 Content for {activeTab} would be displayed here.
             </div>

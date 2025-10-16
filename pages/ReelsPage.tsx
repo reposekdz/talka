@@ -1,14 +1,19 @@
 import React, { useRef, useEffect } from 'react';
-import { mockReels } from '../data/mockData';
 import ReelCard from '../components/ReelCard';
 import { Reel, AppSettings } from '../types';
 
 interface ReelsPageProps {
+    reels: Reel[];
     onOpenComments: (reel: Reel) => void;
     settings: AppSettings;
+    onLikeReel: (reelId: string) => void;
+    onDislikeReel: (reelId: string) => void;
+    onBookmarkReel: (reelId: string) => void;
+    onShareReel: (reel: Reel) => void;
 }
 
-const ReelsPage: React.FC<ReelsPageProps> = ({ onOpenComments, settings }) => {
+const ReelsPage: React.FC<ReelsPageProps> = (props) => {
+    const { reels, onOpenComments, settings, onLikeReel, onDislikeReel, onBookmarkReel, onShareReel } = props;
     const containerRef = useRef<HTMLDivElement>(null);
     const autoplaySetting = settings.accessibilityDisplayAndLanguages.videoAutoplay;
 
@@ -40,22 +45,29 @@ const ReelsPage: React.FC<ReelsPageProps> = ({ onOpenComments, settings }) => {
             { threshold: 0.6 }
         );
 
-        const reels = containerRef.current?.querySelectorAll('.reel-card-container');
-        reels?.forEach((reel) => observer.observe(reel));
+        const reelElements = containerRef.current?.querySelectorAll('.reel-card-container');
+        reelElements?.forEach((reel) => observer.observe(reel));
 
         return () => {
-            reels?.forEach((reel) => observer.unobserve(reel));
+            reelElements?.forEach((reel) => observer.unobserve(reel));
         };
-    }, [autoplaySetting]);
+    }, [autoplaySetting, reels]);
 
     return (
         <div 
             ref={containerRef}
             className="h-full w-full snap-y snap-mandatory overflow-y-auto no-scrollbar"
         >
-            {mockReels.map(reel => (
+            {reels.map(reel => (
                 <div key={reel.id} className="reel-card-container snap-start h-full w-full flex items-center justify-center bg-black">
-                    <ReelCard reel={reel} onOpenComments={onOpenComments} />
+                    <ReelCard 
+                        reel={reel} 
+                        onOpenComments={onOpenComments}
+                        onLike={onLikeReel}
+                        onDislike={onDislikeReel}
+                        onBookmark={onBookmarkReel}
+                        onShare={onShareReel}
+                    />
                 </div>
             ))}
         </div>

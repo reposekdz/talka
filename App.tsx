@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -21,18 +22,22 @@ import ReplyModal from './components/ReplyModal';
 import FloatingChatManager from './components/FloatingChatManager';
 import Toast from './components/Toast';
 import StoryViewer from './components/StoryViewer';
-import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
 import ReelCommentsPanel from './components/ReelCommentsPanel';
 import VideoCallView from './components/VideoCallView';
 import InAppNotification from './components/InAppNotification';
 import EditTweetModal from './components/EditTweetModal';
 import QuoteTweetModal from './components/QuoteTweetModal';
-import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message } from './types';
-import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages } from './data/mockData';
+import SpacesPlayer from './components/SpacesPlayer';
+import AiAssistantModal from './components/AiAssistantModal';
+import IncomingCallModal from './components/IncomingCallModal';
+import AudioCallView from './components/AudioCallView';
+import ShareReelModal from './components/ShareReelModal';
+import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call } from './types';
+import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
 import { AnimatePresence } from 'framer-motion';
 
-type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' };
+type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string } | { type: 'reel-share', reelId: string };
 
 const initialSettings: AppSettings = {
   privacyAndSafety: {
@@ -55,6 +60,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>(Page.Home);
   const [theme, setTheme] = useState<Theme>('dark');
   const [tweets, setTweets] = useState<Tweet[]>(mockTweets);
+  const [reels, setReels] = useState<Reel[]>(mockReels);
   const [currentUser, setCurrentUser] = useState<User>(mockUser);
   const [otherUsers, setOtherUsers] = useState<User[]>(initialOtherUsers);
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
@@ -66,9 +72,10 @@ function App() {
   const [replyingToTweet, setReplyingToTweet] = useState<Tweet | null>(null);
   const [editingTweet, setEditingTweet] = useState<Tweet | null>(null);
   const [quotingTweet, setQuotingTweet] = useState<Tweet | null>(null);
-  const [storyViewerState, setStoryViewerState] = useState<{ stories: typeof userStories, index: number } | null>(null);
+  const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[] | Highlight[], initialIndex: number, isHighlight?: boolean } | null>(null);
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
-  const [videoCallUser, setVideoCallUser] = useState<User | null>(null);
+  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
+  const [sharingReel, setSharingReel] = useState<Reel | null>(null);
 
   // Profile/User List states
   const [profileUser, setProfileUser] = useState<User | null>(null);
@@ -83,11 +90,55 @@ function App() {
   const [toast, setToast] = useState<{ message: string; isVisible: boolean }>({ message: '', isVisible: false });
   const [inAppNotification, setInAppNotification] = useState<{ conversation: Conversation, message: Message } | null>(null);
 
+  // Live updates
+  const [newTweetsBuffer, setNewTweetsBuffer] = useState<Tweet[]>([]);
+  const [newTweetsCount, setNewTweetsCount] = useState(0);
+  const [liveReactions, setLiveReactions] = useState<{ tweetId: string, type: 'like' | 'retweet', id: number }[]>([]);
+
+  // Advanced Features
+  const [activeSpace, setActiveSpace] = useState<Space | null>(null);
+  const [activeCall, setActiveCall] = useState<Call | null>(null);
+
 
   useEffect(() => {
     document.documentElement.className = theme;
   }, [theme]);
   
+  // Simulate receiving new tweets, live reactions & incoming calls
+  useEffect(() => {
+    const tweetInterval = setInterval(() => {
+        const randomTweet = { ...baseTweets[Math.floor(Math.random() * baseTweets.length)] };
+        const newTweet: Tweet = {
+            ...randomTweet,
+            id: `t-live-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            user: otherUsers[Math.floor(Math.random() * otherUsers.length)]
+        };
+        setNewTweetsBuffer(prev => [newTweet, ...prev]);
+        setNewTweetsCount(prev => prev + 1);
+    }, 15000); // New tweet every 15 seconds
+    
+    const reactionInterval = setInterval(() => {
+        if (tweets.length === 0) return;
+        const randomTweetId = tweets[Math.floor(Math.random() * tweets.length)].id;
+        const reactionType = Math.random() > 0.5 ? 'like' : 'retweet';
+        setLiveReactions(prev => [...prev, { tweetId: randomTweetId, type: reactionType, id: Date.now() }]);
+        // Clean up old reactions
+        setTimeout(() => setLiveReactions(prev => prev.slice(1)), 2000);
+    }, 3000);
+
+    const callTimeout = setTimeout(() => {
+        const randomUser = otherUsers[Math.floor(Math.random() * otherUsers.length)];
+        setActiveCall({ user: randomUser, type: 'video', status: 'incoming' });
+    }, 25000); // Incoming call after 25 seconds
+
+    return () => {
+      clearInterval(tweetInterval);
+      clearInterval(reactionInterval);
+      clearTimeout(callTimeout);
+    }
+  }, [tweets]);
+
   const showToast = (message: string) => {
     setToast({ message, isVisible: true });
     setTimeout(() => setToast({ message: '', isVisible: false }), 3000);
@@ -105,7 +156,9 @@ function App() {
       replyCount: 0,
       retweetCount: 0,
       likeCount: 0,
+      shareCount: 0,
       viewCount: 0,
+      mediaUrls: tweetContent.mediaUrls,
       isVoiceTweet: tweetContent.isVoiceTweet,
       audioUrl: tweetContent.audioUrl,
       quotedTweet: tweetContent.quotedTweet,
@@ -113,6 +166,12 @@ function App() {
     setTweets(prev => [newTweet, ...prev]);
     setQuotingTweet(null);
   }, [currentUser]);
+
+  const handleShowNewTweets = () => {
+    setTweets(prev => [...newTweetsBuffer, ...prev]);
+    setNewTweetsBuffer([]);
+    setNewTweetsCount(0);
+  };
 
   const handleEditTweet = useCallback((tweetId: string, newContent: string) => {
     setTweets(prev => prev.map(t => 
@@ -134,6 +193,7 @@ function App() {
       replyCount: 0,
       retweetCount: 0,
       likeCount: 0,
+      shareCount: 0,
       viewCount: 0,
     };
     setTweets(prev => [newTweet, ...prev]);
@@ -142,7 +202,15 @@ function App() {
   }, [currentUser]);
 
   const handleToggleBookmark = useCallback((tweetId: string) => {
-    setTweets(prev => prev.map(t => t.id === tweetId ? { ...t, isBookmarked: !t.isBookmarked } : t));
+    let bookmarked = false;
+    setTweets(prev => prev.map(t => {
+        if (t.id === tweetId) {
+            bookmarked = !t.isBookmarked;
+            return { ...t, isBookmarked: bookmarked };
+        }
+        return t;
+    }));
+    showToast(bookmarked ? 'Added to your Bookmarks' : 'Removed from your Bookmarks');
   }, []);
 
   const handleVote = useCallback((tweetId: string, optionId: string) => {
@@ -191,14 +259,28 @@ function App() {
   };
 
   const handleOpenChat = (user: User) => {
-    const existingChat = openChats.find(c => c.participant.id === user.id);
-    if (existingChat) {
-       setOpenChats(prev => [...prev.filter(c => c.participant.id !== user.id), existingChat]);
-       setFocusedChatId(existingChat.id);
+    const existingChatIndex = openChats.findIndex(c => c.participant.id === user.id);
+  
+    if (existingChatIndex > -1) {
+      // If chat exists, move it to the end (top of the stack)
+      const existingChat = openChats[existingChatIndex];
+      const newChats = [...openChats];
+      newChats.splice(existingChatIndex, 1);
+      newChats.push(existingChat);
+      setOpenChats(newChats);
+      setFocusedChatId(existingChat.id);
     } else {
-      const chatData = mockConversations.find(c => c.participant.id === user.id);
-      if (!chatData) return;
-
+      // If new chat, find its data and add it
+      const chatData = mockConversations.find(c => c.participant.id === user.id) || 
+        // Create a new conversation if it doesn't exist in mock data
+        { 
+          id: `c-new-${user.id}`, 
+          participant: user, 
+          lastMessage: { id: 'm-start', senderId: '', type: 'text', text: 'Start of your conversation', timestamp: new Date().toISOString(), isRead: true}, 
+          unreadCount: 0,
+          chatTheme: 'default-blue'
+        };
+      
       const newChat: Conversation = { ...chatData };
       setOpenChats(prev => [...prev, newChat]);
       setFocusedChatId(newChat.id);
@@ -302,6 +384,97 @@ function App() {
       });
   };
 
+  const handleUpdateChatTheme = (conversationId: string, theme: ChatTheme) => {
+    setOpenChats(prev => prev.map(c => c.id === conversationId ? { ...c, chatTheme: theme } : c));
+  };
+
+  const handleJoinSpace = (space: Space) => setActiveSpace(space);
+  const handleLeaveSpace = () => setActiveSpace(null);
+  
+  const handleStoryClick = (stories: UserStory[] | Highlight[], index: number, isHighlight: boolean = false) => {
+      setStoryViewerState({ stories, initialIndex: index, isHighlight });
+  };
+  
+  const handleStartVideoCall = (user: User) => setActiveCall({ user, type: 'video', status: 'outgoing' });
+  const handleStartAudioCall = (user: User) => setActiveCall({ user, type: 'audio', status: 'outgoing' });
+  const handleEndCall = () => setActiveCall(null);
+  const handleAcceptCall = (call: Call) => setActiveCall({ ...call, status: 'active' });
+  const handleDeclineCall = () => setActiveCall(null);
+
+  // Reel Handlers
+  const handleLikeReel = (reelId: string) => {
+    setReels(prev => prev.map(r => {
+      if (r.id === reelId) {
+        const isLiked = !r.isLiked;
+        return { 
+          ...r, 
+          isLiked, 
+          likeCount: isLiked ? r.likeCount + 1 : r.likeCount - 1,
+          isDisliked: isLiked ? false : r.isDisliked, // remove dislike if liking
+        };
+      }
+      return r;
+    }));
+  };
+
+  const handleDislikeReel = (reelId: string) => {
+    setReels(prev => prev.map(r => {
+      if (r.id === reelId) {
+        const isDisliked = !r.isDisliked;
+        // If it was liked, unlike it
+        const wasLiked = r.isLiked;
+        return { 
+          ...r, 
+          isDisliked, 
+          isLiked: isDisliked ? false : r.isLiked,
+          likeCount: wasLiked && isDisliked ? r.likeCount - 1 : r.likeCount
+        };
+      }
+      return r;
+    }));
+  };
+
+  const handleBookmarkReel = (reelId: string) => {
+    setReels(prev => prev.map(r => r.id === reelId ? { ...r, isBookmarked: !r.isBookmarked } : r));
+    showToast('Reel saved!');
+  };
+
+  const handlePostReelComment = (reelId: string, text: string) => {
+    const newComment = {
+      id: `rc-new-${Date.now()}`,
+      user: currentUser,
+      text,
+      timestamp: 'Now',
+      likeCount: 0,
+      isLiked: false
+    };
+    setReels(prev => prev.map(r => {
+      if (r.id === reelId) {
+        const updatedReel = {
+          ...r,
+          comments: [newComment, ...r.comments],
+          commentCount: r.commentCount + 1
+        };
+        // Also update the viewingReelComments state if it's open
+        if (viewingReelComments?.id === reelId) {
+          setViewingReelComments(updatedReel);
+        }
+        return updatedReel;
+      }
+      return r;
+    }));
+  };
+
+  const handleShareReelAsMessage = (reelId: string, conversationId: string) => {
+    handleSendMessage(conversationId, { type: 'reel-share', reelId });
+    setSharingReel(null);
+    showToast('Reel sent!');
+    const targetUser = mockConversations.find(c => c.id === conversationId)?.participant;
+    if (targetUser) {
+        handleOpenChat(targetUser);
+    }
+  };
+
   const renderPage = () => {
     if (userListState && currentPage === Page.UserList) {
       return <UserListPage 
@@ -329,6 +502,7 @@ function App() {
         onVote={handleVote}
         onQuote={setQuotingTweet}
         onEdit={setEditingTweet}
+        onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
       />;
     }
 
@@ -342,15 +516,21 @@ function App() {
         onReply={setReplyingToTweet}
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
-        onStoryClick={(index) => setStoryViewerState({ stories: userStories, index })}
+        onStoryClick={(index) => handleStoryClick(userStories, index)}
         onQuote={setQuotingTweet}
         onEdit={setEditingTweet}
+        newTweetsCount={newTweetsCount}
+        onShowNewTweets={handleShowNewTweets}
+        onJoinSpace={handleJoinSpace}
+        liveReactions={liveReactions}
+        onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
       case Page.Messages: return <MessagesPage openChat={handleOpenChat} />;
       case Page.Bookmarks: return <BookmarksPage 
         tweets={tweets}
+        currentUser={currentUser}
         onImageClick={setLightboxImageUrl}
         onViewProfile={handleViewProfile}
         onReply={setReplyingToTweet}
@@ -358,9 +538,18 @@ function App() {
         onVote={handleVote}
         onQuote={setQuotingTweet}
         onEdit={setEditingTweet}
+        liveReactions={liveReactions}
       />;
       case Page.Communities: return <CommunitiesPage />;
-      case Page.Reels: return <ReelsPage onOpenComments={setViewingReelComments} settings={settings} />;
+      case Page.Reels: return <ReelsPage 
+        reels={reels}
+        onOpenComments={setViewingReelComments} 
+        settings={settings}
+        onLikeReel={handleLikeReel}
+        onDislikeReel={handleDislikeReel}
+        onBookmarkReel={handleBookmarkReel}
+        onShareReel={setSharingReel}
+        />;
       case Page.CreatorStudio: return <CreatorStudioPage />;
       case Page.Settings: return <SettingsPage settings={settings} onUpdateSettings={(newSettings) => setSettings(prev => ({...prev, ...newSettings}))} openDisplayModal={() => setIsDisplayModalOpen(true)} />;
       case Page.HelpCenter: return <HelpCenterPage />;
@@ -378,6 +567,7 @@ function App() {
         onVote={handleVote}
         onQuote={setQuotingTweet}
         onEdit={setEditingTweet}
+        onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
        />;
       default: return <HomePage 
         tweets={tweets} 
@@ -388,9 +578,14 @@ function App() {
         onReply={setReplyingToTweet}
         onToggleBookmark={handleToggleBookmark}
         onVote={handleVote}
-        onStoryClick={(index) => setStoryViewerState({ stories: userStories, index })}
+        onStoryClick={(index) => handleStoryClick(userStories, index)}
         onQuote={setQuotingTweet}
         onEdit={setEditingTweet}
+        newTweetsCount={newTweetsCount}
+        onShowNewTweets={handleShowNewTweets}
+        onJoinSpace={handleJoinSpace}
+        liveReactions={liveReactions}
+        onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
       />;
     }
   };
@@ -401,6 +596,7 @@ function App() {
   
   const mainContent = renderPage();
   const unreadMessages = mockConversations.reduce((sum, conv) => sum + conv.unreadCount, 0);
+  const unreadNotifications = mockNotifications.length;
 
   return (
     <div className={theme}>
@@ -408,20 +604,16 @@ function App() {
             <div className="container mx-auto flex justify-center max-w-[1280px]">
                 <Sidebar 
                     currentPage={currentPage} 
-                    setCurrentPage={setCurrentPage} 
+                    setCurrentPage={(p) => {
+                        if (p === Page.Profile) setProfileUser(currentUser);
+                        setCurrentPage(p);
+                    }}
                     onLogout={handleLogout} 
                     openDisplayModal={() => setIsDisplayModalOpen(true)}
                     activeChatCount={unreadMessages}
                 />
-                <main className="flex-1 min-w-0 border-x border-light-border dark:border-twitter-border dim:border-dim-border relative">
-                     <MobileHeader 
-                        currentPage={currentPage}
-                        currentUser={currentUser}
-                        onProfileClick={() => handleViewProfile(currentUser)}
-                    />
-                    <div className="sm:hidden h-14"></div> {/* Spacer for MobileHeader */}
+                <main className="flex-1 min-w-0 border-x border-light-border dark:border-twitter-border dim:border-dim-border relative h-screen overflow-y-auto no-scrollbar pb-16 sm:pb-0">
                     {mainContent}
-                    <div className="sm:hidden h-16"></div> {/* Spacer for BottomNav */}
                 </main>
                 <RightSidebar 
                     openSearchModal={() => setIsSearchModalOpen(true)} 
@@ -432,33 +624,54 @@ function App() {
                 />
 
                 {viewingReelComments && (
-                    <ReelCommentsPanel reel={viewingReelComments} onClose={() => setViewingReelComments(null)} />
+                    <ReelCommentsPanel 
+                        reel={viewingReelComments} 
+                        onClose={() => setViewingReelComments(null)}
+                        onPostComment={handlePostReelComment}
+                     />
                 )}
             </div>
 
             {/* Modals and Overlays */}
-            {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-            {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
-            {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
-            {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
-            {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={handleEditTweet} />}
-            {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={handlePostTweet} />}
-            {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.index} onClose={() => setStoryViewerState(null)} />}
-            {videoCallUser && <VideoCallView user={videoCallUser} onEndCall={() => setVideoCallUser(null)} />}
+            <AnimatePresence>
+                {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
+                {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
+                {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
+                {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
+                {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
+                {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={handleEditTweet} />}
+                {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={handlePostTweet} />}
+                {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.initialIndex} onClose={() => setStoryViewerState(null)} showToast={showToast} isHighlight={storyViewerState.isHighlight} />}
+                
+                {/* Call System */}
+                {activeCall?.status === 'incoming' && <IncomingCallModal call={activeCall} onAccept={() => handleAcceptCall(activeCall)} onDecline={handleDeclineCall} />}
+                {activeCall?.status === 'active' && activeCall.type === 'video' && <VideoCallView user={activeCall.user} status="active" onEndCall={handleEndCall} />}
+                {activeCall?.status === 'outgoing' && activeCall.type === 'video' && <VideoCallView user={activeCall.user} status="outgoing" onEndCall={handleEndCall} />}
+                {activeCall?.status === 'active' && activeCall.type === 'audio' && <AudioCallView user={activeCall.user} status="active" onEndCall={handleEndCall} />}
+                {activeCall?.status === 'outgoing' && activeCall.type === 'audio' && <AudioCallView user={activeCall.user} status="outgoing" onEndCall={handleEndCall} />}
+            </AnimatePresence>
 
 
             {/* Floating UI */}
             <FloatingChatManager 
                 chats={openChats}
                 allMessages={allMessages}
+                reels={reels}
                 onCloseChat={handleCloseChat}
                 onFocusChat={handleFocusChat}
                 onNavigateToMessages={handleNavigateToMessages}
                 onSendMessage={handleSendMessage}
                 onAddReaction={handleAddReaction}
                 onPinMessage={handlePinMessage}
-                onStartVideoCall={setVideoCallUser}
+                onStartVideoCall={handleStartVideoCall}
+                onStartAudioCall={handleStartAudioCall}
+                onUpdateChatTheme={handleUpdateChatTheme}
             />
+            
+            <AnimatePresence>
+                {activeSpace && <SpacesPlayer space={activeSpace} onClose={handleLeaveSpace} />}
+            </AnimatePresence>
 
             <AnimatePresence>
                 {inAppNotification && (
@@ -475,9 +688,13 @@ function App() {
             <Toast message={toast.message} isVisible={toast.isVisible} onClose={() => setToast(prev => ({...prev, isVisible: false}))} />
             <BottomNav 
                 currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
+                setCurrentPage={(p) => {
+                    if (p === Page.Profile) setProfileUser(currentUser);
+                    setCurrentPage(p);
+                }}
                 currentUser={currentUser}
                 activeChatCount={unreadMessages}
+                notificationCount={unreadNotifications}
             />
         </div>
     </div>

@@ -1,10 +1,11 @@
 import React from 'react';
 import TweetCard from '../components/TweetCard';
 import { Tweet, User } from '../types';
-import { mockUser } from '../data/mockData';
+import { BookmarkFillIcon } from '../components/Icon';
 
 interface BookmarksPageProps {
   tweets: Tweet[];
+  currentUser: User;
   onImageClick: (url: string) => void;
   onViewProfile: (user: User) => void;
   onReply: (tweet: Tweet) => void;
@@ -12,17 +13,18 @@ interface BookmarksPageProps {
   onVote: (tweetId: string, optionId: string) => void;
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
+  liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
 }
 
 const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
-  const { tweets, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit } = props;
+  const { tweets, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions } = props;
   const bookmarkedTweets = tweets.filter(t => t.isBookmarked);
 
   return (
     <div>
-      <div className="sticky top-0 bg-twitter-dark/80 backdrop-blur-md z-10 p-4 border-b border-twitter-border">
+      <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
         <h1 className="text-xl font-bold">Bookmarks</h1>
-        <p className="text-sm text-twitter-gray">@reactdev</p>
+        <p className="text-sm text-light-secondary-text dark:text-twitter-gray">@{currentUser.username}</p>
       </div>
       <div>
         {bookmarkedTweets.length > 0 ? (
@@ -30,7 +32,7 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
             <TweetCard 
               key={tweet.id} 
               tweet={tweet} 
-              currentUser={mockUser}
+              currentUser={currentUser}
               onImageClick={onImageClick}
               onViewProfile={onViewProfile}
               onReply={onReply}
@@ -38,10 +40,17 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
               onVote={onVote}
               onQuote={onQuote}
               onEdit={onEdit}
+              liveReactions={liveReactions}
             />
           ))
         ) : (
-          <p className="text-center p-8 text-twitter-gray">You haven't added any Tweets to your Bookmarks yet.</p>
+          <div className="text-center p-8 text-light-secondary-text dark:text-twitter-gray">
+              <div className="w-16 h-16 mx-auto mb-4 text-twitter-gray">
+                <BookmarkFillIcon/>
+              </div>
+              <h2 className="text-2xl font-bold text-light-text dark:text-white mb-2">Save Posts for later</h2>
+              <p>Don’t let the good ones fly away! Bookmark Posts to easily find them again in the future.</p>
+          </div>
         )}
       </div>
     </div>

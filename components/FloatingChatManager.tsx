@@ -1,14 +1,14 @@
-
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import FloatingChatWindow from './FloatingChatWindow';
-import { Conversation, Message, User } from '../types';
+import { Conversation, Message, User, ChatTheme, Reel } from '../types';
 
-type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' };
+type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string };
 
 interface FloatingChatManagerProps {
   chats: Conversation[];
   allMessages: Record<string, Message[]>;
+  reels: Reel[];
   onCloseChat: (conversationId: string) => void;
   onFocusChat: (user: User) => void;
   onNavigateToMessages: () => void;
@@ -16,10 +16,12 @@ interface FloatingChatManagerProps {
   onAddReaction: (conversationId: string, messageId: string, emoji: string) => void;
   onPinMessage: (conversationId: string, messageId: string) => void;
   onStartVideoCall: (user: User) => void;
+  onStartAudioCall: (user: User) => void;
+  onUpdateChatTheme: (conversationId: string, theme: ChatTheme) => void;
 }
 
 const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
-  const { chats, allMessages, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onAddReaction, onPinMessage, onStartVideoCall } = props;
+  const { chats, allMessages, reels, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
   const focusedIndex = chats.length - 1;
 
   return (
@@ -30,6 +32,7 @@ const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
             key={chat.id}
             conversation={chat}
             messages={allMessages[chat.id] || []}
+            reels={reels}
             onClose={() => onCloseChat(chat.id)}
             onFocus={() => onFocusChat(chat.participant)}
             onMaximize={onNavigateToMessages}
@@ -39,6 +42,8 @@ const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
             onAddReaction={onAddReaction}
             onPinMessage={onPinMessage}
             onStartVideoCall={onStartVideoCall}
+            onStartAudioCall={onStartAudioCall}
+            onUpdateChatTheme={onUpdateChatTheme}
           />
         ))}
       </AnimatePresence>

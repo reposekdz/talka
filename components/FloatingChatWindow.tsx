@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Conversation, Message, User } from '../types';
+import { Conversation, Message, User, ChatTheme, Reel } from '../types';
 import { mockUser } from '../data/mockData';
-import { CloseIcon, WaveIcon, VideoCallIcon, PinFillIcon } from './Icon';
+import { CloseIcon, WaveIcon, VideoCallIcon, PinFillIcon, MoreIcon, PhoneIcon } from './Icon';
 import AvatarWithStatus from './AvatarWithStatus';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
@@ -11,11 +11,14 @@ type MessageContent =
     | { type: 'text'; text: string }
     | { type: 'voice'; audioUrl: string; duration: number }
     | { type: 'gif'; gifUrl: string }
-    | { type: 'wave' };
+    | { type: 'wave' }
+    | { type: 'image'; imageUrl: string; text?: string }
+    | { type: 'reel-share', reelId: string };
 
 interface FloatingChatWindowProps {
   conversation: Conversation;
   messages: Message[];
+  reels: Reel[];
   onClose: () => void;
   onFocus: () => void;
   onMaximize: () => void;
@@ -25,12 +28,51 @@ interface FloatingChatWindowProps {
   onAddReaction: (conversationId: string, messageId: string, emoji: string) => void;
   onPinMessage: (conversationId: string, messageId: string) => void;
   onStartVideoCall: (user: User) => void;
+  onStartAudioCall: (user: User) => void;
+  onUpdateChatTheme: (conversationId: string, theme: ChatTheme) => void;
+}
+
+const themeOptions: { name: string, theme: ChatTheme, class: string }[] = [
+    { name: 'Default', theme: 'default-blue', class: 'bg-twitter-blue' },
+    { name: 'Sunset', theme: 'sunset-orange', class: 'bg-gradient-to-br from-orange-500 to-red-500' },
+    { name: 'Ocean', theme: 'ocean-green', class: 'bg-gradient-to-br from-green-400 to-teal-500' },
+    { name: 'Mint', theme: 'minty-fresh', class: 'bg-gradient-to-br from-emerald-400 to-lime-400' },
+]
+
+const ChatOptionsMenu: React.FC<{onSelectTheme: (theme: ChatTheme) => void; onClose: () => void;}> = ({ onSelectTheme, onClose }) => {
+    const menuRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [onClose]);
+
+    return (
+        <motion.div
+            ref={menuRef}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-12 right-2 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg p-2 rounded-lg shadow-lg border border-light-border dark:border-twitter-border z-20"
+        >
+            <p className="text-xs text-light-secondary-text dark:text-twitter-gray px-2 pb-1">Chat Theme</p>
+            <div className="flex gap-2">
+                {themeOptions.map(opt => (
+                    <button key={opt.theme} onClick={() => onSelectTheme(opt.theme)} className={`w-6 h-6 rounded-full ${opt.class}`}></button>
+                ))}
+            </div>
+        </motion.div>
+    )
 }
 
 const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
-  const { conversation, messages, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onAddReaction, onPinMessage, onStartVideoCall } = props;
+  const { conversation, messages, reels, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
   const [isMinimized, setIsMinimized] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const pinnedMessage = useMemo(() => messages.find(m => m.isPinned), [messages]);
@@ -62,6 +104,10 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
         <motion.div 
             className="pointer-events-auto fixed group"
             style={{ zIndex: isFocused ? 110 : 100, right: positionRight + 16, bottom: 4 }}
+            drag
+            dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 256, bottom: window.innerHeight - 80 }}
+            dragMomentum={false}
+            onDragStart={onFocus}
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1, x: 0 }}
             exit={{ y: 100, opacity: 0, scale: 0.8 }}
@@ -90,6 +136,10 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
 
   return (
     <motion.div
+      drag
+      dragListener={false}
+      dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 320, bottom: window.innerHeight - 450 }}
+      dragMomentum={false}
       onDragStart={onFocus}
       className="w-80 h-[450px] bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-t-lg shadow-2xl flex flex-col pointer-events-auto"
       style={{ zIndex: isFocused ? 110 : 100, right: positionRight, bottom: 0, position: 'fixed' }}
@@ -98,7 +148,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
       exit={{ y: "100%", opacity: 0.8 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
     >
-      <header onDoubleClick={() => setIsMinimized(true)} onClick={onFocus} className="p-2 flex items-center justify-between border-b border-light-border dark:border-twitter-border dim:border-dim-border cursor-pointer">
+      <motion.header onPointerDown={(e) => { e.currentTarget.style.cursor = 'grabbing'; (e.currentTarget.parentElement as HTMLDivElement).setAttribute('drag', 'true')}} onPointerUp={(e) => e.currentTarget.style.cursor = 'pointer'} onDoubleClick={() => setIsMinimized(true)} onClick={onFocus} className="p-2 flex items-center justify-between border-b border-light-border dark:border-twitter-border dim:border-dim-border cursor-pointer relative">
         <div className="flex items-center gap-2">
           <AvatarWithStatus user={conversation.participant} size="small" />
           <div className="flex flex-col">
@@ -107,11 +157,12 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
           </div>
         </div>
         <div className="flex items-center">
-          <button onClick={() => handleSendMessage({type: 'wave'})} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><WaveIcon /></button>
+          <button onClick={() => onStartAudioCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><PhoneIcon /></button>
           <button onClick={() => onStartVideoCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><VideoCallIcon /></button>
-          <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full text-lg font-bold">⎯</button>
+          <button onClick={() => setIsOptionsOpen(prev => !prev)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon /></button>
           <button onClick={onClose} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
         </div>
+        {isOptionsOpen && <ChatOptionsMenu onClose={() => setIsOptionsOpen(false)} onSelectTheme={(theme) => onUpdateChatTheme(conversation.id, theme)} />}
       </header>
       
       <div className="flex-1 p-2 space-y-2 overflow-y-auto relative">
@@ -134,10 +185,12 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
           <MessageBubble 
             key={msg.id} 
             message={msg} 
+            reels={reels}
             isOwnMessage={msg.senderId === mockUser.id} 
             onReply={setReplyingTo} 
             onAddReaction={handleAddReaction} 
             onPinMessage={(messageId) => onPinMessage(conversation.id, messageId)}
+            chatTheme={conversation.chatTheme || 'default-blue'}
           />
         ))}
         <div ref={messagesEndRef} />

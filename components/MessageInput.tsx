@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../types';
-import { PhotoIcon, GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, ChevronLeftIcon } from './Icon';
+import { PhotoIcon, GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, ChevronLeftIcon, PaperclipIcon, CloseIcon, WaveIcon } from './Icon';
 import EmojiPicker from './EmojiPicker';
 import GifPickerModal from './GifPickerModal';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -9,7 +9,9 @@ type MessageContent =
     | { type: 'text'; text: string }
     | { type: 'voice'; audioUrl: string; duration: number }
     | { type: 'gif'; gifUrl: string }
-    | { type: 'wave' };
+    | { type: 'wave' }
+    | { type: 'image'; imageUrl: string };
+
 
 interface MessageInputProps {
   onSendMessage: (content: MessageContent, replyTo?: Message) => void;
@@ -22,6 +24,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [slidePosition, setSlidePosition] = useState(0);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isGifModalOpen, setIsGifModalOpen] = useState(false);
@@ -29,11 +32,25 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingIntervalRef = useRef<number | null>(null);
   const micButtonRef = useRef<HTMLButtonElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Refs to hold the latest values to avoid stale closures in event handlers
+  const slidePositionRef = useRef(0);
+  const recordingTimeRef = useRef(0);
+  
+  useEffect(() => {
+      recordingTimeRef.current = recordingTime;
+  }, [recordingTime]);
 
   const handleSendMessage = () => {
-    if (inputText.trim()) {
-      onSendMessage({ type: 'text', text: inputText.trim() }, replyingTo || undefined);
+    if (inputText.trim() || imagePreview) {
+      if (imagePreview) {
+        onSendMessage({ type: 'image', imageUrl: imagePreview, text: inputText.trim() }, replyingTo || undefined);
+      } else if (inputText.trim()) {
+        onSendMessage({ type: 'text', text: inputText.trim() }, replyingTo || undefined);
+      }
       setInputText('');
+      setImagePreview(null);
       onCancelReply();
     }
   };
@@ -44,18 +61,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     onCancelReply();
   };
   
-  const cancelRecording = () => {
-    if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-        mediaRecorderRef.current.stop();
-        mediaRecorderRef.current = null;
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-    if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
-    setIsRecording(false);
-    setRecordingTime(0);
-    setSlidePosition(0);
   };
-
+  
   const startRecording = async (event: React.MouseEvent | React.TouchEvent) => {
     event.preventDefault();
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -74,17 +90,21 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       recorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
-        if (slidePosition < -50) { // Cancelled
+
+        if (slidePositionRef.current < -80) { // Canceled
              URL.revokeObjectURL(audioUrl);
         } else {
-            onSendMessage({ type: 'voice', audioUrl: audioUrl, duration: recordingTime }, replyingTo || undefined);
+            onSendMessage({ type: 'voice', audioUrl: audioUrl, duration: recordingTimeRef.current }, replyingTo || undefined);
             onCancelReply();
         }
         stream.getTracks().forEach(track => track.stop());
         if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
+        
         setIsRecording(false);
         setRecordingTime(0);
         setSlidePosition(0);
+        slidePositionRef.current = 0;
+        recordingTimeRef.current = 0;
       };
 
       recorder.start();
@@ -104,11 +124,12 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
 
   useEffect(() => {
     const handleMouseUp = () => stopRecording();
+    const handleTouchEnd = () => stopRecording();
     window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchend', handleMouseUp);
+    window.addEventListener('touchend', handleTouchEnd);
     return () => {
         window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('touchend', handleMouseUp);
+        window.removeEventListener('touchend', handleTouchEnd);
     }
   }, [isRecording]);
 
@@ -116,7 +137,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     if (isRecording && micButtonRef.current) {
         const rect = micButtonRef.current.getBoundingClientRect();
         const newSlidePosition = clientX - (rect.left + rect.width / 2);
-        setSlidePosition(Math.min(0, newSlidePosition));
+        const cappedSlidePosition = Math.min(0, newSlidePosition);
+        setSlidePosition(cappedSlidePosition);
+        slidePositionRef.current = cappedSlidePosition;
     }
   };
 
@@ -140,8 +163,12 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const cancelThreshold = -80;
+  const isCancelZone = slidePosition < cancelThreshold;
+
   return (
     <div className="p-2 border-t border-light-border dark:border-twitter-border dim:border-dim-border relative">
+      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
       <AnimatePresence>
         {replyingTo && (
             <motion.div
@@ -161,37 +188,70 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       </AnimatePresence>
      
       <div className="flex items-center min-h-[44px]">
-        {isRecording ? (
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="w-full flex items-center justify-between px-4">
-                <div className="flex items-center gap-2 text-red-500">
-                    <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="font-mono">{formatTime(recordingTime)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-light-secondary-text dark:text-twitter-gray">
-                    <ChevronLeftIcon />
-                    <span>Slide to cancel</span>
-                </div>
-            </motion.div>
-        ) : (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1 mx-2">
-                <div className="flex gap-1 text-twitter-blue">
-                    <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><PhotoIcon /></button>
-                    <button onClick={() => setIsGifModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
-                    <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
-                </div>
-                <input
-                    type="text"
-                    placeholder="Start a new message"
-                    className="bg-transparent w-full focus:outline-none text-light-text dark:text-white dim:text-dim-text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                />
-            </motion.div>
-        )}
+        <AnimatePresence mode="wait">
+            {isRecording ? (
+                <motion.div 
+                    key="recording-ui"
+                    initial={{ opacity: 0, scale: 0.8 }} 
+                    animate={{ opacity: 1, scale: 1 }} 
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="w-full flex items-center justify-between px-4 overflow-hidden relative"
+                >
+                    <div className="flex items-center gap-2 text-red-500">
+                        <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="font-mono">{formatTime(recordingTime)}</span>
+                    </div>
+                    <motion.div 
+                        className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-light-secondary-text dark:text-twitter-gray"
+                        animate={{ opacity: isCancelZone ? 0 : 1, x: isCancelZone ? -20 : 0 }}
+                    >
+                        <ChevronLeftIcon />
+                        <span>Slide to cancel</span>
+                    </motion.div>
+                     <motion.div 
+                        className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-red-500"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: isCancelZone ? 1 : 0, x: isCancelZone ? 0 : 20 }}
+                    >
+                        <TrashIcon />
+                        <span>Release to cancel</span>
+                    </motion.div>
+                </motion.div>
+            ) : (
+                <motion.div 
+                    key="text-input-ui"
+                    initial={{ opacity: 0, scale: 0.8 }} 
+                    animate={{ opacity: 1, scale: 1 }} 
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex-1 flex flex-col gap-2 mx-2">
+                    {imagePreview && (
+                        <div className="relative w-24 h-24 ml-2 mt-1">
+                            <img src={imagePreview} alt="preview" className="w-full h-full object-cover rounded-lg"/>
+                            <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 bg-black/60 text-white rounded-full p-0.5"><CloseIcon/></button>
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1">
+                      <div className="flex gap-1 text-twitter-blue">
+                          <button onClick={() => fileInputRef.current?.click()} className="p-2 hover:bg-twitter-blue/10 rounded-full"><PaperclipIcon /></button>
+                          <button onClick={() => setIsGifModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
+                          <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
+                          <button onClick={() => onSendMessage({type: 'wave'})} className="p-2 hover:bg-twitter-blue/10 rounded-full"><WaveIcon/></button>
+                      </div>
+                      <input
+                          type="text"
+                          placeholder="Start a new message"
+                          className="bg-transparent w-full focus:outline-none text-light-text dark:text-white dim:text-dim-text"
+                          value={inputText}
+                          onChange={(e) => setInputText(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                      />
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
         
         <div className="px-2">
-            {inputText && !isRecording ? (
+            {(inputText || imagePreview) && !isRecording ? (
                 <button onClick={handleSendMessage} className="p-2 text-twitter-blue"><SendIcon /></button>
             ) : (
                 <motion.button 
@@ -199,7 +259,10 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
                     onMouseDown={startRecording}
                     onTouchStart={startRecording}
                     className="p-2 text-twitter-blue relative"
-                    animate={{ scale: isRecording ? 1.2 : 1, x: slidePosition }}
+                    animate={{ 
+                        scale: isRecording ? 1.2 : 1, 
+                        x: slidePosition 
+                    }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 >
                     <MicrophoneIcon />
@@ -223,7 +286,6 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
           />
         )}
       </AnimatePresence>
-
     </div>
   );
 };

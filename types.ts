@@ -4,13 +4,14 @@ export enum Page {
   Notifications = 'Notifications',
   Messages = 'Messages',
   Bookmarks = 'Bookmarks',
-  Communities = 'Communities',
   Profile = 'Profile',
-  UserList = 'UserList',
+  LoginPage = 'LoginPage',
+  Communities = 'Communities',
   Reels = 'Reels',
   CreatorStudio = 'CreatorStudio',
   Settings = 'Settings',
   HelpCenter = 'HelpCenter',
+  UserList = 'UserList',
 }
 
 export type Theme = 'light' | 'dark' | 'dim';
@@ -68,6 +69,7 @@ export interface Tweet {
   replyCount: number;
   retweetCount: number;
   likeCount: number;
+  shareCount: number;
   viewCount: number;
   isBookmarked?: boolean;
   pinned?: boolean;
@@ -89,19 +91,23 @@ export interface Notification {
 }
 
 export interface Message {
-  id: string;
+  id:string;
   senderId: string;
-  type: 'text' | 'voice' | 'gif' | 'wave';
+  type: 'text' | 'voice' | 'gif' | 'wave' | 'image' | 'reel-share';
   text?: string;
   audioUrl?: string;
   duration?: number;
   gifUrl?: string;
+  imageUrl?: string;
   timestamp: string;
   isRead: boolean;
   replyTo?: Message;
   reactions?: { emoji: string; users: string[] }[];
   isPinned?: boolean;
+  reelId?: string;
 }
+
+export type ChatTheme = 'default-blue' | 'sunset-orange' | 'ocean-green' | 'minty-fresh';
 
 export interface Conversation {
   id: string;
@@ -109,6 +115,7 @@ export interface Conversation {
   lastMessage: Message;
   unreadCount: number;
   isTyping?: boolean;
+  chatTheme?: ChatTheme;
 }
 
 export interface Community {
@@ -127,6 +134,13 @@ export interface Story {
   timestamp: string;
 }
 
+export interface Highlight {
+  id: string;
+  title: string;
+  coverUrl: string;
+  stories: Story[];
+}
+
 export interface UserStory {
   user: User;
   hasUnseen: boolean;
@@ -134,7 +148,7 @@ export interface UserStory {
 }
 
 export interface ReelComment {
-  id: string;
+  id:string;
   user: User;
   text: string;
   timestamp: string;
@@ -153,5 +167,21 @@ export interface Reel {
   shareCount: number;
   isLiked: boolean;
   isDisliked: boolean;
+  isBookmarked?: boolean;
   comments: ReelComment[];
+}
+
+export interface Space {
+  id: string;
+  title: string;
+  host: User;
+  speakers: User[];
+  listenerCount: number;
+  color: string;
+}
+
+export interface Call {
+  user: User;
+  type: 'video' | 'audio';
+  status: 'outgoing' | 'incoming' | 'active';
 }
