@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
@@ -6,8 +5,7 @@ import StoryReel from '../components/StoryReel';
 import LiveCard from '../components/LiveCard';
 import TweetSkeleton from '../components/TweetSkeleton';
 import SpacesCard from '../components/SpacesCard';
-import { Tweet, User, Space, Page } from '../types';
-import { userStories } from '../data/mockData';
+import { Tweet, User, Space, Page, UserStory } from '../types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ProtoIcon, NotificationsIcon, MoreIcon } from '../components/Icon';
 import Avatar from '../components/Avatar';
@@ -15,6 +13,7 @@ import Avatar from '../components/Avatar';
 interface HomePageProps {
   tweets: Tweet[];
   currentUser: User;
+  userStories: UserStory[];
   onPostTweet: (tweet: Partial<Tweet>) => void;
   onImageClick: (url: string) => void;
   onViewProfile: (user: User) => void;
@@ -32,6 +31,7 @@ interface HomePageProps {
   notificationCount: number;
   setCurrentPage: (page: Page) => void;
   onOpenTopRightMenu: () => void;
+  onOpenCreator: (mode: 'select' | 'story' | 'reel' | 'post') => void;
 }
 
 const TabButton: React.FC<{
@@ -48,7 +48,7 @@ const TabButton: React.FC<{
 );
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer, notificationCount, setCurrentPage, onOpenTopRightMenu } = props;
+  const { tweets, currentUser, userStories, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer, notificationCount, setCurrentPage, onOpenTopRightMenu, onOpenCreator } = props;
   const [activeTab, setActiveTab] = useState<'For You' | 'Following'>('For You');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -104,14 +104,11 @@ const HomePage: React.FC<HomePageProps> = (props) => {
 
        <AnimatePresence>
         {newTweetsCount > 0 && (
-            // FIX: Wrapped framer-motion props to bypass type errors.
             <motion.div
                 className="sticky top-[113px] sm:top-16 flex justify-center z-10"
-                {...{
-                    initial: { opacity: 0, y: -40 },
-                    animate: { opacity: 1, y: 0 },
-                    exit: { opacity: 0, y: -40 },
-                }}
+                initial={{ opacity: 0, y: -40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -40 }}
             >
                 <button 
                     onClick={onShowNewTweets}
@@ -128,7 +125,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         <Composer onPostTweet={onPostTweet} />
       </div>
       
-      <StoryReel userStories={userStories} onStoryClick={onStoryClick} />
+      <StoryReel userStories={userStories} onStoryClick={onStoryClick} onOpenCreator={() => onOpenCreator('story')} />
 
       <SpacesCard onJoinSpace={onJoinSpace} />
 

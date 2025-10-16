@@ -129,12 +129,21 @@ export interface Community {
   memberIds: string[];
   tags: string[];
 }
+export interface TextOverlay {
+  text: string;
+  color: string;
+  style: 'classic' | 'neon';
+  position: { x: number; y: number };
+}
+
 
 export interface Story {
   id: string;
   mediaUrl: string;
+  type: 'image' | 'video';
   duration: number;
   timestamp: string;
+  textOverlays?: TextOverlay[];
 }
 
 export interface Highlight {

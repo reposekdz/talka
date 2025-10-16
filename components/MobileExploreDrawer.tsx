@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CloseIcon, SearchIcon } from './Icon';
@@ -11,14 +10,11 @@ interface MobileExploreDrawerProps {
 
 const MobileExploreDrawer: React.FC<MobileExploreDrawerProps> = ({ onClose }) => {
   return (
-    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      {...{
-        initial: { y: '100%' },
-        animate: { y: 0 },
-        exit: { y: '100%' },
-        transition: { type: 'spring', stiffness: 300, damping: 30 },
-      }}
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="fixed inset-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg z-50 flex flex-col"
     >
       <div className="p-2 flex items-center gap-2 border-b border-light-border dark:border-twitter-border dim:border-dim-border">

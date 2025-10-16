@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Conversation, Message } from '../types';
@@ -18,15 +17,12 @@ const InAppNotification: React.FC<InAppNotificationProps> = ({ notification, onC
   const { conversation, message } = notification;
 
   return (
-    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      {...{
-        layout: true,
-        initial: { opacity: 0, y: 50, scale: 0.8 },
-        animate: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 0, x: 50, scale: 0.8 },
-        transition: { type: 'spring', stiffness: 400, damping: 35 },
-      }}
+      layout
+      initial={{ opacity: 0, y: 50, scale: 0.8 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 50, scale: 0.8 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
       onClick={onClick}
       className="fixed bottom-20 right-4 sm:right-8 md:right-16 z-50 w-80 bg-light-bg dark:bg-twitter-light-dark dim:bg-dim-bg rounded-2xl shadow-2xl cursor-pointer border border-light-border dark:border-twitter-border dim:border-dim-border"
     >

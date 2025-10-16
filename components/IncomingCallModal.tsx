@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Call } from '../types';
@@ -13,14 +12,11 @@ interface IncomingCallModalProps {
 
 const IncomingCallModal: React.FC<IncomingCallModalProps> = ({ call, onAccept, onDecline, onReplyWithMessage }) => {
   return (
-    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      {...{
-        initial: { opacity: 0, scale: 0.95 },
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.9 },
-        transition: { type: 'spring', stiffness: 400, damping: 30 },
-      }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       className="fixed inset-0 sm:inset-auto sm:bottom-8 sm:left-1/2 sm:-translate-x-1/2 z-50 flex items-center sm:items-end justify-center"
     >
       {/* Full-screen blurred background for mobile */}
@@ -61,14 +57,11 @@ const IncomingCallModal: React.FC<IncomingCallModalProps> = ({ call, onAccept, o
                 <span className="text-sm">Message</span>
             </div>
              <div className="flex flex-col items-center gap-2">
-                {/* FIX: Wrapped framer-motion props to bypass type errors. */}
                 <motion.button 
                     onClick={onAccept}
                     className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center transform hover:scale-105 transition-transform"
-                    {...{
-                        animate: { scale: [1, 1.05, 1] },
-                        transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
-                    }}
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                 >
                     {call.type === 'video' ? <VideoCallIcon /> : <PhoneIcon />}
                 </motion.button>

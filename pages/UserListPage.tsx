@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { User } from '../types';
 import WhoToFollow from '../components/WhoToFollow';
@@ -41,8 +40,7 @@ const UserListPage: React.FC<UserListPageProps> = ({ user, listType, allUsers, c
                             <span className={activeTab === tabId ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
                                 {tabName}
                             </span>
-                            {/* FIX: Wrapped framer-motion props to bypass type errors. */}
-                            {activeTab === tabId && <motion.div {...{layoutId:"userListTabIndicator"}} className="absolute bottom-0 left-0 w-full h-1 bg-twitter-blue rounded-full" />}
+                            {activeTab === tabId && <motion.div layoutId="userListTabIndicator" className="absolute bottom-0 left-0 w-full h-1 bg-twitter-blue rounded-full" />}
                         </div>
                     )
                 })}

@@ -9,7 +9,7 @@ interface BottomNavProps {
   currentUser: User;
   activeChatCount: number;
   notificationCount: number;
-  onOpenCreator: () => void;
+  onOpenCreator: (mode?: 'select' | 'story' | 'reel' | 'post') => void;
 }
 
 const NavItem: React.FC<{
@@ -55,7 +55,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, acti
             <NavItem page={navItems[4].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[4].icon} />
         </nav>
         <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2">
-            <button onClick={onOpenCreator} className="w-16 h-16 bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 active:scale-95 transition-transform">
+            <button onClick={() => onOpenCreator('select')} className="w-16 h-16 bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 active:scale-95 transition-transform">
                <CreateIcon />
             </button>
         </div>

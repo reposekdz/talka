@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Highlight } from '../types';
 import { motion } from 'framer-motion';
@@ -27,12 +26,11 @@ const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwn
             </div>
         )}
         {highlights.map((highlight, index) => (
-          // FIX: Wrapped framer-motion props to bypass type errors.
           <motion.div 
             key={highlight.id} 
             className="flex flex-col items-center flex-shrink-0 w-20 cursor-pointer"
             onClick={() => onHighlightClick(index)}
-            {...{whileTap:{ scale: 0.95 }}}
+            whileTap={{ scale: 0.95 }}
           >
             <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-light-border dark:ring-twitter-border ring-offset-2 ring-offset-light-bg dark:ring-offset-twitter-dark">
                 <img src={highlight.coverUrl} alt={highlight.title} className="w-full h-full object-cover"/>

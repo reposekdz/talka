@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
@@ -63,14 +62,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center"
       onClick={onClose}
     >
-      {/* FIX: Wrapped framer-motion props to bypass type errors. */}
       <motion.div
-        {...{
-            initial: { y: -50, opacity: 0 },
-            animate: { y: 0, opacity: 1 },
-            exit: { y: -50, opacity: 0 },
-            transition: { type: 'spring', stiffness: 400, damping: 40 },
-        }}
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -50, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 40 }}
         className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full h-full sm:max-w-[600px] sm:h-[90vh] sm:mt-4 sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
@@ -101,8 +97,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
               <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
                 {tab}
               </span>
-              {/* FIX: Wrapped framer-motion props to bypass type errors. */}
-              {activeTab === tab && <motion.div {...{layoutId:"searchTabIndicator"}} className="absolute bottom-0 left-0 right-0 h-1 bg-twitter-blue rounded-full"></motion.div>}
+              {activeTab === tab && <motion.div layoutId="searchTabIndicator" className="absolute bottom-0 left-0 right-0 h-1 bg-twitter-blue rounded-full"></motion.div>}
             </div>
           ))}
         </div>
@@ -110,15 +105,13 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence>
             {searchTerm.trim() === '' ? (
-              // FIX: Wrapped framer-motion props to bypass type errors.
-              <motion.div {...{initial:{opacity: 0}, animate:{opacity: 1}}} className="text-center p-16 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+              <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="text-center p-16 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
                 <h2 className="text-xl font-bold mb-2">Try searching for people or keywords</h2>
                 <p>Find what's happening on Proto-Twitter.</p>
               </motion.div>
             ) : results.length > 0 ? (
               results.map(item => {
                 if ('content' in item) { 
-                  // FIX: Added missing props to TweetCard to satisfy its type definition.
                   return <TweetCard 
                     key={`tweet-${item.id}`} 
                     tweet={item} 
@@ -138,8 +131,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
                 }
               })
             ) : (
-              // FIX: Wrapped framer-motion props to bypass type errors.
-              <motion.div {...{initial:{opacity: 0}, animate:{opacity: 1}}} className="text-center p-16 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+              <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="text-center p-16 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
                 <h2 className="text-xl font-bold mb-2">No results for "{searchTerm}"</h2>
                 <p>The term you entered did not bring up any results. You may have mistyped your term.</p>
               </motion.div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { otherUsers } from '../data/mockData';
@@ -16,14 +15,11 @@ const ReelComments: React.FC<ReelCommentsProps> = ({ onClose }) => {
         { user: otherUsers[2], text: 'Wow! 🚀', timestamp: '30m' },
     ];
   return (
-    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-        {...{
-            initial: { y: "100%" },
-            animate: { y: 0 },
-            exit: { y: "100%" },
-            transition: { type: "spring", stiffness: 400, damping: 40 },
-        }}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", stiffness: 400, damping: 40 }}
         className="absolute inset-0 bg-white dark:bg-twitter-dark z-20 flex flex-col"
     >
         <div className="p-4 border-b border-light-border dark:border-twitter-border flex justify-between items-center">

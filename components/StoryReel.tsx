@@ -6,11 +6,12 @@ import { PlusIcon } from './Icon';
 interface StoryReelProps {
   userStories: UserStory[];
   onStoryClick: (userIndex: number) => void;
+  onOpenCreator: () => void;
 }
 
-const CreateStoryCard: React.FC<{ user: User }> = ({ user }) => (
+const CreateStoryCard: React.FC<{ user: User, onOpenCreator: () => void }> = ({ user, onOpenCreator }) => (
     <div className="flex-shrink-0 w-28 h-48 flex flex-col items-center justify-center">
-        <div className="relative w-24 h-24 cursor-pointer group" onClick={() => { /* Placeholder for create story action */ }}>
+        <div className="relative w-24 h-24 cursor-pointer group" onClick={onOpenCreator}>
             <img 
                 src={user.avatarUrl} 
                 alt="Your Story"
@@ -25,11 +26,11 @@ const CreateStoryCard: React.FC<{ user: User }> = ({ user }) => (
 );
 
 
-const StoryReel: React.FC<StoryReelProps> = ({ userStories, onStoryClick }) => {
+const StoryReel: React.FC<StoryReelProps> = ({ userStories, onStoryClick, onOpenCreator }) => {
   return (
     <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
       <div className="flex space-x-3 overflow-x-auto pb-2 -mb-2 no-scrollbar">
-        <CreateStoryCard user={mockUser} />
+        <CreateStoryCard user={mockUser} onOpenCreator={onOpenCreator} />
         {userStories.map((userStory, index) => (
           <div
             key={userStory.user.id}

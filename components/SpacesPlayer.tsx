@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Space } from '../types';
@@ -17,14 +16,11 @@ const SpacesPlayer: React.FC<SpacesPlayerProps> = ({ space, onClose }) => {
 
     if (!isExpanded) {
         return (
-            // FIX: Wrapped framer-motion props to bypass type errors.
             <motion.div
-                {...{
-                    layoutId: `space-player-${space.id}`,
-                    initial: { opacity: 0, y: 50 },
-                    animate: { opacity: 1, y: 0 },
-                    exit: { opacity: 0, y: 50 },
-                }}
+                layoutId={`space-player-${space.id}`}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 50 }}
                 onClick={() => setIsExpanded(true)}
                 className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-16 z-40 p-3 rounded-2xl cursor-pointer ${space.color} text-white shadow-lg`}
             >
@@ -41,14 +37,11 @@ const SpacesPlayer: React.FC<SpacesPlayerProps> = ({ space, onClose }) => {
     }
 
     return (
-        // FIX: Wrapped framer-motion props to bypass type errors.
         <motion.div
-            {...{
-                layoutId: `space-player-${space.id}`,
-                initial: { opacity: 0, y: "100%" },
-                animate: { opacity: 1, y: 0 },
-                exit: { opacity: 0, y: "100%" },
-            }}
+            layoutId={`space-player-${space.id}`}
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
             className={`fixed bottom-0 sm:bottom-4 right-0 sm:right-4 z-40 w-full sm:w-96 h-full sm:h-[600px] rounded-t-2xl sm:rounded-2xl ${space.color} text-white shadow-2xl flex flex-col`}
         >
             <div className="p-4 flex justify-between items-center">

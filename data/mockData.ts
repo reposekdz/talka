@@ -1,3 +1,4 @@
+
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
 
 export const mockUser: User = {
@@ -296,39 +297,40 @@ export const mockCommunities: Community[] = [
     },
 ];
 
-export const userStories: UserStory[] = [
+export const initialUserStories: UserStory[] = [
     {
         user: mockUser, hasUnseen: true, stories: [
-            { id: 's1', mediaUrl: 'https://picsum.photos/seed/s1/400/700', duration: 5, timestamp: '2024-07-22T10:00:00Z' },
-            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', duration: 5, timestamp: '2024-07-22T11:00:00Z' }
+            { id: 's1', mediaUrl: 'https://picsum.photos/seed/s1/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T10:00:00Z' },
+            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T11:00:00Z' }
         ]
     },
     {
         user: otherUsers[0], hasUnseen: true, stories: [
-            { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, duration: 7, timestamp: '2024-07-24T12:00:00Z' },
-            { id: 's-u2-2', mediaUrl: `https://picsum.photos/seed/s-u2-2/400/700`, duration: 5, timestamp: '2024-07-24T13:00:00Z' }
+            { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z' },
+            { id: 's-u2-2', mediaUrl: `https://picsum.photos/seed/s-u2-2/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T13:00:00Z' }
         ]
     },
      {
         user: otherUsers[1], hasUnseen: false, stories: [ // Seen story
-            { id: 's-u3-1', mediaUrl: `https://picsum.photos/seed/s-u3-1/400/700`, duration: 6, timestamp: '2024-07-23T09:00:00Z' }
+            { id: 's-u3-1', mediaUrl: `https://picsum.photos/seed/s-u3-1/400/700`, type: 'image', duration: 6, timestamp: '2024-07-23T09:00:00Z' }
         ]
     },
     {
         user: otherUsers[2], hasUnseen: true, stories: [
-            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, duration: 5, timestamp: '2024-07-24T15:00:00Z' }
+            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T15:00:00Z' }
         ]
     },
     {
         user: otherUsers[3], hasUnseen: true, stories: [
-            { id: 's-u5-1', mediaUrl: `https://picsum.photos/seed/s-u5-1/400/700`, duration: 8, timestamp: '2024-07-24T11:00:00Z' },
-            { id: 's-u5-2', mediaUrl: `https://picsum.photos/seed/s-u5-2/400/700`, duration: 4, timestamp: '2024-07-24T11:30:00Z' },
-            { id: 's-u5-3', mediaUrl: `https://picsum.photos/seed/s-u5-3/400/700`, duration: 6, timestamp: '2024-07-24T12:30:00Z' }
+            { id: 's-u5-1', mediaUrl: `https://picsum.photos/seed/s-u5-1/400/700`, type: 'image', duration: 8, timestamp: '2024-07-24T11:00:00Z' },
+            { id: 's-u5-2', mediaUrl: `https://picsum.photos/seed/s-u5-2/400/700`, type: 'image', duration: 4, timestamp: '2024-07-24T11:30:00Z' },
+            { id: 's-u5-3', mediaUrl: `https://picsum.photos/seed/s-u5-3/400/700`, type: 'image', duration: 6, timestamp: '2024-07-24T12:30:00Z' }
         ]
     },
-    ...otherUsers.slice(4).map((user, i) => ({ // Remaining users
+    // FIX: Explicitly type the returned object in the map function as UserStory to ensure the 'type' property of stories is correctly inferred as 'image' | 'video' instead of a generic string.
+    ...otherUsers.slice(4).map((user, i): UserStory => ({ // Remaining users
         user, hasUnseen: true, stories: [
-            { id: `s${i+6}`, mediaUrl: `https://picsum.photos/seed/s${i+6}/400/700`, duration: 5, timestamp: '2024-07-22T12:00:00Z' }
+            { id: `s${i+6}`, mediaUrl: `https://picsum.photos/seed/s${i+6}/400/700`, type: 'image', duration: 5, timestamp: '2024-07-22T12:00:00Z' }
         ]
     }))
 ];
@@ -339,8 +341,8 @@ export const mockHighlights: Highlight[] = [
     title: 'Projects',
     coverUrl: 'https://picsum.photos/seed/h1/200/200',
     stories: [
-      { id: 's-h1-1', mediaUrl: 'https://picsum.photos/seed/s-h1-1/400/700', duration: 5, timestamp: '' },
-      { id: 's-h1-2', mediaUrl: 'https://picsum.photos/seed/s-h1-2/400/700', duration: 5, timestamp: '' },
+      { id: 's-h1-1', mediaUrl: 'https://picsum.photos/seed/s-h1-1/400/700', type: 'image', duration: 5, timestamp: '' },
+      { id: 's-h1-2', mediaUrl: 'https://picsum.photos/seed/s-h1-2/400/700', type: 'image', duration: 5, timestamp: '' },
     ]
   },
   {
@@ -348,7 +350,7 @@ export const mockHighlights: Highlight[] = [
     title: 'Travel',
     coverUrl: 'https://picsum.photos/seed/h2/200/200',
     stories: [
-       { id: 's-h2-1', mediaUrl: 'https://picsum.photos/seed/s-h2-1/400/700', duration: 5, timestamp: '' },
+       { id: 's-h2-1', mediaUrl: 'https://picsum.photos/seed/s-h2-1/400/700', type: 'image', duration: 5, timestamp: '' },
     ]
   },
 ];
@@ -371,268 +373,47 @@ export const mockReels: Reel[] = [
             { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h", likeCount: 8, isLiked: true },
         ]
     },
+    // FIX: Completed the Reel object with all required properties to match the 'Reel' type.
     { 
         id: 'r2', 
         user: mockUser, 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', 
-        caption: 'My new setup is finally complete! What do you think? #desksetup #coding', 
-        likeCount: 5000, 
-        dislikeCount: 120,
-        commentCount: 250, 
-        shareCount: 300, 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+        caption: 'Building cool stuff with React! #frontend #development',
+        likeCount: 2500,
+        dislikeCount: 20,
+        commentCount: 88,
+        shareCount: 150,
         isLiked: true,
         isDisliked: false,
         isBookmarked: true,
         comments: [
-            { id: 'rc2-1', user: otherUsers[2], text: "Clean setup! 🚀", timestamp: "3h", likeCount: 50, isLiked: false },
+            { id: 'rc2-1', user: otherUsers[1], text: "This is awesome!", timestamp: "3h", likeCount: 22, isLiked: false },
         ]
     },
     { 
         id: 'r3', 
-        user: otherUsers[1], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4', 
-        caption: 'Shipping a new feature on Vercel!', 
-        likeCount: 8000, 
-        dislikeCount: 50,
-        commentCount: 400, 
-        shareCount: 600, 
-        isLiked: false,
-        isDisliked: false,
-        isBookmarked: false,
-        comments: [
-            { id: 'rc3-1', user: mockUser, text: "Can't wait to try this out!", timestamp: "1d", likeCount: 150, isLiked: true },
-            { id: 'rc3-2', user: otherUsers[0], text: "Game changer!", timestamp: "1d", likeCount: 120, isLiked: false },
-        ] 
-    },
-    { 
-        id: 'r4', 
-        user: otherUsers[4], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', 
-        caption: 'A breathtaking view of the Grand Canyon. #nature #travel', 
-        likeCount: 12000, 
-        dislikeCount: 80,
-        commentCount: 800, 
-        shareCount: 1500, 
-        isLiked: false,
-        isDisliked: false,
-        isBookmarked: false,
-        comments: [] 
-    },
-    { 
-        id: 'r5', 
         user: otherUsers[3], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 
-        caption: 'Exploring the cosmos, one star at a time. #space #nasa', 
-        likeCount: 25000, 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+        caption: 'A glimpse of the cosmos. #space #nasa',
+        likeCount: 15000,
         dislikeCount: 100,
-        commentCount: 1200, 
-        shareCount: 3000, 
+        commentCount: 800,
+        shareCount: 2000,
         isLiked: false,
-        isDisliked: false,
-        isBookmarked: true,
-        comments: [] 
-    },
-    { 
-        id: 'r6', 
-        user: otherUsers[5], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', 
-        caption: 'The art of design is the art of communication. #design #figma', 
-        likeCount: 9500, 
-        dislikeCount: 40,
-        commentCount: 600, 
-        shareCount: 800, 
-        isLiked: true,
-        isDisliked: false,
-        isBookmarked: false,
-        comments: [] 
-    },
-    {
-      id: 'r7',
-      user: otherUsers[6],
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-      caption: 'Code is poetry. #coding #developer',
-      likeCount: 7800,
-      dislikeCount: 30,
-      commentCount: 550,
-      shareCount: 700,
-      isLiked: false,
-      isDisliked: false,
-      isBookmarked: false,
-      comments: [],
-    },
-    {
-      id: 'r8',
-      user: otherUsers[7],
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      caption: 'A day in the life of a frontend developer. #codepen',
-      likeCount: 6200,
-      dislikeCount: 25,
-      commentCount: 450,
-      shareCount: 500,
-      isLiked: false,
-      isDisliked: false,
-      isBookmarked: false,
-      comments: [],
-    },
-    {
-      id: 'r9',
-      user: mockUser,
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      caption: 'Working on some new animations for Proto-Twitter! #react #framer-motion',
-      likeCount: 11000,
-      dislikeCount: 90,
-      commentCount: 900,
-      shareCount: 1200,
-      isLiked: true,
-      isDisliked: false,
-      isBookmarked: true,
-      comments: [],
-    },
-    {
-      id: 'r10',
-      user: otherUsers[0],
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-      caption: 'Just look at how easy it is to create this layout with Tailwind. #tailwindcss',
-      likeCount: 15000,
-      dislikeCount: 60,
-      commentCount: 1100,
-      shareCount: 1800,
-      isLiked: false,
-      isDisliked: false,
-      isBookmarked: false,
-      comments: [],
-    },
-    { 
-        id: 'r11', 
-        user: otherUsers[2], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4', 
-        caption: 'Behind the scenes at our latest launch event. The energy was incredible!', 
-        likeCount: 4200, 
-        dislikeCount: 20,
-        commentCount: 180, 
-        shareCount: 250, 
-        isLiked: false,
-        isDisliked: false,
-        isBookmarked: false,
-        comments: []
-    },
-    { 
-        id: 'r12', 
-        user: otherUsers[5], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4', 
-        caption: 'Quick tip for Figma users: use components to save yourself a ton of time. #designtips', 
-        likeCount: 18000, 
-        dislikeCount: 90,
-        commentCount: 850, 
-        shareCount: 1100, 
-        isLiked: true,
-        isDisliked: false,
-        isBookmarked: true,
-        comments: []
-    },
-     {
-      id: 'r13',
-      user: otherUsers[4],
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4',
-      caption: 'The beautiful landscapes of Iceland. #travel #iceland',
-      likeCount: 22000,
-      dislikeCount: 110,
-      commentCount: 1300,
-      shareCount: 2200,
-      isLiked: false,
-      isDisliked: false,
-      isBookmarked: false,
-      comments: [],
-    },
-    {
-      id: 'r14',
-      user: mockUser,
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-      caption: 'Another quick coding challenge complete! #100DaysOfCode',
-      likeCount: 980,
-      dislikeCount: 10,
-      commentCount: 55,
-      shareCount: 80,
-      isLiked: true,
-      isDisliked: false,
-      isBookmarked: false,
-      comments: [],
-    },
-    {
-      id: 'r15',
-      user: otherUsers[3],
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-      caption: 'Hubble vs. Webb. The difference is astounding.',
-      likeCount: 55000,
-      dislikeCount: 200,
-      commentCount: 2400,
-      shareCount: 4500,
-      isLiked: false,
-      isDisliked: false,
-      isBookmarked: true,
-      comments: [],
-    },
-    {
-      id: 'r16',
-      user: otherUsers[6],
-      videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-      caption: 'Trying out a new CSS feature: container queries!',
-      likeCount: 3200,
-      dislikeCount: 15,
-      commentCount: 210,
-      shareCount: 300,
-      isLiked: false,
-      isDisliked: false,
-      isBookmarked: false,
-      comments: [
-          { id: 'rc16-1', user: mockUser, text: "Looks powerful!", timestamp: "1d", likeCount: 20, isLiked: true }
-      ],
-    },
-    { 
-        id: 'r17', 
-        user: otherUsers[1], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', 
-        caption: 'Warp speed deployments with Vercel. #frontend #devops', 
-        likeCount: 11500, 
-        dislikeCount: 80,
-        commentCount: 600, 
-        shareCount: 950, 
-        isLiked: false,
-        isDisliked: false,
-        isBookmarked: false,
-        comments: []
-    },
-    { 
-        id: 'r18', 
-        user: otherUsers[7], 
-        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 
-        caption: 'The perfect recipe for a weekend brunch. #food #recipe', 
-        likeCount: 8800, 
-        dislikeCount: 250,
-        commentCount: 720, 
-        shareCount: 1200, 
-        isLiked: true,
         isDisliked: false,
         isBookmarked: false,
         comments: []
     },
 ];
 
+// FIX: Added mockSpaces export to resolve import errors in components that use it.
 export const mockSpaces: Space[] = [
     {
         id: 'sp1',
-        title: 'Frontend Friday: React 19 and the Compiler',
-        host: otherUsers[1],
-        speakers: [otherUsers[1], mockUser, otherUsers[0]],
+        title: 'React Roundtable: Hooks vs. The World',
+        host: otherUsers[6], // codepen
+        speakers: [otherUsers[6], otherUsers[0], mockUser],
         listenerCount: 1250,
-        color: 'bg-blue-500'
-    },
-    {
-        id: 'sp2',
-        title: 'Tech Talk: The Future of AI',
-        host: otherUsers[2],
-        speakers: [otherUsers[2], otherUsers[3]],
-        listenerCount: 890,
-        color: 'bg-green-500'
+        color: 'bg-gradient-to-br from-purple-500 to-indigo-600'
     }
 ];

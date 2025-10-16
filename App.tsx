@@ -33,12 +33,12 @@ import IncomingCallModal from './components/IncomingCallModal';
 import AudioCallView from './components/AudioCallView';
 import ShareReelModal from './components/ShareReelModal';
 import AiAssistantModal from './components/AiAssistantModal';
-import CreatorModal from './components/CreatorModal';
+import CreatorFlowModal from './components/CreatorFlowModal';
 import MobileDrawer from './components/MobileDrawer';
 import ReelOptionsModal from './components/ReelOptionsModal';
 import TopRightMenu from './components/TopRightMenu';
-import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call } from './types';
-import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
+import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call, Story } from './types';
+import { mockUser, otherUsers as initialOtherUsers, mockTweets, initialUserStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // FIX: Added optional text property to image message content type to match usage.
@@ -69,6 +69,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User>(mockUser);
   const [otherUsers, setOtherUsers] = useState<User[]>(initialOtherUsers);
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const [userStories, setUserStories] = useState<UserStory[]>(initialUserStories);
   
   // Modal states
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
@@ -81,7 +82,8 @@ function App() {
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
   const [sharingReel, setSharingReel] = useState<Reel | null>(null);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
-  const [isCreatorModalOpen, setIsCreatorModalOpen] = useState(false);
+  const [isCreatorFlowOpen, setIsCreatorFlowOpen] = useState(false);
+  const [creatorInitialMode, setCreatorInitialMode] = useState<'select' | 'story' | 'reel' | 'post'>('select');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [reelOptions, setReelOptions] = useState<Reel | null>(null);
   const [isTopRightMenuOpen, setIsTopRightMenuOpen] = useState(false);
@@ -165,6 +167,11 @@ function App() {
   const handleLogin = () => setIsLoggedIn(true);
   const handleLogout = () => setIsLoggedIn(false);
 
+  const handleOpenCreator = (mode: 'select' | 'story' | 'reel' | 'post' = 'select') => {
+    setCreatorInitialMode(mode);
+    setIsCreatorFlowOpen(true);
+  };
+
   const handlePostTweet = useCallback((tweetContent: Partial<Tweet>) => {
     const newTweet: Tweet = {
       id: `t-${Date.now()}`,
@@ -183,8 +190,63 @@ function App() {
     };
     setTweets(prev => [newTweet, ...prev]);
     setQuotingTweet(null);
-    setIsCreatorModalOpen(false);
+    setIsCreatorFlowOpen(false);
   }, [currentUser]);
+
+  const handlePostStory = (newStory: Omit<Story, 'id' | 'timestamp'>) => {
+    setUserStories(prev => {
+        const myStoriesIndex = prev.findIndex(us => us.user.id === mockUser.id);
+        const storyToAdd: Story = {
+            ...newStory,
+            id: `s-new-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+        };
+
+        let updatedStories = [...prev];
+
+        if (myStoriesIndex > -1) {
+            // Add to existing story array
+            const userStory = updatedStories[myStoriesIndex];
+            userStory.stories.push(storyToAdd);
+            userStory.hasUnseen = true; 
+            // Move user's stories to the front
+            updatedStories.splice(myStoriesIndex, 1);
+            updatedStories.unshift(userStory);
+        } else {
+            // If user has no stories yet, create a new entry
+            const newUserStory: UserStory = {
+                user: mockUser,
+                hasUnseen: true,
+                stories: [storyToAdd],
+            };
+            updatedStories.unshift(newUserStory);
+        }
+        return updatedStories;
+    });
+    setIsCreatorFlowOpen(false);
+    showToast('Story posted!');
+  };
+
+  const handlePostReel = (videoUrl: string, caption: string) => {
+      const newReel: Reel = {
+          id: `r-new-${Date.now()}`,
+          user: currentUser,
+          videoUrl,
+          caption,
+          likeCount: 0,
+          dislikeCount: 0,
+          commentCount: 0,
+          shareCount: 0,
+          isLiked: false,
+          isDisliked: false,
+          isBookmarked: false,
+          comments: [],
+      };
+      setReels(prev => [newReel, ...prev]);
+      setIsCreatorFlowOpen(false);
+      showToast('Reel posted!');
+  };
+
 
   const handleShowNewTweets = () => {
     setTweets(prev => [...newTweetsBuffer, ...prev]);
@@ -593,6 +655,7 @@ function App() {
       case Page.Home: return <HomePage 
         tweets={filteredTweets} 
         currentUser={currentUser}
+        userStories={userStories}
         onPostTweet={handlePostTweet}
         onImageClick={setLightboxImageUrl}
         onViewProfile={handleViewProfile}
@@ -610,6 +673,7 @@ function App() {
         notificationCount={unreadNotifications}
         setCurrentPage={setCurrentPage}
         onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
+        onOpenCreator={handleOpenCreator}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
@@ -662,6 +726,7 @@ function App() {
       default: return <HomePage 
         tweets={filteredTweets} 
         currentUser={currentUser}
+        userStories={userStories}
         onPostTweet={handlePostTweet}
         onImageClick={setLightboxImageUrl}
         onViewProfile={handleViewProfile}
@@ -679,6 +744,7 @@ function App() {
         notificationCount={unreadNotifications}
         setCurrentPage={setCurrentPage}
         onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
+        onOpenCreator={handleOpenCreator}
       />;
     }
   };
@@ -693,7 +759,7 @@ function App() {
 
   return (
     <div className={theme}>
-        <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text h-screen w-screen overflow-hidden">
+        <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg h-screen w-screen overflow-hidden">
             <div className="container mx-auto flex justify-center max-w-[1280px] h-full">
                 <Sidebar 
                     currentPage={currentPage} 
@@ -704,7 +770,7 @@ function App() {
                     onLogout={handleLogout} 
                     openDisplayModal={() => setIsDisplayModalOpen(true)}
                     activeChatCount={unreadMessages}
-                    onOpenCreator={() => setIsCreatorModalOpen(true)}
+                    onOpenCreator={handleOpenCreator}
                 />
                 <main className="flex-1 min-w-0 border-x border-light-border dark:border-twitter-border dim:border-dim-border relative h-full overflow-y-auto no-scrollbar">
                     {mainContent}
@@ -722,15 +788,12 @@ function App() {
             {/* Modals and Overlays */}
             <AnimatePresence>
                 {viewingReelComments && (
-                    // FIX: Wrapped framer-motion props to bypass type errors.
                     <motion.div
                         className="fixed inset-0 z-40 sm:absolute sm:top-0 sm:right-0 sm:h-full sm:w-[350px]"
-                        {...{
-                          initial: { x: '100%' },
-                          animate: { x: '0%' },
-                          exit: { x: '100%' },
-                          transition: { type: 'tween', ease: 'easeInOut', duration: 0.3 }
-                        }}
+                        initial={{ x: '100%' }}
+                        animate={{ x: '0%' }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
                     >
                         <ReelCommentsPanel 
                             reel={viewingReelComments} 
@@ -741,7 +804,7 @@ function App() {
                 )}
                 {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={handleDrawerNavigate} />}
                 {isTopRightMenuOpen && <TopRightMenu onDisplayClick={() => {setIsDisplayModalOpen(true); setIsTopRightMenuOpen(false);}} setCurrentPage={handleTopRightMenuNavigate} closeMenu={() => setIsTopRightMenuOpen(false)} />}
-                {isCreatorModalOpen && <CreatorModal onClose={() => setIsCreatorModalOpen(false)} onPostTweet={handlePostTweet} />}
+                {isCreatorFlowOpen && <CreatorFlowModal initialMode={creatorInitialMode} onClose={() => setIsCreatorFlowOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
@@ -777,6 +840,7 @@ function App() {
                 onPinMessage={handlePinMessage}
                 onStartVideoCall={handleStartVideoCall}
                 onStartAudioCall={handleStartAudioCall}
+                // FIX: Pass the correct handler function `handleUpdateChatTheme` to the `onUpdateChatTheme` prop.
                 onUpdateChatTheme={handleUpdateChatTheme}
             />
             
@@ -806,7 +870,7 @@ function App() {
                 currentUser={currentUser}
                 activeChatCount={unreadMessages}
                 notificationCount={unreadNotifications}
-                onOpenCreator={() => setIsCreatorModalOpen(true)}
+                onOpenCreator={handleOpenCreator}
             />
         </div>
     </div>

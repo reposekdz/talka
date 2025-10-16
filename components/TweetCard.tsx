@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tweet, User } from '../types';
 import Avatar from './Avatar';
@@ -85,13 +84,10 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
   ];
 
   return (
-    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-        {...{
-            layout: "position",
-            initial: { opacity: 0, y: -20 },
-            animate: { opacity: 1, y: 0 },
-        }}
+        layout="position"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
         className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4 cursor-pointer transition-colors duration-200 hover:bg-light-hover/50 dark:hover:bg-white/5"
     >
       <div className="flex-shrink-0" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>
@@ -149,8 +145,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                 return <VideoPlayer key={url} src={url} />;
               }
               return (
-                // FIX: Wrapped framer-motion props to bypass type errors.
-                 <motion.div key={url} {...{layoutId: url}} onClick={(e) => handleActionClick(e, () => onImageClick(url))} className="cursor-pointer relative overflow-hidden aspect-video">
+                 <motion.div key={url} layoutId={url} onClick={(e) => handleActionClick(e, () => onImageClick(url))} className="cursor-pointer relative overflow-hidden aspect-video">
                   <img src={url} alt={`Tweet media ${index + 1}`} className="w-full h-full object-cover" />
                 </motion.div>
               )
@@ -167,14 +162,11 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
               {btn.count !== undefined && <span className="text-sm">{btn.count.toLocaleString()}</span>}
               <AnimatePresence>
                 {relevantReactions.filter(r => r.type === btn.type).map(reaction => (
-                    // FIX: Wrapped framer-motion props to bypass type errors.
                     <motion.div
                         key={reaction.id}
-                        {...{
-                            initial: { opacity: 1, y: 0, scale: 0.5 },
-                            animate: { opacity: 0, y: -30, scale: 1 },
-                            transition: { duration: 1.5, ease: 'easeOut' },
-                        }}
+                        initial={{ opacity: 1, y: 0, scale: 0.5 }}
+                        animate={{ opacity: 0, y: -30, scale: 1 }}
+                        transition={{ duration: 1.5, ease: 'easeOut' }}
                         className="absolute -top-2 left-2 pointer-events-none"
                     >
                         {reaction.type === 'like' ? <HeartFillIcon className="w-5 h-5"/> : <RetweetFillIcon className="w-5 h-5"/>}

@@ -9,7 +9,7 @@ interface SidebarProps {
   onLogout: () => void;
   openDisplayModal: () => void;
   activeChatCount: number;
-  onOpenCreator: () => void;
+  onOpenCreator: (mode?: 'select' | 'story' | 'reel' | 'post') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout, openDisplayModal, activeChatCount, onOpenCreator }) => {
@@ -67,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
               </li>
           </ul>
         </nav>
-        <button onClick={onOpenCreator} className="bg-twitter-blue w-14 h-14 xl:w-56 mt-4 text-white font-bold text-lg p-3 rounded-full hover:bg-opacity-90 flex items-center justify-center">
+        <button onClick={() => onOpenCreator('select')} className="bg-twitter-blue w-14 h-14 xl:w-56 mt-4 text-white font-bold text-lg p-3 rounded-full hover:bg-opacity-90 flex items-center justify-center">
             <span className="hidden xl:inline">Create</span>
             <span className="xl:hidden"><CreateIcon /></span>
         </button>
