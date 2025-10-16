@@ -1,14 +1,19 @@
 import React from 'react';
 import TweetCard from '../components/TweetCard';
-import { baseTweets } from '../data/mockData';
-import { Tweet } from '../types';
+import { Tweet, User } from '../types';
 
 interface BookmarksPageProps {
+  tweets: Tweet[];
   onImageClick: (url: string) => void;
+  onViewProfile: (user: User) => void;
+  onReply: (tweet: Tweet) => void;
+  onToggleBookmark: (tweetId: string) => void;
+  onVote: (tweetId: string, optionId: string) => void;
 }
 
-const BookmarksPage: React.FC<BookmarksPageProps> = ({ onImageClick }) => {
-  const bookmarkedTweets = baseTweets.filter(t => t.isBookmarked);
+const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
+  const { tweets, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote } = props;
+  const bookmarkedTweets = tweets.filter(t => t.isBookmarked);
 
   return (
     <div>
@@ -19,7 +24,15 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ onImageClick }) => {
       <div>
         {bookmarkedTweets.length > 0 ? (
           bookmarkedTweets.map(tweet => (
-            <TweetCard key={tweet.id} tweet={tweet} onImageClick={onImageClick} />
+            <TweetCard 
+              key={tweet.id} 
+              tweet={tweet} 
+              onImageClick={onImageClick}
+              onViewProfile={onViewProfile}
+              onReply={onReply}
+              onToggleBookmark={onToggleBookmark}
+              onVote={onVote}
+            />
           ))
         ) : (
           <p className="text-center p-8 text-twitter-gray">You haven't added any Tweets to your Bookmarks yet.</p>

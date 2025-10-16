@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { mockUser, baseTweets } from '../data/mockData';
 import TweetCard from '../components/TweetCard';
-import { MoreIcon, CalendarIcon, ChevronLeftIcon } from '../components/Icon';
+import { MoreIcon, CalendarIcon, ChevronLeftIcon, MessagesIcon } from '../components/Icon';
 import { User } from '../types';
 
 interface ProfilePageProps {
@@ -12,9 +12,14 @@ interface ProfilePageProps {
   onViewProfile: (user: User) => void;
   onFollowToggle: (userId: string) => void;
   onViewUserList: (user: User, type: 'followers' | 'following') => void;
+  onOpenChat: (user: User) => void;
+  onReply: (tweet: any) => void;
+  onToggleBookmark: (tweetId: string) => void;
+  onVote: (tweetId: string, optionId: string) => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList }) => {
+const ProfilePage: React.FC<ProfilePageProps> = (props) => {
+  const { user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
   const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(false);
@@ -122,6 +127,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, onImageCli
 
       <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
         <div className="flex justify-end items-center gap-2">
+          {!isCurrentUserProfile && (
+            <button onClick={() => onOpenChat(user)} className="p-2 border border-light-border dark:border-twitter-border rounded-full hover:bg-light-hover dark:hover:bg-white/10"><MessagesIcon /></button>
+          )}
           <button className="p-2 border border-light-border dark:border-twitter-border rounded-full hover:bg-light-hover dark:hover:bg-white/10"><MoreIcon /></button>
           {renderFollowButton()}
         </div>
@@ -159,7 +167,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, onImageCli
       
       <div>
         {activeTab === 'Posts' && userTweets.map(tweet => (
-          <TweetCard key={tweet.id} tweet={tweet} onImageClick={onImageClick} onViewProfile={onViewProfile} />
+          <TweetCard 
+            key={tweet.id} 
+            tweet={tweet} 
+            onImageClick={onImageClick} 
+            onViewProfile={onViewProfile}
+            onReply={onReply}
+            onToggleBookmark={onToggleBookmark}
+            onVote={onVote}
+          />
         ))}
         {activeTab === 'Monetization' && renderMonetizationTab()}
         {activeTab !== 'Posts' && activeTab !== 'Monetization' && (

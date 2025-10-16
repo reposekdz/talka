@@ -6,13 +6,14 @@ interface BottomNavProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
   currentUser: User;
+  activeChatCount: number;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, currentUser }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, currentUser, activeChatCount }) => {
   const navItems = [
     { page: Page.Home, icon: <HomeIcon /> },
     { page: Page.Explore, icon: <ExploreIcon /> },
-    { page: Page.Messages, icon: <MessagesIcon /> },
+    { page: Page.Messages, icon: <MessagesIcon />, notificationCount: activeChatCount },
     { page: Page.Reels, icon: <ReelsIcon /> },
     { 
       page: Page.Profile, 
@@ -35,7 +36,14 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, curr
             onClick={() => setCurrentPage(item.page)}
             className={`flex-1 flex justify-center items-center p-2 h-full ${currentPage === item.page ? 'text-current font-bold' : 'text-light-secondary-text dark:text-twitter-gray'}`}
           >
-            {item.icon}
+            <div className="relative">
+              {item.icon}
+              {item.notificationCount && item.notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-twitter-blue text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {item.notificationCount}
+                  </span>
+              )}
+            </div>
           </button>
         ))}
       </nav>

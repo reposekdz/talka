@@ -19,10 +19,13 @@ import Lightbox from './components/Lightbox';
 import StoryViewer from './components/StoryViewer';
 import UserListPage from './pages/UserListPage';
 import ReelCommentsPanel from './components/ReelCommentsPanel';
-import { userStories, mockUser as initialUser, otherUsers as initialOtherUsers, mockTweets as initialTweets } from './data/mockData';
+import ReplyModal from './components/ReplyModal';
+import Toast from './components/Toast';
+import FloatingChatManager from './components/FloatingChatManager';
+import { userStories, mockUser as initialUser, otherUsers as initialOtherUsers, mockTweets as initialTweets, mockConversations } from './data/mockData';
 import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
-import { Page, Theme, User, Tweet, Reel, AppSettings } from './types';
+import { Page, Theme, User, Tweet, Reel, AppSettings, Conversation } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const initialSettings: AppSettings = {
@@ -61,9 +64,13 @@ function App() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
   const [storyViewerIndex, setStoryViewerIndex] = useState<number | null>(null);
+  const [replyingToTweet, setReplyingToTweet] = useState<Tweet | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
   
   const [isReelsCommentOpen, setIsReelsCommentOpen] = useState(false);
   const [activeReelForComments, setActiveReelForComments] = useState<Reel | null>(null);
+
+  const [activeChats, setActiveChats] = useState<Conversation[]>([]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -104,7 +111,6 @@ function App() {
   const handleFollowToggle = (userIdToToggle: string) => {
     const isFollowing = currentUser.followingIds.includes(userIdToToggle);
     
-    // Update current user's state
     setCurrentUser(prevUser => ({
       ...prevUser,
       followingIds: isFollowing
@@ -113,7 +119,6 @@ function App() {
       followingCount: isFollowing ? prevUser.followingCount - 1 : prevUser.followingCount + 1,
     }));
 
-    // Update the other user's state (either in otherUsers or viewingProfileFor)
     const updateUser = (user: User) => {
         if (user.id === userIdToToggle) {
             return {
@@ -147,6 +152,44 @@ function App() {
     setTweets(prev => [newTweet, ...prev]);
   };
 
+  const handlePostReply = (replyContent: string, originalTweet: Tweet) => {
+    handlePostTweet({ content: replyContent });
+    // In a real app, this would be an API call, but we'll simulate it
+    setTweets(prevTweets => prevTweets.map(t => t.id === originalTweet.id ? { ...t, replyCount: t.replyCount + 1 } : t));
+    setReplyingToTweet(null);
+  };
+
+  const handleToggleBookmark = (tweetId: string) => {
+    let isBookmarked = false;
+    setTweets(prevTweets => prevTweets.map(t => {
+      if (t.id === tweetId) {
+        isBookmarked = !t.isBookmarked;
+        return { ...t, isBookmarked };
+      }
+      return t;
+    }));
+    setToastMessage(isBookmarked ? 'Tweet added to your Bookmarks' : 'Tweet removed from your Bookmarks');
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+  
+  const handleVoteOnPoll = (tweetId: string, optionId: string) => {
+    setTweets(prevTweets => prevTweets.map(t => {
+      if (t.id === tweetId) {
+        if (t.votedOnPollId) return t; // Already voted
+
+        const newPoll = {
+          ...t.poll!,
+          totalVotes: t.poll!.totalVotes + 1,
+          options: t.poll!.options.map(opt => 
+            opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt
+          )
+        };
+        return { ...t, poll: newPoll, votedOnPollId: optionId };
+      }
+      return t;
+    }));
+  };
+
   const handleOpenReelsComments = (reel: Reel) => {
     setActiveReelForComments(reel);
     setIsReelsCommentOpen(true);
@@ -160,6 +203,20 @@ function App() {
   const handleUpdateSettings = (newSettings: Partial<AppSettings>) => {
     setAppSettings(prev => ({ ...prev, ...newSettings }));
   };
+
+  const openChat = (user: User) => {
+    const existingConversation = mockConversations.find(c => c.participant.id === user.id);
+    if (!existingConversation) return; // In a real app, we'd create a new conversation
+
+    if (!activeChats.find(c => c.id === existingConversation.id)) {
+      setActiveChats(prev => [...prev, existingConversation]);
+    }
+  };
+
+  const closeChat = (conversationId: string) => {
+    setActiveChats(prev => prev.filter(c => c.id !== conversationId));
+  };
+
 
   const filteredTweets = useMemo(() => {
     const mutedWords = appSettings.notifications.mutedWords;
@@ -178,6 +235,9 @@ function App() {
       onFollowToggle: handleFollowToggle,
       onImageClick: setLightboxImageUrl,
       onPostTweet: handlePostTweet,
+      onReply: setReplyingToTweet,
+      onToggleBookmark: handleToggleBookmark,
+      onVote: handleVoteOnPoll,
     };
     
     switch (currentPage) {
@@ -188,13 +248,13 @@ function App() {
       case Page.Notifications:
         return <NotificationsPage {...pageProps} />;
       case Page.Messages:
-        return <MessagesPage {...pageProps} />;
+        return <MessagesPage {...pageProps} openChat={openChat} />;
       case Page.Bookmarks:
-        return <BookmarksPage {...pageProps} />;
+        return <BookmarksPage {...pageProps} tweets={tweets} />;
       case Page.Communities:
         return <CommunitiesPage />;
       case Page.Profile:
-        return <ProfilePage {...pageProps} user={viewingProfileFor || currentUser} onBack={handleBack} onViewUserList={handleViewUserList} />;
+        return <ProfilePage {...pageProps} user={viewingProfileFor || currentUser} onBack={handleBack} onViewUserList={handleViewUserList} onOpenChat={openChat} />;
        case Page.UserList:
         return userListInfo ? <UserListPage {...pageProps} allUsers={allUsers} user={userListInfo.user} listType={userListInfo.type} onBack={handleBack} /> : <HomePage {...pageProps} tweets={filteredTweets} onStoryClick={setStoryViewerIndex} />;
       case Page.Reels:
@@ -215,7 +275,7 @@ function App() {
   }
 
   return (
-    <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text h-screen">
+    <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg h-screen">
       <div className="container mx-auto flex justify-center h-full">
         
         <MobileHeader
@@ -229,6 +289,7 @@ function App() {
           setCurrentPage={handleSetCurrentPage}
           onLogout={handleLogout}
           openDisplayModal={() => setIsDisplayModalOpen(true)}
+          activeChatCount={activeChats.length}
         />
         
         <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border h-full overflow-y-auto">
@@ -268,13 +329,16 @@ function App() {
           </AnimatePresence>
         </div>
 
-        <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} currentUser={currentUser} />
+        <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} currentUser={currentUser} activeChatCount={activeChats.length}/>
       </div>
 
+      <FloatingChatManager chats={activeChats} onCloseChat={closeChat} onNavigateToMessages={handleSetCurrentPage} />
+      <Toast message={toastMessage} isVisible={!!toastMessage} onClose={() => setToastMessage('')} />
       {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
       {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
       {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
       {storyViewerIndex !== null && <StoryViewer stories={userStories} initialUserIndex={storyViewerIndex} onClose={() => setStoryViewerIndex(null)} />}
+      {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
     </div>
   );
 }

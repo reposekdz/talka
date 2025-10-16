@@ -12,9 +12,12 @@ interface HomePageProps {
     onStoryClick: (userIndex: number) => void;
     onViewProfile: (user: User) => void;
     onPostTweet: (tweet: Partial<Tweet>) => void;
+    onReply: (tweet: Tweet) => void;
+    onToggleBookmark: (tweetId: string) => void;
+    onVote: (tweetId: string, optionId: string) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ tweets, onImageClick, onStoryClick, onViewProfile, onPostTweet }) => {
+const HomePage: React.FC<HomePageProps> = ({ tweets, onImageClick, onStoryClick, onViewProfile, onPostTweet, onReply, onToggleBookmark, onVote }) => {
   return (
     <div>
       <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
@@ -25,7 +28,15 @@ const HomePage: React.FC<HomePageProps> = ({ tweets, onImageClick, onStoryClick,
       <LiveCard />
       <div>
         {tweets.map(tweet => (
-          <TweetCard key={tweet.id} tweet={tweet} onImageClick={onImageClick} onViewProfile={onViewProfile} />
+          <TweetCard 
+            key={tweet.id} 
+            tweet={tweet} 
+            onImageClick={onImageClick} 
+            onViewProfile={onViewProfile}
+            onReply={onReply}
+            onToggleBookmark={onToggleBookmark}
+            onVote={onVote}
+          />
         ))}
       </div>
     </div>

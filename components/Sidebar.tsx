@@ -8,16 +8,17 @@ interface SidebarProps {
   setCurrentPage: (page: Page) => void;
   onLogout: () => void;
   openDisplayModal: () => void;
+  activeChatCount: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout, openDisplayModal }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout, openDisplayModal, activeChatCount }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const navItems = [
     { icon: <HomeIcon />, text: 'Home', page: Page.Home },
     { icon: <ExploreIcon />, text: 'Explore', page: Page.Explore },
     { icon: <NotificationsIcon />, text: 'Notifications', page: Page.Notifications },
-    { icon: <MessagesIcon />, text: 'Messages', page: Page.Messages },
+    { icon: <MessagesIcon />, text: 'Messages', page: Page.Messages, notificationCount: activeChatCount },
     { icon: <ReelsIcon />, text: 'Reels', page: Page.Reels },
     { icon: <BookmarkIcon />, text: 'Bookmarks', page: Page.Bookmarks },
     { icon: <CommunityIcon />, text: 'Communities', page: Page.Communities },
@@ -44,7 +45,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
                 onClick={() => setCurrentPage(item.page)} 
                 className={`flex items-center justify-center xl:justify-start gap-4 text-xl p-3 my-1 cursor-pointer hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full transition-colors duration-200 w-auto`}
                 >
-                {item.icon}
+                <div className="relative">
+                    {item.icon}
+                    {item.notificationCount && item.notificationCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-twitter-blue text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {item.notificationCount}
+                        </span>
+                    )}
+                </div>
                 <span className={`hidden xl:inline ${currentPage === item.page ? 'font-bold' : ''}`}>{item.text}</span>
               </li>
             ))}

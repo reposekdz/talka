@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { mockConversations, mockMessages, mockUser, otherUsers } from '../data/mockData';
-import { Conversation, Message, User } from '../types';
+import React, { useState } from 'react';
+import { mockConversations } from '../data/mockData';
+import { Conversation, User } from '../types';
 import Avatar from '../components/Avatar';
-import { VerifiedIcon, MoreIcon, InfoIcon, VideoCallIcon, AudioCallIcon, ChevronLeftIcon } from '../components/Icon';
-import MessageBubble from '../components/MessageBubble';
-import MessageInput from '../components/MessageInput';
-import { motion, AnimatePresence } from 'framer-motion';
-import GifPickerModal from '../components/GifPickerModal';
+import { VerifiedIcon, MoreIcon, PlusIcon } from '../components/Icon';
+import { motion } from 'framer-motion';
 
-const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boolean, onClick: () => void }> = ({ conversation, isSelected, onClick }) => {
+interface ConversationItemProps {
+    conversation: Conversation;
+    onClick: () => void;
+}
+const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onClick }) => {
     const { participant, lastMessage, unreadCount } = conversation;
 
     const formatTimestamp = (timestamp: string) => {
@@ -30,7 +31,7 @@ const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boole
     }
 
     return (
-        <div onClick={onClick} className={`p-4 flex gap-3 cursor-pointer ${isSelected ? 'bg-light-hover dark:bg-white/10 dim:bg-dim-hover' : 'hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50'}`}>
+        <div onClick={onClick} className="p-4 flex gap-3 cursor-pointer hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors">
             <Avatar src={participant.avatarUrl} alt={participant.displayName} />
             <div className="flex-1 overflow-hidden">
                 <div className="flex justify-between items-center">
@@ -54,181 +55,28 @@ const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boole
     );
 };
 
-const ChatView: React.FC<{
-    conversation: Conversation;
-    messages: Message[];
-    currentUser: User;
-    onSendMessage: (convId: string, msg: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId'>) => void;
-    onBack: () => void;
-}> = ({ conversation, messages, currentUser, onSendMessage, onBack }) => {
-    const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView();
-    }, [messages]);
+interface MessagesPageProps {
+    openChat: (user: User) => void;
+}
 
-    const handleSendMessage = (content: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId' | 'replyTo'>, replyTo?: Message) => {
-        onSendMessage(conversation.id, {
-            ...content,
-            replyTo: replyTo ?? undefined
-        });
-        setReplyingTo(null);
-    };
-    
+const MessagesPage: React.FC<MessagesPageProps> = ({ openChat }) => {
+    const [conversations] = useState(mockConversations);
+
     return (
-        <div className="flex flex-col h-full bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">
-            <div className="p-2 md:p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
-                <div className="flex items-center gap-2">
-                    <button onClick={onBack} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full md:hidden"><ChevronLeftIcon /></button>
-                    <Avatar src={conversation.participant.avatarUrl} alt={conversation.participant.displayName} size="small" />
-                    <div>
-                        <div className="flex items-center">
-                            <h2 className="font-bold">{conversation.participant.displayName}</h2>
-                            {conversation.participant.verified && <VerifiedIcon />}
-                        </div>
-                        <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{conversation.participant.username}</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2 text-current">
-                    <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full"><AudioCallIcon /></button>
-                    <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full"><VideoCallIcon /></button>
-                    <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full"><InfoIcon /></button>
-                </div>
+        <div className="flex h-full flex-col">
+            <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center">
+                <h1 className="text-xl font-bold">Messages</h1>
+                <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><PlusIcon/></button>
             </div>
-            
-            <div className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {messages.map(msg => (
-                    <MessageBubble key={msg.id} message={msg} isOwnMessage={msg.senderId === currentUser.id} onReply={setReplyingTo} />
+            <div className="flex-1 overflow-y-auto">
+                {conversations.map(conv => (
+                    <ConversationItem
+                        key={conv.id}
+                        conversation={conv}
+                        onClick={() => openChat(conv.participant)}
+                    />
                 ))}
-                {conversation.isTyping && (
-                    <div className="flex justify-start">
-                        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray px-4 py-2 rounded-t-xl rounded-br-xl">
-                            <span className="italic">typing...</span>
-                        </motion.div>
-                    </div>
-                )}
-                <div ref={messagesEndRef} />
-            </div>
-
-            <MessageInput
-                onSendMessage={handleSendMessage}
-                replyingTo={replyingTo}
-                onCancelReply={() => setReplyingTo(null)}
-            />
-        </div>
-    );
-};
-
-const MessagesPage: React.FC = () => {
-    const [conversations, setConversations] = useState(mockConversations);
-    const [messages, setMessages] = useState(mockMessages);
-    const [selectedConversationId, setSelectedConversationId] = useState<string | null>(mockConversations[0]?.id || null);
-    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
-
-    const handleSelectConversation = (id: string) => {
-        setSelectedConversationId(id);
-        setMobileView('chat');
-    };
-
-    const handleBackToList = () => {
-        setMobileView('list');
-    };
-    
-    const selectedConversation = conversations.find(c => c.id === selectedConversationId);
-    const selectedMessages = selectedConversationId ? messages[selectedConversationId] : [];
-
-    const handleSendMessage = (convId: string, msgContent: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId'>) => {
-        const newMessage: Message = {
-            id: `m-${Date.now()}`,
-            senderId: mockUser.id,
-            timestamp: new Date().toISOString(),
-            isRead: false,
-            ...msgContent,
-        };
-
-        setMessages(prev => ({
-            ...prev,
-            [convId]: [...prev[convId], newMessage]
-        }));
-
-        // Simulate a reply
-        setTimeout(() => {
-             const replyMessage: Message = {
-                id: `m-${Date.now()}-reply`,
-                senderId: otherUsers[0].id,
-                timestamp: new Date().toISOString(),
-                isRead: true,
-                type: 'text',
-                text: 'Got it!'
-            };
-             setMessages(prev => ({
-                ...prev,
-                [convId]: [...prev[convId], replyMessage]
-            }));
-        }, 1500);
-    };
-
-    return (
-        <div className="flex h-screen relative overflow-hidden">
-            <motion.div
-                className="w-full md:w-2/5 md:static absolute top-0 left-0 h-full border-r border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg z-20"
-                animate={{ x: mobileView === 'chat' ? '-100%' : '0%' }}
-                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
-            >
-                <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
-                    <h1 className="text-xl font-bold">Messages</h1>
-                    <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon/></button>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                    {conversations.map(conv => (
-                        <ConversationItem
-                            key={conv.id}
-                            conversation={conv}
-                            isSelected={selectedConversationId === conv.id}
-                            onClick={() => handleSelectConversation(conv.id)}
-                        />
-                    ))}
-                </div>
-            </motion.div>
-           
-            <AnimatePresence>
-            {mobileView === 'chat' && selectedConversation && (
-                 <motion.div
-                    className="md:hidden absolute top-0 left-0 w-full h-full z-30"
-                    initial={{ x: '100%' }}
-                    animate={{ x: '0%' }}
-                    exit={{ x: '100%' }}
-                    transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
-                >
-                    <ChatView
-                        conversation={selectedConversation}
-                        messages={selectedMessages}
-                        currentUser={mockUser}
-                        onSendMessage={handleSendMessage}
-                        onBack={handleBackToList}
-                    />
-                </motion.div>
-            )}
-            </AnimatePresence>
-            
-            <div className="hidden md:flex flex-1 flex-col">
-                {selectedConversation ? (
-                     <ChatView
-                        conversation={selectedConversation}
-                        messages={selectedMessages}
-                        currentUser={mockUser}
-                        onSendMessage={handleSendMessage}
-                        onBack={() => {}}
-                    />
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">
-                        <h2 className="text-2xl font-bold mb-2">Select a message</h2>
-                        <p className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text max-w-sm">
-                            Choose from your existing conversations, start a new one, or just keep swimming.
-                        </p>
-                    </div>
-                )}
             </div>
         </div>
     );

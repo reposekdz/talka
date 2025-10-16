@@ -38,6 +38,7 @@ export interface Tweet {
   pinned?: boolean;
   isVoiceTweet?: boolean;
   audioUrl?: string;
+  votedOnPollId?: string;
 }
 
 export interface Notification {
