@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
@@ -8,7 +9,7 @@ import SpacesCard from '../components/SpacesCard';
 import { Tweet, User, Space } from '../types';
 import { userStories } from '../data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ProtoIcon, SparklesIcon } from '../components/Icon';
+import { ProtoIcon } from '../components/Icon';
 
 interface HomePageProps {
   tweets: Tweet[];
@@ -26,7 +27,6 @@ interface HomePageProps {
   onShowNewTweets: () => void;
   onJoinSpace: (space: Space) => void;
   liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
-  onOpenAiAssistant: () => void;
 }
 
 const TabButton: React.FC<{
@@ -42,7 +42,7 @@ const TabButton: React.FC<{
     </div>
 );
 
-const MobileTopHeader: React.FC<{onOpenAiAssistant: () => void;}> = ({onOpenAiAssistant}) => (
+const MobileTopHeader: React.FC = () => (
     <div className="sm:hidden sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-2 flex justify-between items-center border-b border-light-border dark:border-twitter-border dim:border-dim-border">
         <div className="w-10">
             {/* Potentially add profile avatar here */}
@@ -50,15 +50,13 @@ const MobileTopHeader: React.FC<{onOpenAiAssistant: () => void;}> = ({onOpenAiAs
         <div className="text-current">
             <ProtoIcon />
         </div>
-        <button onClick={onOpenAiAssistant} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full w-10 h-10 flex items-center justify-center">
-            <SparklesIcon className="w-5 h-5"/>
-        </button>
+        <div className="w-10 h-10"></div>
     </div>
 );
 
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenAiAssistant } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions } = props;
   const [activeTab, setActiveTab] = useState<'For You' | 'Following'>('For You');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -76,13 +74,10 @@ const HomePage: React.FC<HomePageProps> = (props) => {
 
   return (
     <div className="relative">
-      <MobileTopHeader onOpenAiAssistant={onOpenAiAssistant}/>
+      <MobileTopHeader />
       <div className="hidden sm:block sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
         <div className="flex justify-between items-center p-4">
             <h1 className="text-xl font-bold">Home</h1>
-             <button onClick={onOpenAiAssistant} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">
-                <SparklesIcon className="w-5 h-5 text-twitter-blue"/>
-            </button>
         </div>
         <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border">
           <TabButton title="For You" activeTab={activeTab} setActiveTab={setActiveTab} />

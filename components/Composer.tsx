@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import Avatar from './Avatar';
 import { PhotoIcon, GifIcon, ChartBarIcon, EmojiIcon, CalendarIcon, GlobeIcon, MicrophoneIcon, StopIcon, TrashIcon, CloseIcon } from './Icon';
 import { mockUser } from '../data/mockData';
@@ -112,7 +113,7 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
         <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4">
             {isGifModalOpen && <GifComposerModal onSelectGif={handleSelectGif} onClose={() => setIsGifModalOpen(false)} />}
             <Avatar src={mockUser.avatarUrl} alt={mockUser.displayName} />
-            <div className="flex-1">
+            <div className="flex-1 relative">
                 <textarea
                     placeholder={isRecording ? "Add a comment to your voice tweet..." : "What's happening?!"}
                     value={tweetText}
@@ -152,7 +153,7 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
                 <div className="border-t border-light-border dark:border-twitter-border dim:border-dim-border my-2"></div>
                 
                 <div className="flex justify-between items-center">
-                    <div className="flex gap-1 text-twitter-blue">
+                    <div className="flex gap-1 text-twitter-blue items-center">
                         {!isRecording && iconButtons.map(btn => (
                              <button key={btn.label} onClick={btn.action} className="p-2 hover:bg-twitter-blue/10 rounded-full" aria-label={btn.label}>
                                 {btn.icon}

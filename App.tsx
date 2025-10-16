@@ -29,7 +29,6 @@ import InAppNotification from './components/InAppNotification';
 import EditTweetModal from './components/EditTweetModal';
 import QuoteTweetModal from './components/QuoteTweetModal';
 import SpacesPlayer from './components/SpacesPlayer';
-import AiAssistantModal from './components/AiAssistantModal';
 import IncomingCallModal from './components/IncomingCallModal';
 import AudioCallView from './components/AudioCallView';
 import ShareReelModal from './components/ShareReelModal';
@@ -74,7 +73,6 @@ function App() {
   const [quotingTweet, setQuotingTweet] = useState<Tweet | null>(null);
   const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[] | Highlight[], initialIndex: number, isHighlight?: boolean } | null>(null);
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
-  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [sharingReel, setSharingReel] = useState<Reel | null>(null);
 
   // Profile/User List states
@@ -523,7 +521,6 @@ function App() {
         onShowNewTweets={handleShowNewTweets}
         onJoinSpace={handleJoinSpace}
         liveReactions={liveReactions}
-        onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
@@ -585,7 +582,6 @@ function App() {
         onShowNewTweets={handleShowNewTweets}
         onJoinSpace={handleJoinSpace}
         liveReactions={liveReactions}
-        onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
       />;
     }
   };
@@ -635,7 +631,6 @@ function App() {
             {/* Modals and Overlays */}
             <AnimatePresence>
                 {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
-                {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
                 {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
