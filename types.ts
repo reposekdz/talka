@@ -125,6 +125,8 @@ export interface Community {
   avatarUrl: string;
   bannerUrl: string;
   memberCount: number;
+  memberIds: string[];
+  tags: string[];
 }
 
 export interface Story {

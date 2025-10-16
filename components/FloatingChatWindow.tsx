@@ -73,6 +73,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [showWave, setShowWave] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const pinnedMessage = useMemo(() => messages.find(m => m.isPinned), [messages]);
@@ -86,6 +87,10 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
   const handleSendMessage = (content: MessageContent, replyTo?: Message) => {
     onSendMessage(conversation.id, content, replyTo);
     setReplyingTo(null);
+    if (content.type === 'wave') {
+        setShowWave(true);
+        setTimeout(() => setShowWave(false), 1500);
+    }
   };
   
   const handleAddReaction = (messageId: string, emoji: string) => {
@@ -160,12 +165,25 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
           <button onClick={() => onStartAudioCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><PhoneIcon /></button>
           <button onClick={() => onStartVideoCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><VideoCallIcon /></button>
           <button onClick={() => setIsOptionsOpen(prev => !prev)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon /></button>
-          <button onClick={onClose} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
+          <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
         </div>
         {isOptionsOpen && <ChatOptionsMenu onClose={() => setIsOptionsOpen(false)} onSelectTheme={(theme) => onUpdateChatTheme(conversation.id, theme)} />}
       </header>
       
       <div className="flex-1 p-2 space-y-2 overflow-y-auto relative">
+         <AnimatePresence>
+            {showWave && (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.5, y: 50 }}
+                    animate={{ opacity: 1, scale: 1.5, y: -50 }}
+                    exit={{ opacity: 0, scale: 0, y: -100 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
+                >
+                    <span className="text-8xl drop-shadow-lg">👋</span>
+                </motion.div>
+            )}
+        </AnimatePresence>
         <AnimatePresence>
             {pinnedMessage && (
                 <motion.div layout initial={{opacity: 0, y: -20}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -20}} className="sticky top-0 z-10 bg-light-hover/80 dark:bg-white/10 backdrop-blur-sm p-2 rounded-lg mb-2 text-sm">

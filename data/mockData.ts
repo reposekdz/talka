@@ -1,4 +1,3 @@
-
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
 
 export const mockUser: User = {
@@ -275,8 +274,26 @@ export const mockConversations: Conversation[] = [
 ];
 
 export const mockCommunities: Community[] = [
-    { id: 'com1', name: 'React Developers', description: 'A community for all things React. Ask questions, share projects, and connect with other developers.', avatarUrl: 'https://picsum.photos/seed/c1/200/200', bannerUrl: 'https://picsum.photos/seed/cb1/600/200', memberCount: 15000 },
-    { id: 'com2', name: 'Design & Code', description: 'Where design meets development. For frontend developers and UI/UX designers.', avatarUrl: 'https://picsum.photos/seed/c2/200/200', bannerUrl: 'https://picsum.photos/seed/cb2/600/200', memberCount: 8000 },
+    { 
+        id: 'com1', 
+        name: 'React Developers', 
+        description: 'A community for all things React. Ask questions, share projects, and connect with other developers.', 
+        avatarUrl: 'https://picsum.photos/seed/c1/200/200', 
+        bannerUrl: 'https://picsum.photos/seed/cb1/1200/400', 
+        memberCount: 15000,
+        memberIds: ['u2', 'u3', 'u7', 'u8'],
+        tags: ['React', 'JavaScript', 'Frontend', 'Web Dev']
+    },
+    { 
+        id: 'com2', 
+        name: 'Design & Code', 
+        description: 'Where design meets development. For frontend developers and UI/UX designers.', 
+        avatarUrl: 'https://picsum.photos/seed/c2/200/200', 
+        bannerUrl: 'https://picsum.photos/seed/cb2/1200/400', 
+        memberCount: 8000,
+        memberIds: ['u7', 'u8', 'u5', 'u1'],
+        tags: ['UI/UX', 'Figma', 'CSS', 'Design Systems']
+    },
 ];
 
 export const userStories: UserStory[] = [
