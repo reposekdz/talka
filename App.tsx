@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -12,6 +13,7 @@ import CommunitiesPage from './pages/CommunitiesPage';
 import CreatorStudioPage from './pages/CreatorStudioPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpCenterPage from './pages/HelpCenterPage';
+import ReelsPage from './pages/ReelsPage';
 import DisplayModal from './components/DisplayModal';
 import { Page, Theme } from './types';
 import { mockUser } from './data/mockData';
@@ -52,6 +54,8 @@ const App: React.FC = () => {
         return <MessagesPage />;
       case Page.Bookmarks:
         return <BookmarksPage onImageClick={openLightbox} />;
+      case Page.Reels:
+        return <ReelsPage />;
       case Page.Profile:
         return <ProfilePage user={mockUser} onImageClick={openLightbox} />;
       case Page.Communities:
@@ -71,6 +75,8 @@ const App: React.FC = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  const isReelsPage = currentPage === Page.Reels;
+
   return (
     <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text min-h-screen">
       <div className="container mx-auto flex justify-center">
@@ -80,10 +86,10 @@ const App: React.FC = () => {
           onLogout={handleLogout}
           openDisplayModal={() => setIsDisplayModalOpen(true)}
         />
-        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border min-h-screen">
+        <main className={`w-full min-h-screen ${isReelsPage ? 'max-w-full' : 'max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border'}`}>
           {renderPage()}
         </main>
-        <RightSidebar openSearchModal={openSearchModal} />
+        {!isReelsPage && <RightSidebar openSearchModal={openSearchModal} />}
       </div>
       <AnimatePresence>
         {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}

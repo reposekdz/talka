@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
 import { UserStory } from '../types';
 import Avatar from './Avatar';
+import { LikeIcon, ReplyIcon, ShareIcon, SendIcon } from './Icon';
 
 interface StoryViewerProps {
   userStories: UserStory[];
@@ -90,7 +92,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex
       
         <AnimatePresence initial={false} custom={direction}>
             <motion.div
-            key={`${currentUserIndex}-${currentStoryIndex}`}
+            key={currentUserIndex}
             custom={direction}
             variants={slideVariants}
             initial="enter"
@@ -100,11 +102,22 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex
             className="relative w-[360px] h-[640px] bg-neutral-800 rounded-2xl overflow-hidden shadow-2xl"
             >
                 {/* Media */}
-                {activeStory.type === 'video' ? (
-                    <video src={activeStory.mediaUrl} autoPlay muted playsInline className="w-full h-full object-cover" />
-                ) : (
-                    <img src={activeStory.mediaUrl} alt="story content" className="w-full h-full object-cover" />
-                )}
+                 <AnimatePresence>
+                    <motion.div
+                        key={`${currentUserIndex}-${currentStoryIndex}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0"
+                    >
+                        {activeStory.type === 'video' ? (
+                            <video src={activeStory.mediaUrl} autoPlay muted playsInline className="w-full h-full object-cover" />
+                        ) : (
+                            <img src={activeStory.mediaUrl} alt="story content" className="w-full h-full object-cover" />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
 
                 {/* Overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40"></div>
@@ -132,13 +145,17 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ userStories, initialUserIndex
                 </div>
 
                 {/* Footer */}
-                <div className="absolute bottom-4 left-4 right-4 z-10">
+                <div 
+                    className="absolute bottom-4 left-4 right-4 z-10 flex items-center gap-2"
+                    onPointerDown={e => e.stopPropagation()}
+                >
                     <input
                         type="text"
                         placeholder="Send message"
                         className="w-full bg-black/30 border border-white/30 rounded-full px-4 py-2 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/50"
-                        onPointerDown={e => e.stopPropagation()}
                     />
+                    <button className="p-2 text-white hover:bg-white/20 rounded-full"><LikeIcon /></button>
+                    <button className="p-2 text-white hover:bg-white/20 rounded-full"><ShareIcon /></button>
                 </div>
             </motion.div>
       </AnimatePresence>

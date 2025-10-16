@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { TwitterIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, ComposeIcon } from './Icon';
+import { TwitterIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, ComposeIcon, ReelsIcon } from './Icon';
 import MoreMenu from './MoreMenu';
 import { Page } from '../types';
 
@@ -18,6 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
     { icon: <ExploreIcon />, text: 'Explore', page: Page.Explore },
     { icon: <NotificationsIcon />, text: 'Notifications', page: Page.Notifications },
     { icon: <MessagesIcon />, text: 'Messages', page: Page.Messages },
+    { icon: <ReelsIcon />, text: 'Reels', page: Page.Reels },
     { icon: <BookmarkIcon />, text: 'Bookmarks', page: Page.Bookmarks },
     { icon: <CommunityIcon />, text: 'Communities', page: Page.Communities },
     { icon: <ProfileIcon />, text: 'Profile', page: Page.Profile },

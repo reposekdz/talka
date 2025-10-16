@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tweet } from '../types';
 import Avatar from './Avatar';
@@ -41,7 +42,7 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, isPinned = false, onImageC
   const isVideo = hasMedia && mediaUrls[0].endsWith('.mp4');
 
   return (
-    <div className={`p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border transition-colors duration-200 cursor-pointer ${!hasMedia ? 'hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50' : ''}`}>
+    <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border cursor-pointer">
       {isPinned && (
         <div className="flex items-center gap-3 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-2 ml-8">
           <PinIcon />

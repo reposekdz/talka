@@ -22,15 +22,18 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal }) => {
 
         <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl">
             <h2 className="text-xl font-bold p-4">What's happening</h2>
-            {mockTrendingTopics.map((trend, index) => (
-                <TrendingTopic
-                key={index}
-                category={trend.category}
-                topic={trend.topic}
-                tweets={trend.tweets}
-                />
-            ))}
-             <div className="p-4 hover:bg-white/10 cursor-pointer transition-colors duration-200">
+            <div className="grid grid-cols-2 gap-2 p-2">
+                {mockTrendingTopics.slice(0, 4).map((trend, index) => (
+                    <TrendingTopic
+                        key={index}
+                        category={trend.category}
+                        topic={trend.topic}
+                        tweets={trend.tweets}
+                        imageUrl={trend.imageUrl}
+                    />
+                ))}
+            </div>
+             <div className="p-4 hover:bg-white/10 cursor-pointer transition-colors duration-200 rounded-b-2xl">
                 <a href="#" className="text-twitter-blue">Show more</a>
             </div>
         </div>

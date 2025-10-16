@@ -1,9 +1,11 @@
+
 import React, { useState, useMemo } from 'react';
 import { User } from '../types';
 import { baseTweets, mockTweets } from '../data/mockData';
 import TweetCard from '../components/TweetCard';
 import { VerifiedIcon, CalendarIcon, MoreIcon } from '../components/Icon';
 import Avatar from '../components/Avatar';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProfilePageProps {
   user: User;
@@ -22,10 +24,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onImageClick }) => {
             case 'Media':
                 return nonPinnedTweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0);
             case 'Likes':
-                // For demo, show tweets the mockUser has liked from the main feed
                 return user.id === 'u1' ? mockTweets.filter(t => t.isLiked) : [];
             case 'Replies':
-                return []; // Placeholder for replies
+                return []; 
             case 'Tweets':
             default:
                 return nonPinnedTweets;
@@ -39,8 +40,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onImageClick }) => {
     }
 
     return (
-        <div>
-            <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-4">
+        <div className="relative">
+            <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-20 p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
                 <h1 className="text-xl font-bold">{user.displayName}</h1>
                 <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">{userTweets.length} Tweets</p>
             </div>
@@ -85,7 +86,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onImageClick }) => {
                 </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-twitter-border dim:border-dim-border flex">
+            <div className="sticky top-[73px] bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex">
                 {tabs.map(tab => (
                     <div 
                         key={tab}
@@ -93,25 +94,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onImageClick }) => {
                         className="flex-1 text-center font-bold text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text p-4 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover cursor-pointer relative"
                     >
                        <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : ''}>{tab}</span> 
-                       {activeTab === tab && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-twitter-blue rounded-full"></div>}
+                       {activeTab === tab && <motion.div layoutId="profileTabIndicator" className="absolute bottom-0 left-0 right-0 h-1 bg-twitter-blue rounded-full"></motion.div>}
                     </div>
                 ))}
             </div>
 
             <div>
-                {pinnedTweet && activeTab === 'Tweets' && (
-                    <TweetCard key={pinnedTweet.id} tweet={pinnedTweet} isPinned={true} onImageClick={onImageClick}/>
-                )}
-                {displayedTweets.length > 0 ? (
-                     displayedTweets.map(tweet => <TweetCard key={tweet.id} tweet={tweet} onImageClick={onImageClick} />)
-                ) : (
-                    <p className="text-center p-8 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
-                        {activeTab === 'Likes' && 'This user hasn\'t liked any tweets yet.'}
-                        {activeTab === 'Media' && 'This user hasn\'t posted any media yet.'}
-                        {activeTab === 'Replies' && 'This user hasn\'t replied to any tweets yet.'}
-                        {activeTab === 'Tweets' && 'This user hasn\'t tweeted yet.'}
-                    </p>
-                )}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {pinnedTweet && activeTab === 'Tweets' && (
+                            <TweetCard key={pinnedTweet.id} tweet={pinnedTweet} isPinned={true} onImageClick={onImageClick}/>
+                        )}
+                        {displayedTweets.length > 0 ? (
+                            displayedTweets.map(tweet => <TweetCard key={tweet.id} tweet={tweet} onImageClick={onImageClick} />)
+                        ) : (
+                            <p className="text-center p-8 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+                                {activeTab === 'Likes' && 'This user hasn\'t liked any tweets yet.'}
+                                {activeTab === 'Media' && 'This user hasn\'t posted any media yet.'}
+                                {activeTab === 'Replies' && 'This user hasn\'t replied to any tweets yet.'}
+                                {activeTab === 'Tweets' && 'This user hasn\'t tweeted yet.'}
+                            </p>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     );
