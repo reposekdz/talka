@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { Reel } from '../types';
 import Avatar from './Avatar';
 import { HeartFillIcon, LikeIcon, MessagesIcon, ShareIcon, MoreIcon, PlayIcon, PauseIcon } from './Icon';
-import ReelCommentsPanel from './ReelCommentsPanel';
 
 interface ReelCardProps {
   reel: Reel;
@@ -15,6 +14,7 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const backgroundVideoRef = useRef<HTMLVideoElement>(null);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -22,11 +22,13 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
   };
 
   const handleVideoClick = () => {
-    if (videoRef.current) {
+    if (videoRef.current && backgroundVideoRef.current) {
         if (isPlaying) {
             videoRef.current.pause();
+            backgroundVideoRef.current.pause();
         } else {
             videoRef.current.play();
+            backgroundVideoRef.current.play();
         }
         setIsPlaying(!isPlaying);
     }
@@ -42,6 +44,15 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
   return (
     <div className="relative w-full max-w-[400px] h-[85vh] rounded-2xl overflow-hidden bg-black">
       <video
+        ref={backgroundVideoRef}
+        src={reel.videoUrl}
+        loop
+        autoPlay
+        playsInline
+        muted
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full object-cover scale-150 blur-2xl opacity-50"
+      />
+      <video
         ref={videoRef}
         src={reel.videoUrl}
         loop
@@ -50,10 +61,10 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
         muted
         onClick={handleVideoClick}
         onTimeUpdate={handleTimeUpdate}
-        className="w-full h-full object-cover"
+        className="relative z-10 w-full h-full object-contain"
       />
       <div 
-        className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 cursor-pointer"
+        className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 cursor-pointer z-20"
         onClick={handleVideoClick}
       >
         {!isPlaying && (
@@ -63,7 +74,7 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
         )}
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+      <div className="absolute bottom-0 left-0 right-0 p-4 z-30">
         <div className="flex items-center gap-2">
           <Avatar src={reel.user.avatarUrl} alt={reel.user.displayName} size="small" />
           <span className="font-bold text-white">{reel.user.displayName}</span>
@@ -76,7 +87,7 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, onOpenComments }) => {
       </div>
 
 
-      <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4 text-white z-10">
+      <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4 text-white z-30">
         <button onClick={handleLike} className="flex flex-col items-center">
             {isLiked ? <HeartFillIcon /> : <LikeIcon />}
             <span className="text-sm font-bold">{likeCount.toLocaleString()}</span>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
 import HomePage from './pages/HomePage';
@@ -23,8 +23,24 @@ import { userStories, mockUser as initialUser, otherUsers as initialOtherUsers, 
 import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
 import MobileMenu from './components/MobileMenu';
-import { Page, Theme, User, Tweet, Reel } from './types';
+import { Page, Theme, User, Tweet, Reel, AppSettings } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
+
+const initialSettings: AppSettings = {
+  privacyAndSafety: {
+    protectPosts: false,
+    photoTagging: 'everyone',
+    dmRequests: 'everyone',
+  },
+  notifications: {
+    mutedWords: ['politics', 'crypto'],
+  },
+  accessibilityDisplayAndLanguages: {
+    reduceMotion: false,
+    videoAutoplay: 'on-cellular-wifi',
+  }
+};
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,6 +51,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [otherUsers, setOtherUsers] = useState<User[]>(initialOtherUsers);
   const [tweets, setTweets] = useState<Tweet[]>(initialTweets);
+  const [appSettings, setAppSettings] = useState<AppSettings>(initialSettings);
   
   const [viewingProfileFor, setViewingProfileFor] = useState<User | null>(null);
   const [userListInfo, setUserListInfo] = useState<{ user: User; type: 'followers' | 'following' } | null>(null);
@@ -143,6 +160,19 @@ function App() {
     setIsReelsCommentOpen(false);
     setActiveReelForComments(null);
   };
+  
+  const handleUpdateSettings = (newSettings: Partial<AppSettings>) => {
+    setAppSettings(prev => ({ ...prev, ...newSettings }));
+  };
+
+  const filteredTweets = useMemo(() => {
+    const mutedWords = appSettings.notifications.mutedWords;
+    if (mutedWords.length === 0) return tweets;
+
+    return tweets.filter(tweet => 
+        !mutedWords.some(mutedWord => tweet.content.toLowerCase().includes(mutedWord.toLowerCase()))
+    );
+  }, [tweets, appSettings.notifications.mutedWords]);
 
 
   const renderPage = () => {
@@ -156,7 +186,7 @@ function App() {
     
     switch (currentPage) {
       case Page.Home:
-        return <HomePage {...pageProps} tweets={tweets} onStoryClick={setStoryViewerIndex} />;
+        return <HomePage {...pageProps} tweets={filteredTweets} onStoryClick={setStoryViewerIndex} />;
       case Page.Explore:
         return <ExplorePage {...pageProps} openSearchModal={() => setIsSearchModalOpen(true)} />;
       case Page.Notifications:
@@ -170,17 +200,17 @@ function App() {
       case Page.Profile:
         return <ProfilePage {...pageProps} user={viewingProfileFor || currentUser} onBack={handleBack} onViewUserList={handleViewUserList} />;
        case Page.UserList:
-        return userListInfo ? <UserListPage {...pageProps} allUsers={allUsers} user={userListInfo.user} listType={userListInfo.type} onBack={handleBack} /> : <HomePage {...pageProps} tweets={tweets} onStoryClick={setStoryViewerIndex} />;
+        return userListInfo ? <UserListPage {...pageProps} allUsers={allUsers} user={userListInfo.user} listType={userListInfo.type} onBack={handleBack} /> : <HomePage {...pageProps} tweets={filteredTweets} onStoryClick={setStoryViewerIndex} />;
       case Page.Reels:
-        return <ReelsPage onOpenComments={handleOpenReelsComments} />;
+        return <ReelsPage onOpenComments={handleOpenReelsComments} settings={appSettings} />;
       case Page.CreatorStudio:
         return <CreatorStudioPage />;
       case Page.Settings:
-        return <SettingsPage />;
+        return <SettingsPage settings={appSettings} onUpdateSettings={setAppSettings} />;
       case Page.HelpCenter:
         return <HelpCenterPage />;
       default:
-        return <HomePage {...pageProps} tweets={tweets} onStoryClick={setStoryViewerIndex} />;
+        return <HomePage {...pageProps} tweets={filteredTweets} onStoryClick={setStoryViewerIndex} />;
     }
   };
   

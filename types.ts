@@ -93,7 +93,7 @@ export interface UserStory {
 }
 
 export interface ReelComment {
-  id: string;
+  id:string;
   user: User;
   text: string;
   timestamp: string;
@@ -130,3 +130,19 @@ export enum Page {
 }
 
 export type Theme = 'light' | 'dim' | 'dark';
+
+// Advanced App Settings
+export interface AppSettings {
+  privacyAndSafety: {
+    protectPosts: boolean;
+    photoTagging: 'everyone' | 'following' | 'off';
+    dmRequests: 'everyone' | 'following';
+  };
+  notifications: {
+    mutedWords: string[];
+  };
+  accessibilityDisplayAndLanguages: {
+    reduceMotion: boolean;
+    videoAutoplay: 'on-cellular-wifi' | 'on-wifi-only' | 'never';
+  };
+}
