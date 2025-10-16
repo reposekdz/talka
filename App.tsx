@@ -15,17 +15,23 @@ import DisplayModal from './components/DisplayModal';
 import { Page, Theme } from './types';
 import { mockUser } from './data/mockData';
 import Lightbox from './components/Lightbox';
+import SearchModal from './components/SearchModal';
+import { AnimatePresence } from 'framer-motion';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>(Page.Home);
   const [theme, setTheme] = useState<Theme>('dark');
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
 
   const openLightbox = (url: string) => setLightboxImageUrl(url);
   const closeLightbox = () => setLightboxImageUrl(null);
   
+  const openSearchModal = () => setIsSearchModalOpen(true);
+  const closeSearchModal = () => setIsSearchModalOpen(false);
+
   useEffect(() => {
     document.documentElement.className = theme;
   }, [theme]);
@@ -38,7 +44,7 @@ const App: React.FC = () => {
       case Page.Home:
         return <HomePage onImageClick={openLightbox} />;
       case Page.Explore:
-        return <ExplorePage />;
+        return <ExplorePage openSearchModal={openSearchModal} />;
       case Page.Notifications:
         return <NotificationsPage />;
       case Page.Messages:
@@ -74,10 +80,13 @@ const App: React.FC = () => {
         <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border min-h-screen">
           {renderPage()}
         </main>
-        <RightSidebar />
+        <RightSidebar openSearchModal={openSearchModal} />
       </div>
-      {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-      {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={closeLightbox} />}
+      <AnimatePresence>
+        {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
+        {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={closeLightbox} />}
+        {isSearchModalOpen && <SearchModal onClose={closeSearchModal} onImageClick={openLightbox} />}
+      </AnimatePresence>
     </div>
   );
 };

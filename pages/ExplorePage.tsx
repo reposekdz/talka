@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import TrendingTopic from '../components/TrendingTopic';
 import { mockTrendingTopics, mockTweets } from '../data/mockData';
+import { SearchIcon } from '../components/Icon';
 
-const ExplorePage: React.FC = () => {
+interface ExplorePageProps {
+    openSearchModal: () => void;
+}
+
+const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal }) => {
     const [activeTab, setActiveTab] = useState('For You');
     const tabs = ['For You', 'Trending', 'News', 'Sports', 'Entertainment'];
 
@@ -10,11 +15,13 @@ const ExplorePage: React.FC = () => {
         <div>
             <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
                 <div className="p-2">
-                    <input
-                        type="text"
-                        placeholder="Search Proto-Twitter"
-                        className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-current placeholder-light-secondary-text dark:placeholder-twitter-gray dim:placeholder-dim-secondary-text rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-                    />
+                     <div
+                        onClick={openSearchModal}
+                        className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray rounded-full px-4 py-2 cursor-pointer flex items-center gap-3 hover:bg-light-hover/80 dark:hover:bg-white/5 dim:hover:bg-dim-hover/80 transition-colors"
+                    >
+                        <SearchIcon />
+                        <span>Search Proto-Twitter</span>
+                    </div>
                 </div>
                 <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border overflow-x-auto">
                     {tabs.map(tab => (

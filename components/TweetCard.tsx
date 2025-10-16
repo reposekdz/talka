@@ -37,10 +37,11 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, isPinned = false, onImageC
     { icon: <ShareIcon />, color: 'hover:text-twitter-blue hover:bg-twitter-blue/10' },
   ];
 
-  const isVideo = mediaUrls && mediaUrls.length > 0 && mediaUrls[0].endsWith('.mp4');
+  const hasMedia = mediaUrls && mediaUrls.length > 0;
+  const isVideo = hasMedia && mediaUrls[0].endsWith('.mp4');
 
   return (
-    <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors duration-200 cursor-pointer">
+    <div className={`p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border transition-colors duration-200 cursor-pointer ${!hasMedia ? 'hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50' : ''}`}>
       {isPinned && (
         <div className="flex items-center gap-3 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-2 ml-8">
           <PinIcon />
@@ -75,7 +76,7 @@ const TweetCard: React.FC<TweetCardProps> = ({ tweet, isPinned = false, onImageC
                   </button>
                 </>
               ) : (
-                <img onClick={(e) => { e.stopPropagation(); onImageClick(mediaUrls[0]); }} src={mediaUrls[0]} alt="Tweet media" className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-110"/>
+                <img onClick={(e) => { e.stopPropagation(); onImageClick(mediaUrls[0]); }} src={mediaUrls[0]} alt="Tweet media" className="w-full h-auto object-cover"/>
               )}
             </div>
           )}

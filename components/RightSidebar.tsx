@@ -3,15 +3,22 @@ import React from 'react';
 import { mockTrendingTopics, otherUsers } from '../data/mockData';
 import TrendingTopic from './TrendingTopic';
 import WhoToFollow from './WhoToFollow';
+import { SearchIcon } from './Icon';
 
-const RightSidebar: React.FC = () => {
+interface RightSidebarProps {
+  openSearchModal: () => void;
+}
+
+const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal }) => {
   return (
     <aside className="w-[350px] h-screen sticky top-0 py-2 px-4 hidden lg:flex flex-col gap-4">
-        <input
-            type="text"
-            placeholder="Search"
-            className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-current placeholder-light-secondary-text dark:placeholder-twitter-gray dim:placeholder-dim-secondary-text rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-        />
+        <div
+            onClick={openSearchModal}
+            className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray rounded-full px-4 py-2 cursor-pointer flex items-center gap-3 hover:bg-light-hover/80 dark:hover:bg-white/5 dim:hover:bg-dim-hover/80 transition-colors"
+        >
+            <SearchIcon />
+            <span>Search</span>
+        </div>
 
         <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl">
             <h2 className="text-xl font-bold p-4">What's happening</h2>
