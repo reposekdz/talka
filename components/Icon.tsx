@@ -77,3 +77,4 @@ export const ReadReceiptIcon = createIcon(<path d="M18 7l-1.41-1.41-6.34 6.34 1.
 export const CloseIcon = createIcon(<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>);
 export const PaperPlaneIcon = createIcon(<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>);
 export const PlusIcon = createIcon(<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>);
+export const ExpandIcon = createIcon(<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>);

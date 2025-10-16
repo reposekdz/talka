@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../types';
-import Avatar from './Avatar';
+import AvatarWithStatus from './AvatarWithStatus';
 import { VerifiedIcon } from './Icon';
 
 interface WhoToFollowProps {
@@ -34,7 +34,7 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({ user, currentUser, onFollowTo
   return (
     <div onClick={handleUserClick} className="flex items-center justify-between p-4 hover:bg-white/10 cursor-pointer transition-colors duration-200">
       <div className="flex items-center gap-3">
-        <Avatar src={user.avatarUrl} alt={user.displayName} />
+        <AvatarWithStatus user={user} size="medium" />
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <span className="font-bold hover:underline">{user.displayName}</span>

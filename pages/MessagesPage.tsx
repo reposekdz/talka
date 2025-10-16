@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { mockConversations } from '../data/mockData';
 import { Conversation, User } from '../types';
-import Avatar from '../components/Avatar';
+import AvatarWithStatus from '../components/AvatarWithStatus';
 import { VerifiedIcon, MoreIcon, PlusIcon } from '../components/Icon';
 import { motion } from 'framer-motion';
 
@@ -32,7 +32,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onCli
 
     return (
         <div onClick={onClick} className="p-4 flex gap-3 cursor-pointer hover:bg-light-hover/50 dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors">
-            <Avatar src={participant.avatarUrl} alt={participant.displayName} />
+            <AvatarWithStatus user={participant} size="medium" />
             <div className="flex-1 overflow-hidden">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1">
@@ -43,8 +43,8 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onCli
                     <span className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">{formatTimestamp(lastMessage.timestamp)}</span>
                 </div>
                 <div className="flex justify-between items-start mt-1">
-                    <p className={`text-sm truncate ${unreadCount > 0 ? 'font-bold text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}`}>
-                        {getLastMessageText()}
+                     <p className={`text-sm truncate ${unreadCount > 0 ? 'font-bold text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}`}>
+                        {conversation.isTyping ? <span className="text-twitter-blue italic">typing...</span> : getLastMessageText()}
                     </p>
                     {unreadCount > 0 && (
                         <span className="bg-twitter-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{unreadCount}</span>

@@ -126,7 +126,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
       </div>
 
       <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
-        <div className="flex justify-end items-center gap-2">
+        <div className="flex justify-end items-center gap-2 flex-wrap">
           {!isCurrentUserProfile && (
             <button onClick={() => onOpenChat(user)} className="p-2 border border-light-border dark:border-twitter-border rounded-full hover:bg-light-hover dark:hover:bg-white/10"><MessagesIcon /></button>
           )}
@@ -141,7 +141,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
             <CalendarIcon />
             <span>Joined July 2024</span>
           </div>
-          <div className="flex gap-4 mt-2">
+          <div className="flex gap-4 mt-2 flex-wrap">
             <button onClick={() => onViewUserList(user, 'following')} className="hover:underline">
                 <span className="font-bold text-light-text dark:text-white">{user.followingCount}</span> 
                 <span className="text-twitter-gray"> Following</span>

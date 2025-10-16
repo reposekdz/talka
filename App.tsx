@@ -205,13 +205,19 @@ function App() {
   };
 
   const openChat = (user: User) => {
-    const existingConversation = mockConversations.find(c => c.participant.id === user.id);
-    if (!existingConversation) return; // In a real app, we'd create a new conversation
+    const conversation = mockConversations.find(c => c.participant.id === user.id);
+    if (!conversation) return;
 
-    if (!activeChats.find(c => c.id === existingConversation.id)) {
-      setActiveChats(prev => [...prev, existingConversation]);
-    }
+    setActiveChats(prev => {
+        const existing = prev.find(c => c.id === conversation.id);
+        if (existing) {
+            // Move to the end to bring it to the front
+            return [...prev.filter(c => c.id !== conversation.id), existing];
+        }
+        return [...prev, conversation];
+    });
   };
+
 
   const closeChat = (conversationId: string) => {
     setActiveChats(prev => prev.filter(c => c.id !== conversationId));
@@ -277,62 +283,63 @@ function App() {
   return (
     <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg h-screen">
       <div className="container mx-auto flex justify-center h-full">
-        
-        <MobileHeader
-          pageHistory={pageHistory}
-          onBack={handleBack}
-          setCurrentPage={handleSetCurrentPage}
-        />
-        
-        <Sidebar 
-          currentPage={currentPage}
-          setCurrentPage={handleSetCurrentPage}
-          onLogout={handleLogout}
-          openDisplayModal={() => setIsDisplayModalOpen(true)}
-          activeChatCount={activeChats.length}
-        />
-        
-        <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border h-full overflow-y-auto">
-          <div className="pt-14 pb-16 sm:pt-0 sm:pb-0 min-h-full">
-            {renderPage()}
+        <div className="flex-1 flex justify-center w-full max-w-7xl">
+          <MobileHeader
+            pageHistory={pageHistory}
+            onBack={handleBack}
+            setCurrentPage={handleSetCurrentPage}
+          />
+          
+          <Sidebar 
+            currentPage={currentPage}
+            setCurrentPage={handleSetCurrentPage}
+            onLogout={handleLogout}
+            openDisplayModal={() => setIsDisplayModalOpen(true)}
+            activeChatCount={activeChats.length}
+          />
+          
+          <main className="w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border h-full overflow-y-auto">
+            <div className="pt-14 pb-16 sm:pt-0 sm:pb-0 min-h-full">
+              {renderPage()}
+            </div>
+          </main>
+          
+          <div className="w-0 md:w-[290px] lg:w-[350px] flex-shrink-0 relative">
+            <AnimatePresence>
+              {isReelsCommentOpen && activeReelForComments ? (
+                <motion.div
+                  key="comments"
+                  className="absolute inset-0"
+                  initial={{ x: '100%' }}
+                  animate={{ x: '0%' }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+                >
+                  <ReelCommentsPanel reel={activeReelForComments} onClose={handleCloseReelsComments} />
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="sidebar"
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={{ x: '0%' }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+                >
+                  <RightSidebar 
+                    {...{currentUser, onFollowToggle: handleFollowToggle, onViewProfile: handleViewProfile}}
+                    openSearchModal={() => setIsSearchModalOpen(true)} 
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </main>
-        
-        <div className="w-0 md:w-[290px] lg:w-[350px] flex-shrink-0 relative">
-          <AnimatePresence>
-            {isReelsCommentOpen && activeReelForComments ? (
-              <motion.div
-                key="comments"
-                className="absolute inset-0"
-                initial={{ x: '100%' }}
-                animate={{ x: '0%' }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
-              >
-                <ReelCommentsPanel reel={activeReelForComments} onClose={handleCloseReelsComments} />
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="sidebar"
-                className="absolute inset-0"
-                initial={false}
-                animate={{ x: '0%' }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
-              >
-                <RightSidebar 
-                  {...{currentUser, onFollowToggle: handleFollowToggle, onViewProfile: handleViewProfile}}
-                  openSearchModal={() => setIsSearchModalOpen(true)} 
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} currentUser={currentUser} activeChatCount={activeChats.length}/>
       </div>
 
-      <FloatingChatManager chats={activeChats} onCloseChat={closeChat} onNavigateToMessages={handleSetCurrentPage} />
+      <FloatingChatManager chats={activeChats} onCloseChat={closeChat} onFocusChat={openChat} onNavigateToMessages={() => handleSetCurrentPage(Page.Messages)} />
       <Toast message={toastMessage} isVisible={!!toastMessage} onClose={() => setToastMessage('')} />
       {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
       {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}

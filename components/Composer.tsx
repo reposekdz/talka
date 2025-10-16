@@ -33,7 +33,20 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
     };
     
     const startRecording = async () => {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            alert("Audio recording is not supported by your browser.");
+            return;
+        }
+
         try {
+            if (navigator.permissions) {
+                 const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+                 if (permissionStatus.state === 'denied') {
+                     alert("Microphone access has been denied. Please enable it in your browser settings to record a voice tweet.");
+                     return;
+                 }
+            }
+           
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const recorder = new MediaRecorder(stream);
             mediaRecorderRef.current = recorder;
@@ -54,8 +67,12 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
             setRecordingTime(0);
             recordingIntervalRef.current = window.setInterval(() => setRecordingTime(prev => prev + 1), 1000);
         } catch (err) {
-            console.error("Microphone access denied:", err);
-            alert("Microphone access is required to record a voice tweet.");
+            console.error("Error accessing microphone:", err);
+            if (err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
+                // User denied the permission prompt. The console error is sufficient.
+            } else {
+                 alert("Microphone access is required to record a voice tweet. Please allow access when prompted.");
+            }
         }
     };
 
