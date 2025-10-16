@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tweet, User, UserStory, Space } from '../types';
 import Composer from '../components/Composer';
@@ -27,10 +26,25 @@ interface HomePageProps {
   onTranslateTweet: (tweetId: string) => void;
 }
 
+const TWEETS_PER_PAGE = 10;
+
 const HomePage: React.FC<HomePageProps> = (props) => {
   const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet } = props;
   const [activeTab, setActiveTab] = useState('For you');
-  const [isLoading] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const visibleTweets = tweets.slice(0, visibleCount);
+  const hasMore = visibleCount < tweets.length;
+
+  const loadMore = () => {
+    setIsLoadingMore(true);
+    setTimeout(() => {
+        setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, tweets.length));
+        setIsLoadingMore(false);
+    }, 1000); // Simulate network delay
+  };
+
 
   return (
     <div>
@@ -57,26 +71,33 @@ const HomePage: React.FC<HomePageProps> = (props) => {
       <SpacesCard onJoinSpace={onJoinSpace} />
 
       <div>
-        {isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => <TweetSkeleton key={i} />)
-        ) : (
-          tweets.map(tweet => (
-            <TweetCard
-              key={tweet.id}
-              tweet={tweet}
-              currentUser={currentUser}
-              onImageClick={onImageClick}
-              onViewProfile={onViewProfile}
-              onReply={onReply}
-              onToggleBookmark={onToggleBookmark}
-              onVote={onVote}
-              onQuote={onQuote}
-              onEdit={onEdit}
-              onGrok={onGrok}
-              onTranslateTweet={onTranslateTweet}
-              liveReactions={[]}
-            />
-          ))
+        {visibleTweets.map(tweet => (
+          <TweetCard
+            key={tweet.id}
+            tweet={tweet}
+            currentUser={currentUser}
+            onImageClick={onImageClick}
+            onViewProfile={onViewProfile}
+            onReply={onReply}
+            onToggleBookmark={onToggleBookmark}
+            onVote={onVote}
+            onQuote={onQuote}
+            onEdit={onEdit}
+            onGrok={onGrok}
+            onTranslateTweet={onTranslateTweet}
+            liveReactions={[]}
+          />
+        ))}
+        {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
+        {hasMore && !isLoadingMore && (
+            <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border text-center">
+                <button
+                    onClick={loadMore}
+                    className="text-twitter-blue hover:underline font-semibold"
+                >
+                    Show more
+                </button>
+            </div>
         )}
       </div>
     </div>

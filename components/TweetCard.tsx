@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tweet, User } from '../types';
 import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon } from './Icon';
@@ -22,12 +21,18 @@ interface TweetCardProps {
     liveReactions: { id: number, emoji: string, tweetId: string }[];
 }
 
+const TRUNCATE_LENGTH = 250;
+
 const TweetCard: React.FC<TweetCardProps> = (props) => {
     const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onGrok, onTranslateTweet } = props;
     const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isBookmarked, pinned, translation } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isTranslating, setIsTranslating] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    const isLongContent = content.length > TRUNCATE_LENGTH;
+    const displayedContent = isLongContent && !isExpanded ? `${content.substring(0, TRUNCATE_LENGTH)}...` : content;
 
     const timeAgo = (dateString: string) => {
         const date = new Date(dateString);
@@ -66,11 +71,19 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
             return <div className="mt-2 rounded-2xl overflow-hidden"><VideoPlayer src={mediaUrls[0]} /></div>
         }
 
+        const mediaToDisplay = mediaUrls.slice(0, 4);
+        const remainingCount = mediaUrls.length - 4;
+
         return (
-            <div className={`mt-2 grid ${mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-1 rounded-2xl overflow-hidden`}>
-                {mediaUrls.map(url => (
-                    <div key={url} className="cursor-pointer" onClick={(e) => handleActionClick(e, () => onImageClick(url))}>
+            <div className={`mt-2 grid ${mediaToDisplay.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-1 rounded-2xl overflow-hidden`}>
+                {mediaToDisplay.map((url, index) => (
+                    <div key={url} className="cursor-pointer relative" onClick={(e) => handleActionClick(e, () => onImageClick(url))}>
                         <img src={url} alt="tweet media" className="w-full h-full object-cover" />
+                        {index === 3 && remainingCount > 0 && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-2xl font-bold">
+                                +{remainingCount}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -108,7 +121,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             </AnimatePresence>
                         </div>
                     </div>
-                    <p className="whitespace-pre-wrap">{content}</p>
+                    <p className="whitespace-pre-wrap">{displayedContent}</p>
+                     {isLongContent && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                            className="text-twitter-blue mt-1 font-semibold"
+                        >
+                            {isExpanded ? 'Show less' : 'Show more'}
+                        </button>
+                    )}
                     <AnimatePresence>
                         {(showTranslation && translation) && (
                             <motion.div

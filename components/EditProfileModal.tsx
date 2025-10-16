@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User } from '../types';
 import { CloseIcon, PhotoIcon } from './Icon';
 import { motion } from 'framer-motion';
@@ -15,6 +14,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
   const [bio, setBio] = useState(user.bio || '');
   const [location, setLocation] = useState(user.location || '');
   const [website, setWebsite] = useState(user.website || '');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
   
   const handleSave = () => {
     onSave({
@@ -22,12 +26,29 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
       displayName,
       bio,
       location,
-      website
+      website,
+      avatarUrl: avatarPreview || user.avatarUrl,
+      bannerUrl: bannerPreview || user.bannerUrl,
     });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
+      const file = e.target.files?.[0];
+      if (file) {
+          const url = URL.createObjectURL(file);
+          if (type === 'avatar') {
+              setAvatarPreview(url);
+          } else {
+              setBannerPreview(url);
+          }
+      }
+  };
+
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center pt-10" onClick={onClose}>
+      <input type="file" accept="image/*" ref={bannerInputRef} onChange={(e) => handleFileChange(e, 'banner')} className="hidden" />
+      <input type="file" accept="image/*" ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} className="hidden" />
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -44,33 +65,33 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
         </header>
         <div className="flex-1 overflow-y-auto">
             <div className="relative h-48 bg-gray-500">
-                <img src={user.bannerUrl} alt="banner" className="w-full h-full object-cover"/>
+                <img src={bannerPreview || user.bannerUrl} alt="banner" className="w-full h-full object-cover"/>
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-4">
-                    <button className="p-2 bg-black/50 rounded-full text-white"><PhotoIcon /></button>
+                    <button onClick={() => bannerInputRef.current?.click()} className="p-2 bg-black/50 rounded-full text-white"><PhotoIcon /></button>
                 </div>
             </div>
             <div className="p-4 -mt-16">
-                <div className="relative w-32 h-32">
-                     <img src={user.avatarUrl} alt="avatar" className="w-32 h-32 rounded-full border-4 border-light-bg dark:border-twitter-dark"/>
-                     <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center">
-                         <button className="p-2 bg-black/50 rounded-full text-white"><PhotoIcon /></button>
+                <div className="relative w-32 h-32 group">
+                     <img src={avatarPreview || user.avatarUrl} alt="avatar" className="w-32 h-32 rounded-full border-4 border-light-bg dark:border-twitter-dark"/>
+                     <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <button onClick={() => avatarInputRef.current?.click()} className="p-2 bg-black/50 rounded-full text-white"><PhotoIcon /></button>
                     </div>
                 </div>
             </div>
             <div className="p-4 space-y-6">
-                <div className="border border-light-border dark:border-twitter-border rounded-md p-2">
+                <div className="border border-light-border dark:border-twitter-border rounded-md p-2 focus-within:ring-2 focus-within:ring-twitter-blue">
                     <label className="text-xs text-twitter-gray">Name</label>
                     <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full bg-transparent focus:outline-none"/>
                 </div>
-                <div className="border border-light-border dark:border-twitter-border rounded-md p-2">
+                <div className="border border-light-border dark:border-twitter-border rounded-md p-2 focus-within:ring-2 focus-within:ring-twitter-blue">
                     <label className="text-xs text-twitter-gray">Bio</label>
                     <textarea value={bio} onChange={e => setBio(e.target.value)} className="w-full bg-transparent focus:outline-none resize-none" rows={3}/>
                 </div>
-                <div className="border border-light-border dark:border-twitter-border rounded-md p-2">
+                <div className="border border-light-border dark:border-twitter-border rounded-md p-2 focus-within:ring-2 focus-within:ring-twitter-blue">
                     <label className="text-xs text-twitter-gray">Location</label>
                     <input type="text" value={location} onChange={e => setLocation(e.target.value)} className="w-full bg-transparent focus:outline-none"/>
                 </div>
-                <div className="border border-light-border dark:border-twitter-border rounded-md p-2">
+                <div className="border border-light-border dark:border-twitter-border rounded-md p-2 focus-within:ring-2 focus-within:ring-twitter-blue">
                     <label className="text-xs text-twitter-gray">Website</label>
                     <input type="text" value={website} onChange={e => setWebsite(e.target.value)} className="w-full bg-transparent focus:outline-none"/>
                 </div>

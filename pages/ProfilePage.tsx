@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { User, Tweet, Highlight } from '../types';
 import { CalendarIcon, MoreIcon, PinIcon } from '../components/Icon';
 import TweetCard from '../components/TweetCard';
 import ProfileHighlights from '../components/ProfileHighlights';
+import TweetSkeleton from '../components/TweetSkeleton';
 
 interface ProfilePageProps {
   user: User;
@@ -18,9 +18,24 @@ interface ProfilePageProps {
   onGrok: (tweet: Tweet) => void;
 }
 
+const TWEETS_PER_PAGE = 10;
+
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
   const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onHighlightClick, onTranslateTweet, onGrok } = props;
   const [activeTab, setActiveTab] = useState('Posts');
+  const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const visibleTweets = tweets.slice(0, visibleCount);
+  const hasMore = visibleCount < tweets.length;
+
+  const loadMore = () => {
+      setIsLoadingMore(true);
+      setTimeout(() => {
+          setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, tweets.length));
+          setIsLoadingMore(false);
+      }, 1000);
+  };
 
   const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
   const isOwnProfile = user.id === 'u1'; // Mock check
@@ -72,7 +87,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
       </div>
       
       <div>
-        {tweets.map(tweet => (
+        {visibleTweets.map(tweet => (
             <TweetCard
                 key={tweet.id}
                 tweet={tweet}
@@ -89,6 +104,17 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 liveReactions={[]}
             />
         ))}
+         {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
+        {hasMore && !isLoadingMore && (
+            <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border text-center">
+                <button
+                    onClick={loadMore}
+                    className="text-twitter-blue hover:underline font-semibold"
+                >
+                    Show more
+                </button>
+            </div>
+        )}
       </div>
     </div>
   );

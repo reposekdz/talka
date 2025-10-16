@@ -1,4 +1,3 @@
-
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
 
 export const mockUser: User = {
@@ -78,6 +77,25 @@ export const baseTweets: Tweet[] = [
     viewCount: 1200000,
     mediaUrls: ['https://picsum.photos/seed/nasa1/800/600', 'https://picsum.photos/seed/nasa2/800/600'],
   },
+    {
+    id: 't-more-images',
+    user: otherUsers[5], // NatGeo
+    content: 'A stunning collection of photos from our latest expedition to the Galápagos Islands. The biodiversity here is unlike anywhere else on Earth. We saw marine iguanas, giant tortoises, and blue-footed boobies. This trip was a photographer\'s dream, with unique wildlife at every turn. Planning to share a full documentary about it soon! #NatGeo #Wildlife #Galapagos',
+    timestamp: '2024-07-25T10:00:00Z',
+    replyCount: 150,
+    retweetCount: 2500,
+    likeCount: 18000,
+    shareCount: 900,
+    viewCount: 750000,
+    mediaUrls: [
+        'https://picsum.photos/seed/mi1/400/300',
+        'https://picsum.photos/seed/mi2/400/300',
+        'https://picsum.photos/seed/mi3/400/300',
+        'https://picsum.photos/seed/mi4/400/300',
+        'https://picsum.photos/seed/mi5/400/300',
+        'https://picsum.photos/seed/mi6/400/300',
+    ],
+  },
   {
     id: 't3',
     user: otherUsers[1],
@@ -113,7 +131,7 @@ export const baseTweets: Tweet[] = [
   },
   {
     id: 't-new-4grid',
-    user: otherUsers[4],
+    user: otherUsers[5],
     content: 'A few highlights from our recent expedition to the Amazon rainforest. The biodiversity is simply astounding. #NatGeo #Wildlife',
     timestamp: '2024-07-24T16:00:00Z',
     replyCount: 210,
@@ -189,7 +207,7 @@ export const baseTweets: Tweet[] = [
   },
   {
     id: 't-natgeo-1',
-    user: otherUsers[4],
+    user: otherUsers[5],
     content: 'A lioness stalks her prey in the Serengeti. The patience and power of these animals is breathtaking. #wildlife #photography',
     timestamp: '2024-07-23T08:00:00Z',
     replyCount: 150,
@@ -201,7 +219,7 @@ export const baseTweets: Tweet[] = [
   },
   {
     id: 't-figma-1',
-    user: otherUsers[5],
+    user: otherUsers[6],
     content: 'Collaboration just got easier. Introducing live comments directly in your prototypes. Give feedback in context, instantly. @reactdev what do you think?',
     timestamp: '2024-07-23T10:00:00Z',
     replyCount: 200,
@@ -224,7 +242,7 @@ export const baseTweets: Tweet[] = [
   },
   {
     id: 't-codepen-1',
-    user: otherUsers[6],
+    user: otherUsers[7],
     content: 'We love seeing what you build! Check out this week\'s featured pen - a pure CSS recreation of the solar system. #CSSArt #CodePen',
     timestamp: '2024-07-23T12:00:00Z',
     replyCount: 80,

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { mockTrendingTopics } from '../data/mockData';
 import TrendingTopic from '../components/TrendingTopic';
 import { SearchIcon } from '../components/Icon';
@@ -14,8 +13,24 @@ interface ExplorePageProps {
   currentUser: User;
 }
 
+const TWEETS_PER_PAGE = 10;
+
 const ExplorePage: React.FC<ExplorePageProps> = ({ onImageClick, onViewProfile, onGrok, tweets, currentUser }) => {
+  const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const mediaTweets = tweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0);
+  
+  const visibleMediaTweets = mediaTweets.slice(0, visibleCount);
+  const hasMore = visibleCount < mediaTweets.length;
+
+  const loadMore = () => {
+    setIsLoadingMore(true);
+    setTimeout(() => {
+        setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, mediaTweets.length));
+        setIsLoadingMore(false);
+    }, 1000);
+  };
   
   return (
     <div>
@@ -40,7 +55,7 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ onImageClick, onViewProfile, 
         </div>
       </div>
       <div className="p-2" style={{ columnCount: 2, columnGap: '8px' }}>
-          {mediaTweets.map(tweet => (
+          {visibleMediaTweets.map(tweet => (
               <MediaCard 
                 key={tweet.id} 
                 tweet={tweet} 
@@ -52,6 +67,21 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ onImageClick, onViewProfile, 
               />
           ))}
       </div>
+       {hasMore && !isLoadingMore && (
+          <div className="p-4 text-center">
+              <button
+                  onClick={loadMore}
+                  className="text-twitter-blue hover:underline font-semibold"
+              >
+                  Show more
+              </button>
+          </div>
+      )}
+      {isLoadingMore && (
+          <div className="p-4 text-center text-twitter-blue font-semibold">
+              Loading...
+          </div>
+      )}
     </div>
   );
 };
