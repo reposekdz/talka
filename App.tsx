@@ -298,7 +298,7 @@ function App() {
           </div>
         </main>
         
-        <div className="w-0 lg:w-[350px] flex-shrink-0 relative">
+        <div className="w-0 md:w-[290px] lg:w-[350px] flex-shrink-0 relative">
           <AnimatePresence>
             {isReelsCommentOpen && activeReelForComments ? (
               <motion.div

@@ -8,7 +8,7 @@ const createIcon = (path: React.ReactNode) => () => (
 
 export const ProtoIcon = () => (
     <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2.5-8.5h5v2h-5v-2zm-2 4h9v2h-9v-2zm2-8h5v2h-5V6z"></path>
+      <path d="M22 4L2 12l10 2L14 22l8-18z"></path>
     </svg>
 );
 

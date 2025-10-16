@@ -45,7 +45,7 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ openSearchModal, onImageClick
                 </div>
             </div>
             
-            <div className="p-2 md:p-4" style={{ columnCount: 2, columnGap: '0.75rem' }}>
+            <div className="p-2 md:p-4 columns-1 md:columns-2 gap-3">
                 {mediaTweets.map(tweet => (
                     <MediaCard key={tweet.id} tweet={tweet} onMediaClick={handleMediaClick} />
                 ))}
