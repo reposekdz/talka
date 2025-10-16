@@ -56,25 +56,34 @@ export interface TrendingTopic {
   imageUrl?: string;
 }
 
-export interface Conversation {
-    id: string;
-    participant: User;
-    lastMessage: {
-        text: string;
-        timestamp: string;
-    };
-    unreadCount: number;
+export interface Reaction {
+    emoji: string;
+    users: { id: string, displayName: string }[];
 }
 
 export interface Message {
     id: string;
     senderId: string;
-    text: string;
+    text?: string;
     timestamp: string;
+    type: 'text' | 'voice';
+    replyTo?: Message;
+    reactions?: Reaction[];
+    audioUrl?: string;
+    duration?: number; // in seconds
+    isRead: boolean;
+}
+
+export interface Conversation {
+    id: string;
+    participant: User;
+    lastMessage: Message;
+    unreadCount: number;
+    isTyping?: boolean;
 }
 
 export interface Community {
-    id: string;
+    id:string;
     name: string;
     description: string;
     avatarUrl: string;

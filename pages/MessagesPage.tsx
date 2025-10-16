@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { mockConversations, mockMessages, mockUser } from '../data/mockData';
 import { Conversation, Message, User } from '../types';
 import Avatar from '../components/Avatar';
-import { VerifiedIcon, PhotoIcon, GifIcon, EmojiIcon, AudioCallIcon, VideoCallIcon, InfoIcon, MoreIcon } from '../components/Icon';
+import { VerifiedIcon, MoreIcon, InfoIcon, VideoCallIcon, AudioCallIcon } from '../components/Icon';
+import MessageBubble from '../components/MessageBubble';
+import MessageInput from '../components/MessageInput';
 
 const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boolean, onClick: () => void }> = ({ conversation, isSelected, onClick }) => {
     const { participant, lastMessage, unreadCount } = conversation;
@@ -33,7 +35,7 @@ const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boole
                 </div>
                 <div className="flex justify-between items-start mt-1">
                     <p className={`text-sm truncate ${unreadCount > 0 ? 'font-bold text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}`}>
-                        {lastMessage.text}
+                        {lastMessage.type === 'voice' ? 'Voice message' : lastMessage.text}
                     </p>
                     {unreadCount > 0 && (
                         <span className="bg-twitter-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{unreadCount}</span>
@@ -44,11 +46,30 @@ const ConversationItem: React.FC<{ conversation: Conversation, isSelected: boole
     );
 };
 
-const ChatView: React.FC<{ conversation: Conversation, messages: Message[], currentUser: User }> = ({ conversation, messages, currentUser }) => {
+const ChatView: React.FC<{
+    conversation: Conversation;
+    messages: Message[];
+    currentUser: User;
+    onSendMessage: (convId: string, msg: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId'>) => void;
+}> = ({ conversation, messages, currentUser, onSendMessage }) => {
+    const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleSendMessage = (content: { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number }, replyTo?: Message) => {
+        onSendMessage(conversation.id, {
+            ...content,
+            replyTo: replyTo ?? undefined
+        });
+        setReplyingTo(null);
+    };
+    
     return (
-        <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between">
+        <div className="flex flex-col h-full bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">
+            <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex items-center justify-between sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
                 <div className="flex items-center gap-3">
                     <Avatar src={conversation.participant.avatarUrl} alt={conversation.participant.displayName} size="small" />
                     <div>
@@ -59,53 +80,68 @@ const ChatView: React.FC<{ conversation: Conversation, messages: Message[], curr
                         <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">@{conversation.participant.username}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+                <div className="flex items-center gap-2 text-current">
                     <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full"><AudioCallIcon /></button>
                     <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full"><VideoCallIcon /></button>
                     <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover rounded-full"><InfoIcon /></button>
                 </div>
             </div>
-            {/* Messages */}
-            <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+            
+            <div className="flex-1 p-4 space-y-2 overflow-y-auto">
                 {messages.map(msg => (
-                    <div key={msg.id} className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs md:max-w-md p-3 rounded-2xl ${msg.senderId === currentUser.id ? 'bg-twitter-blue text-white rounded-br-none' : 'bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-bl-none'}`}>
-                            {msg.text}
+                    <MessageBubble key={msg.id} message={msg} isOwnMessage={msg.senderId === currentUser.id} onReply={setReplyingTo} />
+                ))}
+                {conversation.isTyping && (
+                    <div className="flex justify-start">
+                        <div className="bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray px-4 py-2 rounded-t-xl rounded-br-xl">
+                            <span className="italic">typing...</span>
                         </div>
                     </div>
-                ))}
+                )}
+                <div ref={messagesEndRef} />
             </div>
-            {/* Input */}
-            <div className="p-4 border-t border-light-border dark:border-twitter-border dim:border-dim-border">
-                <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-4 py-2">
-                     <div className="flex gap-1 text-twitter-blue">
-                        <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><PhotoIcon /></button>
-                        <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
-                        <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
-                    </div>
-                    <input type="text" placeholder="Start a new message" className="bg-transparent w-full focus:outline-none" />
-                </div>
-            </div>
+
+            <MessageInput
+                onSendMessage={handleSendMessage}
+                replyingTo={replyingTo}
+                onCancelReply={() => setReplyingTo(null)}
+            />
         </div>
     );
 };
 
-
 const MessagesPage: React.FC = () => {
+    const [conversations, setConversations] = useState(mockConversations);
+    const [messages, setMessages] = useState(mockMessages);
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(mockConversations[0]?.id || null);
     
-    const selectedConversation = mockConversations.find(c => c.id === selectedConversationId);
-    const messages = selectedConversationId ? mockMessages[selectedConversationId] : [];
+    const selectedConversation = conversations.find(c => c.id === selectedConversationId);
+    const selectedMessages = selectedConversationId ? messages[selectedConversationId] : [];
+
+    const handleSendMessage = (convId: string, msgContent: Omit<Message, 'id' | 'timestamp' | 'isRead' | 'senderId'>) => {
+        const newMessage: Message = {
+            id: `m-${Date.now()}`,
+            senderId: mockUser.id,
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            ...msgContent,
+        };
+
+        setMessages(prev => ({
+            ...prev,
+            [convId]: [...prev[convId], newMessage]
+        }));
+    };
 
     return (
         <div className="flex h-screen">
             <div className="w-full md:w-2/5 border-r border-light-border dark:border-twitter-border dim:border-dim-border flex flex-col">
-                <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center">
+                <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex justify-between items-center sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
                     <h1 className="text-xl font-bold">Messages</h1>
-                    <MoreIcon/>
+                    <button className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><MoreIcon/></button>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                    {mockConversations.map(conv => (
+                    {conversations.map(conv => (
                         <ConversationItem
                             key={conv.id}
                             conversation={conv}
@@ -117,9 +153,14 @@ const MessagesPage: React.FC = () => {
             </div>
             <div className="hidden md:flex flex-1 flex-col">
                 {selectedConversation ? (
-                    <ChatView conversation={selectedConversation} messages={messages} currentUser={mockUser}/>
+                    <ChatView
+                        conversation={selectedConversation}
+                        messages={selectedMessages}
+                        currentUser={mockUser}
+                        onSendMessage={handleSendMessage}
+                    />
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                    <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg">
                         <h2 className="text-2xl font-bold mb-2">Select a message</h2>
                         <p className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text max-w-sm">
                             Choose from your existing conversations, start a new one, or just keep swimming.

@@ -145,28 +145,35 @@ export const mockNotifications: Notification[] = [
     { id: 'n4', type: 'mention', user: mockUser, tweet: { ...baseTweets[1], content: `Hey @reactdev, what do you think of this? ${baseTweets[1].content}` }, timestamp: '2024-07-22T09:35:00.000Z'},
 ];
 
-export const mockConversations: Conversation[] = [
-    { id: 'c1', participant: otherUsers[0], lastMessage: { text: 'Sounds good, thanks!', timestamp: '2024-07-22T11:00:00.000Z'}, unreadCount: 2 },
-    { id: 'c2', participant: otherUsers[1], lastMessage: { text: 'I\'ll check out the new docs.', timestamp: '2024-07-21T18:00:00.000Z'}, unreadCount: 0 },
-    { id: 'c3', participant: otherUsers[2], lastMessage: { text: 'The API looks very powerful.', timestamp: '2024-07-21T14:00:00.000Z'}, unreadCount: 0 },
+const initialMessages: Message[] = [
+    { id: 'm1-1', senderId: otherUsers[0].id, type: 'text', text: 'Hey! Saw your prototype. Looks awesome!', timestamp: '2024-07-22T10:59:00.000Z', isRead: true },
+    { id: 'm1-2', senderId: mockUser.id, type: 'text', text: 'Thanks so much!', timestamp: '2024-07-22T10:59:30.000Z', isRead: true, reactions: [{ emoji: '❤️', users: [otherUsers[0]] }] },
+    { id: 'm1-3', senderId: otherUsers[0].id, type: 'text', text: 'Of course! That video player is slick.', timestamp: '2024-07-22T11:00:00.000Z', isRead: true },
+    { id: 'm1-4', senderId: mockUser.id, type: 'voice', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', duration: 7, timestamp: '2024-07-22T11:01:00.000Z', isRead: true },
+    { id: 'm1-5', senderId: otherUsers[0].id, type: 'text', text: 'Whoa, voice notes work too? Impressive.', timestamp: '2024-07-22T11:01:30.000Z', isRead: true, replyTo: { id: 'm1-4', senderId: mockUser.id, type: 'voice', duration: 7, timestamp: '2024-07-22T11:01:00.000Z', isRead: true }},
+    { id: 'm1-6', senderId: mockUser.id, type: 'text', text: 'Yep! Just added them. Along with replies and reactions.', timestamp: '2024-07-22T11:02:00.000Z', isRead: false },
+    { id: 'm1-7', senderId: mockUser.id, type: 'text', text: 'Let me know what you think!', timestamp: '2024-07-22T11:02:05.000Z', isRead: false },
 ];
 
 export const mockMessages: Record<string, Message[]> = {
-    'c1': [
-        { id: 'm1-1', senderId: otherUsers[0].id, text: 'Hey! Saw your prototype. Looks awesome!', timestamp: '2024-07-22T10:59:00.000Z' },
-        { id: 'm1-2', senderId: mockUser.id, text: 'Thanks so much!', timestamp: '2024-07-22T10:59:30.000Z' },
-        { id: 'm1-3', senderId: otherUsers[0].id, text: 'Sounds good, thanks!', timestamp: '2024-07-22T11:00:00.000Z' },
-    ],
+    'c1': initialMessages,
     'c2': [
-        { id: 'm2-1', senderId: otherUsers[1].id, text: 'Did you see the latest TS update?', timestamp: '2024-07-21T17:59:00.000Z' },
-        { id: 'm2-2', senderId: mockUser.id, text: 'Yes, it\'s packed with features!', timestamp: '2024-07-21T17:59:30.000Z' },
-        { id: 'm2-3', senderId: otherUsers[1].id, text: 'I\'ll check out the new docs.', timestamp: '2024-07-21T18:00:00.000Z' },
+        { id: 'm2-1', senderId: otherUsers[1].id, type: 'text', text: 'Did you see the latest TS update?', timestamp: '2024-07-21T17:59:00.000Z', isRead: true },
+        { id: 'm2-2', senderId: mockUser.id, type: 'text', text: 'Yes, it\'s packed with features!', timestamp: '2024-07-21T17:59:30.000Z', isRead: true },
+        { id: 'm2-3', senderId: otherUsers[1].id, type: 'text', text: 'I\'ll check out the new docs.', timestamp: '2024-07-21T18:00:00.000Z', isRead: true },
     ],
     'c3': [
-        { id: 'm3-1', senderId: mockUser.id, text: 'The Gemini API seems promising.', timestamp: '2024-07-21T13:59:30.000Z' },
-        { id: 'm3-2', senderId: otherUsers[2].id, text: 'The API looks very powerful.', timestamp: '2024-07-21T14:00:00.000Z' },
+        { id: 'm3-1', senderId: mockUser.id, type: 'text', text: 'The Gemini API seems promising.', timestamp: '2024-07-21T13:59:30.000Z', isRead: true },
+        { id: 'm3-2', senderId: otherUsers[2].id, type: 'text', text: 'The API looks very powerful.', timestamp: '2024-07-21T14:00:00.000Z', isRead: true },
     ],
 };
+
+export const mockConversations: Conversation[] = [
+    { id: 'c1', participant: otherUsers[0], lastMessage: initialMessages[initialMessages.length - 1], unreadCount: 2, isTyping: true },
+    { id: 'c2', participant: otherUsers[1], lastMessage: mockMessages['c2'][mockMessages['c2'].length - 1], unreadCount: 0 },
+    { id: 'c3', participant: otherUsers[2], lastMessage: mockMessages['c3'][mockMessages['c3'].length - 1], unreadCount: 0 },
+];
+
 
 export const mockCommunities: Community[] = [
     { id: 'comm1', name: 'React Developers', description: 'A community for all things React, from hooks to suspense.', avatarUrl: 'https://picsum.photos/seed/comm1/200/200', bannerUrl: 'https://picsum.photos/seed/comm-banner1/600/200', memberCount: 150000 },
