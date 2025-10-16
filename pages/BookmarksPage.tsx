@@ -14,10 +14,11 @@ interface BookmarksPageProps {
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
   liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
+  onGrok: (tweet: Tweet) => void;
 }
 
 const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
-  const { tweets, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions } = props;
+  const { tweets, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions, onGrok } = props;
   const bookmarkedTweets = tweets.filter(t => t.isBookmarked);
 
   return (
@@ -41,6 +42,7 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
               onQuote={onQuote}
               onEdit={onEdit}
               liveReactions={liveReactions}
+              onGrok={onGrok}
             />
           ))
         ) : (

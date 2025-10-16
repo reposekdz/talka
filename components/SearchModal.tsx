@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
@@ -10,11 +11,12 @@ interface SearchModalProps {
   onClose: () => void;
   onImageClick: (url: string) => void;
   onViewProfile: (user: User) => void;
+  onGrok: (tweet: Tweet) => void;
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -124,6 +126,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
                     onQuote={() => {}}
                     onEdit={() => {}}
                     liveReactions={[]}
+                    onGrok={onGrok}
                     />;
                 } else {
                   // This part is not fully functional in the prototype; needs follow state management

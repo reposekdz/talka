@@ -32,6 +32,7 @@ interface HomePageProps {
   setCurrentPage: (page: Page) => void;
   onOpenTopRightMenu: () => void;
   onOpenCreator: (mode: 'select' | 'story' | 'reel' | 'post') => void;
+  onGrok: (tweet: Tweet) => void;
 }
 
 const TabButton: React.FC<{
@@ -48,7 +49,7 @@ const TabButton: React.FC<{
 );
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, userStories, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer, notificationCount, setCurrentPage, onOpenTopRightMenu, onOpenCreator } = props;
+  const { tweets, currentUser, userStories, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onStoryClick, onQuote, onEdit, newTweetsCount, onShowNewTweets, onJoinSpace, liveReactions, onOpenDrawer, notificationCount, setCurrentPage, onOpenTopRightMenu, onOpenCreator, onGrok } = props;
   const [activeTab, setActiveTab] = useState<'For You' | 'Following'>('For You');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -149,6 +150,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
                 onQuote={onQuote}
                 onEdit={onEdit}
                 liveReactions={liveReactions}
+                onGrok={onGrok}
                 />
             ))}
           </AnimatePresence>

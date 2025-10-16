@@ -8,10 +8,10 @@ import { mockUser } from '../data/mockData';
 interface ReelCommentsPanelProps {
   reel: Reel;
   onClose: () => void;
-  onPostComment: (reelId: string, text: string) => void;
+  onPostComment: (reelId: string, text: string, replyTo?: ReelComment) => void;
 }
 
-const CommentItem: React.FC<{ comment: ReelComment }> = ({ comment }) => {
+const CommentItem: React.FC<{ comment: ReelComment, onReply: (comment: ReelComment) => void }> = ({ comment, onReply }) => {
     const [isLiked, setIsLiked] = useState(comment.isLiked);
     const [likeCount, setLikeCount] = useState(comment.likeCount);
 
@@ -28,9 +28,12 @@ const CommentItem: React.FC<{ comment: ReelComment }> = ({ comment }) => {
                     <span className="font-bold text-light-text dark:text-dim-text">{comment.user.displayName}</span>
                     <span className="text-light-secondary-text dark:text-twitter-gray ml-2">{comment.timestamp}</span>
                 </p>
-                <p className="text-light-text dark:text-dim-text">{comment.text}</p>
+                <p className="text-light-text dark:text-dim-text">
+                  {comment.replyToUsername && <span className="text-twitter-blue mr-1">@{comment.replyToUsername}</span>}
+                  {comment.text}
+                </p>
                 <div className="flex items-center gap-4 mt-1 text-xs text-light-secondary-text dark:text-twitter-gray">
-                    <button className="hover:underline">Reply</button>
+                    <button onClick={() => onReply(comment)} className="hover:underline">Reply</button>
                 </div>
             </div>
             <div className="text-center">
@@ -45,11 +48,13 @@ const CommentItem: React.FC<{ comment: ReelComment }> = ({ comment }) => {
 
 const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, onPostComment }) => {
     const [newComment, setNewComment] = useState('');
+    const [replyingTo, setReplyingTo] = useState<ReelComment | null>(null);
 
     const handlePostComment = () => {
         if (!newComment.trim()) return;
-        onPostComment(reel.id, newComment.trim());
+        onPostComment(reel.id, newComment.trim(), replyingTo || undefined);
         setNewComment('');
+        setReplyingTo(null);
     };
 
   return (
@@ -71,7 +76,7 @@ const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, on
                     <p className="text-light-text dark:text-dim-text">{reel.caption}</p>
                 </div>
             </div>
-            {reel.comments.map(comment => <CommentItem key={comment.id} comment={comment} />)}
+            {reel.comments.map(comment => <CommentItem key={comment.id} comment={comment} onReply={setReplyingTo} />)}
              {reel.comments.length === 0 && (
                 <div className="text-center text-light-secondary-text dark:text-twitter-gray py-16">
                     <h3 className="font-bold">No comments yet</h3>
@@ -81,6 +86,12 @@ const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, on
         </div>
         
         <div className="p-2 border-t border-light-border dark:border-twitter-border dim:border-dim-border">
+            {replyingTo && (
+                <div className="text-xs text-light-secondary-text dark:text-twitter-gray px-4 pb-1 flex justify-between">
+                    <span>Replying to @{replyingTo.user.username}</span>
+                    <button onClick={() => setReplyingTo(null)} className="font-bold">Cancel</button>
+                </div>
+            )}
             <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark rounded-full px-4 py-2">
                 <Avatar src={mockUser.avatarUrl} alt={mockUser.displayName} size="small" />
                 <input
@@ -90,6 +101,7 @@ const ReelCommentsPanel: React.FC<ReelCommentsPanelProps> = ({ reel, onClose, on
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
+                    autoFocus={!!replyingTo}
                 />
                 <button onClick={handlePostComment} className="text-twitter-blue disabled:opacity-50" disabled={!newComment.trim()}>
                     <PaperPlaneIcon />

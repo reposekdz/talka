@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tweet, User } from '../types';
 import Avatar from './Avatar';
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon, HeartFillIcon, RetweetFillIcon } from './Icon';
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, MoreIcon, PinIcon, BookmarkIcon, BookmarkFillIcon, QuoteIcon, EditIcon, TrashIcon, HeartFillIcon, RetweetFillIcon, SparklesIcon } from './Icon';
 import PollDisplay from './PollDisplay';
 import { motion, AnimatePresence } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
@@ -18,6 +18,7 @@ interface TweetCardProps {
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
   liveReactions: { tweetId: string, type: 'like' | 'retweet', id: number }[];
+  onGrok: (tweet: Tweet) => void;
 }
 
 const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => void }> = ({ tweet, onViewProfile }) => {
@@ -40,7 +41,7 @@ const EmbeddedTweetCard: React.FC<{ tweet: Tweet, onViewProfile: (user:User) => 
 }
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions } = props;
+  const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, liveReactions, onGrok } = props;
   const { user, content, timestamp, mediaUrls, replyCount, retweetCount, likeCount, shareCount, isEdited, quotedTweet, poll, pinned, isVoiceTweet, audioUrl } = tweet;
   const [isMoreMenuOpen, setIsMoreMenuOpen] = React.useState(false);
 
@@ -114,12 +115,17 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
             {isMoreMenuOpen && (
                 <div onMouseLeave={() => setIsMoreMenuOpen(false)} className="absolute top-8 right-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg border border-light-border dark:border-twitter-border dim:border-dim-border z-10 w-48">
                     {currentUser.id === tweet.user.id && (
-                        <button onClick={(e) => handleActionClick(e, () => { onEdit(tweet); setIsMoreMenuOpen(false); })} className="flex items-center gap-2 w-full text-left p-3 hover:bg-light-hover dark:hover:bg-white/10">
-                            <EditIcon/> Edit Post
-                        </button>
+                        <>
+                            <button onClick={(e) => handleActionClick(e, () => { onEdit(tweet); setIsMoreMenuOpen(false); })} className="flex items-center gap-2 w-full text-left p-3 hover:bg-light-hover dark:hover:bg-white/10">
+                                <EditIcon/> Edit Post
+                            </button>
+                             <button onClick={(e) => handleActionClick(e)} className="flex items-center gap-2 w-full text-left p-3 text-red-500 hover:bg-red-500/10">
+                                <TrashIcon/> Delete
+                            </button>
+                        </>
                     )}
-                     <button onClick={(e) => handleActionClick(e)} className="flex items-center gap-2 w-full text-left p-3 text-red-500 hover:bg-red-500/10">
-                        <TrashIcon/> Delete
+                     <button onClick={(e) => handleActionClick(e, () => { onGrok(tweet); setIsMoreMenuOpen(false); })} className="flex items-center gap-2 w-full text-left p-3 hover:bg-light-hover dark:hover:bg-white/10">
+                        <SparklesIcon className="w-5 h-5"/> Analyze Post
                     </button>
                 </div>
             )}

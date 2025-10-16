@@ -250,7 +250,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
                             <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 bg-black/60 text-white rounded-full p-0.5"><CloseIcon/></button>
                         </div>
                     )}
-                    <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1">
+                    <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1 transition-all duration-200">
                       <AnimatePresence>
                         {showAttachmentIcons && (
                             <motion.div 

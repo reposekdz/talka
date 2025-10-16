@@ -24,8 +24,9 @@ const themeClasses: Record<ChatTheme, string> = {
     'minty-fresh': 'bg-gradient-to-br from-emerald-400 to-lime-400 text-black',
 };
 
-const ReelShareContent: React.FC<{ reel: Reel }> = ({ reel }) => (
+const ReelShareContent: React.FC<{ reel: Reel, text?: string }> = ({ reel, text }) => (
     <div className="w-56 cursor-pointer group">
+        {text && <p className="whitespace-pre-wrap break-words mb-2">{text}</p>}
         <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-black">
             <video src={reel.videoUrl} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
@@ -96,7 +97,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
         case 'reel-share':
             const reel = reels.find(r => r.id === reelId);
             if (!reel) return <p className="italic text-sm opacity-80">This reel is unavailable.</p>;
-            return <ReelShareContent reel={reel} />;
+            return <ReelShareContent reel={reel} text={text} />;
         case 'text':
         default:
             return <p className="whitespace-pre-wrap break-words">{text}</p>;

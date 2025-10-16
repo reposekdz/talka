@@ -126,7 +126,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
             exit={{ y: 100, opacity: 0, scale: 0.8 }}
             transition={{ type: 'spring', stiffness: 400, damping: 35 }}
         >
-            <button onClick={handleHeaderClick} className={`relative w-64 h-20 bg-light-bg dark:bg-twitter-light-dark dim:bg-dim-bg rounded-2xl shadow-lg p-3 flex items-center gap-3 text-left focus:outline-none transition-all duration-300 ${isFocused ? 'ring-2 ring-twitter-blue ring-offset-2 dark:ring-offset-twitter-dark' : ''}`}>
+            <button onClick={handleHeaderClick} className={`relative w-72 h-20 bg-light-bg dark:bg-twitter-light-dark dim:bg-dim-bg rounded-2xl shadow-lg p-3 flex items-center gap-3 text-left focus:outline-none transition-all duration-300 ${isFocused ? 'ring-2 ring-twitter-blue ring-offset-2 dark:ring-offset-twitter-dark' : ''}`}>
                 <AvatarWithStatus user={conversation.participant} size="medium" />
                 <div className="flex-1 overflow-hidden">
                     <p className="font-bold truncate text-light-text dark:text-dim-text">{conversation.participant.displayName}</p>
@@ -151,10 +151,10 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
     <motion.div
       drag
       dragListener={false}
-      dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 320, bottom: window.innerHeight - 450 }}
+      dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 384, bottom: window.innerHeight - 450 }}
       dragMomentum={false}
       onDragStart={onFocus}
-      className="w-80 h-[450px] bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-t-lg shadow-2xl flex flex-col pointer-events-auto"
+      className="w-96 h-[450px] bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-t-lg shadow-2xl flex flex-col pointer-events-auto"
       style={{ zIndex: isFocused ? 110 : 100, right: positionRight, bottom: 0, position: 'fixed' }}
       initial={{ y: "100%", opacity: 0.8 }}
       animate={{ y: 0, opacity: 1 }}

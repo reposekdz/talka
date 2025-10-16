@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { VideoCallIcon } from './Icon';
+import { mockLiveParticipants } from '../data/mockData';
 
 const LiveCard: React.FC = () => {
   return (
@@ -9,9 +9,16 @@ const LiveCard: React.FC = () => {
         <img src="https://picsum.photos/seed/live/600/338" alt="Live event" className="w-full h-full object-cover"/>
         <div className="absolute inset-0 bg-black/30"></div>
         <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">LIVE</div>
-        <div className="absolute bottom-2 left-2 text-white drop-shadow-lg">
+        <div className="absolute bottom-2 left-2 right-2 text-white drop-shadow-lg">
             <h3 className="font-bold text-lg">Live Coding Session: Building a Twitter Clone</h3>
-            <p className="text-sm">with React Dev</p>
+            <div className="flex items-center gap-2 mt-1">
+                <div className="flex -space-x-2">
+                    {mockLiveParticipants.map(user => (
+                        <img key={user.id} src={user.avatarUrl} alt={user.displayName} className="w-6 h-6 rounded-full border-2 border-black/50" />
+                    ))}
+                </div>
+                <p className="text-sm">{mockLiveParticipants.length}+ watching</p>
+            </div>
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity">
             <VideoCallIcon/>

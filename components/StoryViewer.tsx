@@ -31,7 +31,7 @@ const StoryCard: React.FC<{
     const title = 'title' in storyData ? storyData.title : null;
 
     const currentStory = stories[currentStoryIndex];
-    const reactionEmojis = ['❤️', '😂', '😮', '😢', '🔥', '👏'];
+    const quickReplies = ['😂', '😍', '🔥', '👏'];
 
     const goToNextStory = () => {
         if (currentStoryIndex < stories.length - 1) {
@@ -108,15 +108,16 @@ const StoryCard: React.FC<{
                         onMouseDown={e => e.stopPropagation()}
                         onTouchStart={e => e.stopPropagation()}
                     />
-                     <button onClick={() => showToast('Shared!')} className="p-2 text-white"><ShareIcon /></button>
                     {replyText ? (
                         <button onClick={handleReply} className="p-2 text-white"><PaperPlaneIcon/></button>
                     ) : (
-                        reactionEmojis.map(emoji => (
-                            <button key={emoji} onClick={() => onReact(emoji)} className="text-2xl hover:scale-125 transition-transform">
-                                {emoji}
-                            </button>
-                        ))
+                       <div className="flex items-center gap-1">
+                            {quickReplies.map(emoji => (
+                                <button key={emoji} onClick={() => onReact(emoji)} className="text-2xl hover:scale-125 transition-transform p-1">
+                                    {emoji}
+                                </button>
+                            ))}
+                       </div>
                     )}
                 </div>
             )}
@@ -170,11 +171,12 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories, initialUserIndex, on
                 className="absolute w-[320px] h-[90vh] max-h-[640px]"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{
-                  x: `${offset * 50}%`,
-                  scale: offset === 0 ? 1 : 0.75,
+                  x: `${offset * 40}%`,
+                  scale: offset === 0 ? 1 : 0.8,
                   opacity: offset === 0 ? 1 : 0.4,
                   zIndex: stories.length - Math.abs(offset),
-                  rotateY: offset * -15,
+                  rotateY: offset * -25,
+                  filter: offset === 0 ? 'blur(0px)' : 'blur(4px)',
                 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 25 }}
                 onClick={(e) => { e.stopPropagation(); paginate(index); }}

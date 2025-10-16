@@ -37,12 +37,13 @@ import CreatorFlowModal from './components/CreatorFlowModal';
 import MobileDrawer from './components/MobileDrawer';
 import ReelOptionsModal from './components/ReelOptionsModal';
 import TopRightMenu from './components/TopRightMenu';
-import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call, Story } from './types';
+import GrokAnalysisModal from './components/GrokAnalysisModal';
+import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call, Story, ReelComment } from './types';
 import { mockUser, otherUsers as initialOtherUsers, mockTweets, initialUserStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// FIX: Added optional text property to image message content type to match usage.
-type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string };
+// FIX: Added optional text property to image and reel-share message content types.
+type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string, text?: string };
 
 const initialSettings: AppSettings = {
   privacyAndSafety: {
@@ -87,6 +88,7 @@ function App() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [reelOptions, setReelOptions] = useState<Reel | null>(null);
   const [isTopRightMenuOpen, setIsTopRightMenuOpen] = useState(false);
+  const [grokkingTweet, setGrokkingTweet] = useState<Tweet | null>(null);
 
   // Profile/User List states
   const [profileUser, setProfileUser] = useState<User | null>(null);
@@ -557,14 +559,15 @@ function App() {
     showToast('Reel saved!');
   };
 
-  const handlePostReelComment = (reelId: string, text: string) => {
-    const newComment = {
+  const handlePostReelComment = (reelId: string, text: string, replyTo?: ReelComment) => {
+    const newComment: ReelComment = {
       id: `rc-new-${Date.now()}`,
       user: currentUser,
       text,
       timestamp: 'Now',
       likeCount: 0,
-      isLiked: false
+      isLiked: false,
+      replyToUsername: replyTo?.user.username,
     };
     setReels(prev => prev.map(r => {
       if (r.id === reelId) {
@@ -583,14 +586,16 @@ function App() {
     }));
   };
 
-  const handleShareReelAsMessage = (reelId: string, conversationId: string) => {
-    handleSendMessage(conversationId, { type: 'reel-share', reelId });
+  const handleShareReelAsMessage = (reelId: string, conversationIds: string[], message?: string) => {
+    conversationIds.forEach(conversationId => {
+        handleSendMessage(conversationId, { type: 'reel-share', reelId, text: message });
+        const targetUser = mockConversations.find(c => c.id === conversationId)?.participant;
+        if (targetUser) {
+            handleOpenChat(targetUser);
+        }
+    });
     setSharingReel(null);
-    showToast('Reel sent!');
-    const targetUser = mockConversations.find(c => c.id === conversationId)?.participant;
-    if (targetUser) {
-        handleOpenChat(targetUser);
-    }
+    showToast(`Reel sent to ${conversationIds.length} chat${conversationIds.length > 1 ? 's' : ''}!`);
   };
   
   const handleDrawerNavigate = (page: Page) => {
@@ -607,6 +612,10 @@ function App() {
     }
     setCurrentPage(page);
     setIsTopRightMenuOpen(false);
+  };
+
+  const handleGrok = (tweet: Tweet) => {
+    setGrokkingTweet(tweet);
   };
 
 
@@ -647,6 +656,7 @@ function App() {
         onEdit={setEditingTweet}
         onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
         tweets={filteredTweets.filter(t => t.user.id === profileUser.id)}
+        onGrok={handleGrok}
       />;
     }
     const unreadNotifications = mockNotifications.length;
@@ -674,6 +684,7 @@ function App() {
         setCurrentPage={setCurrentPage}
         onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
         onOpenCreator={handleOpenCreator}
+        onGrok={handleGrok}
       />;
       case Page.Explore: return <ExplorePage openSearchModal={() => setIsSearchModalOpen(true)} onImageClick={setLightboxImageUrl} />;
       case Page.Notifications: return <NotificationsPage />;
@@ -689,6 +700,7 @@ function App() {
         onQuote={setQuotingTweet}
         onEdit={setEditingTweet}
         liveReactions={liveReactions}
+        onGrok={handleGrok}
       />;
       case Page.Communities: return <CommunitiesPage />;
       case Page.Reels: return <ReelsPage 
@@ -722,6 +734,7 @@ function App() {
         onEdit={setEditingTweet}
         onHighlightClick={(highlights, index) => handleStoryClick(highlights, index, true)}
         tweets={filteredTweets.filter(t => t.user.id === currentUser.id)}
+        onGrok={handleGrok}
        />;
       default: return <HomePage 
         tweets={filteredTweets} 
@@ -745,6 +758,7 @@ function App() {
         setCurrentPage={setCurrentPage}
         onOpenTopRightMenu={() => setIsTopRightMenuOpen(true)}
         onOpenCreator={handleOpenCreator}
+        onGrok={handleGrok}
       />;
     }
   };
@@ -809,12 +823,13 @@ function App() {
                 {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} onGrok={handleGrok} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={handleEditTweet} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={handlePostTweet} />}
                 {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.initialIndex} onClose={() => setStoryViewerState(null)} showToast={showToast} isHighlight={storyViewerState.isHighlight} />}
                 {reelOptions && <ReelOptionsModal reel={reelOptions} onClose={() => setReelOptions(null)} showToast={showToast} />}
+                {grokkingTweet && <GrokAnalysisModal tweet={grokkingTweet} onClose={() => setGrokkingTweet(null)} />}
                 
                 {/* Call System */}
                 {activeCall?.status === 'incoming' && <IncomingCallModal call={activeCall} onAccept={() => handleAcceptCall(activeCall)} onDecline={handleDeclineCall} onReplyWithMessage={() => handleReplyWithMessage(activeCall)} />}
@@ -840,7 +855,6 @@ function App() {
                 onPinMessage={handlePinMessage}
                 onStartVideoCall={handleStartVideoCall}
                 onStartAudioCall={handleStartAudioCall}
-                // FIX: Pass the correct handler function `handleUpdateChatTheme` to the `onUpdateChatTheme` prop.
                 onUpdateChatTheme={handleUpdateChatTheme}
             />
             

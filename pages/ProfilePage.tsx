@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { mockHighlights, baseTweets } from '../data/mockData';
 import TweetCard from '../components/TweetCard';
 import { MoreIcon, CalendarIcon, ChevronLeftIcon, MessagesIcon } from '../components/Icon';
 import ProfileHighlights from '../components/ProfileHighlights';
 import { Tweet, User, Highlight } from '../types';
+import { motion } from 'framer-motion';
 
 interface ProfilePageProps {
   user: User;
@@ -21,11 +22,13 @@ interface ProfilePageProps {
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
   onHighlightClick: (highlights: Highlight[], index: number) => void;
+  onGrok: (tweet: Tweet) => void;
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, currentUser, tweets, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick } = props;
+  const { user, currentUser, tweets, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick, onGrok } = props;
   const [activeTab, setActiveTab] = useState('Posts');
+  const [mediaFilter, setMediaFilter] = useState<'all' | 'photos' | 'videos'>('all');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
   
   const userTweets = tweets;
@@ -33,12 +36,27 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
   const isFollowing = currentUser.followingIds.includes(user.id);
   const isFollowedBy = user.followerIds.includes(currentUser.id);
   
-  const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
+  const tabs = ['Posts', 'Replies', 'Media', 'Likes'];
   
   const handleFollowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onFollowToggle(user.id);
   };
+  
+  const mediaTweets = useMemo(() => {
+    if (activeTab !== 'Media') return [];
+    if (mediaFilter === 'all') {
+      return userTweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0);
+    }
+    if (mediaFilter === 'photos') {
+      return userTweets.filter(t => t.mediaUrls && t.mediaUrls.length > 0 && !t.mediaUrls.some(url => url.endsWith('.mp4')));
+    }
+    if (mediaFilter === 'videos') {
+      return userTweets.filter(t => t.mediaUrls && t.mediaUrls.some(url => url.endsWith('.mp4')));
+    }
+    return [];
+  }, [activeTab, mediaFilter, userTweets]);
+
 
   const renderFollowButton = () => {
     if (isCurrentUserProfile) {
@@ -61,6 +79,38 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
       </button>
     );
   };
+  
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'Posts':
+        return userTweets.map(tweet => (
+          <TweetCard key={tweet.id} tweet={tweet} currentUser={currentUser} onImageClick={onImageClick} onViewProfile={onViewProfile} onReply={onReply} onToggleBookmark={onToggleBookmark} onVote={onVote} onQuote={onQuote} onEdit={onEdit} liveReactions={[]} onGrok={onGrok} />
+        ));
+      case 'Media':
+        return (
+          <>
+            <div className="flex justify-around border-b border-light-border dark:border-twitter-border dim:border-dim-border">
+              {(['all', 'photos', 'videos'] as const).map(filter => (
+                <button key={filter} onClick={() => setMediaFilter(filter)} className={`flex-1 p-3 text-sm font-bold ${mediaFilter === filter ? 'text-twitter-blue border-b-2 border-twitter-blue' : 'text-light-secondary-text dark:text-twitter-gray'}`}>
+                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </button>
+              ))}
+            </div>
+            {mediaTweets.length > 0 ? mediaTweets.map(tweet => (
+              <TweetCard key={tweet.id} tweet={tweet} currentUser={currentUser} onImageClick={onImageClick} onViewProfile={onViewProfile} onReply={onReply} onToggleBookmark={onToggleBookmark} onVote={onVote} onQuote={onQuote} onEdit={onEdit} liveReactions={[]} onGrok={onGrok} />
+            )) : <div className="p-8 text-center text-twitter-gray">This user hasn't posted any media of this type.</div>}
+          </>
+        )
+      case 'Highlights':
+        return <ProfileHighlights highlights={mockHighlights} isOwnProfile={isCurrentUserProfile} onHighlightClick={(index) => onHighlightClick(mockHighlights, index)} />;
+      default:
+        return (
+          <div className="p-8 text-center text-twitter-gray">
+            Content for {activeTab} would be displayed here.
+          </div>
+        );
+    }
+  }
   
   return (
     <div>
@@ -125,33 +175,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
       </div>
       
       <div>
-        {activeTab === 'Posts' && userTweets.map(tweet => (
-          <TweetCard 
-            key={tweet.id} 
-            tweet={tweet} 
-            currentUser={currentUser}
-            onImageClick={onImageClick} 
-            onViewProfile={onViewProfile}
-            onReply={onReply}
-            onToggleBookmark={onToggleBookmark}
-            onVote={onVote}
-            onQuote={onQuote}
-            onEdit={onEdit}
-            liveReactions={[]}
-          />
-        ))}
-        {activeTab === 'Highlights' && (
-            <ProfileHighlights 
-                highlights={mockHighlights} 
-                isOwnProfile={isCurrentUserProfile}
-                onHighlightClick={(index) => onHighlightClick(mockHighlights, index)}
-            />
-        )}
-        {activeTab !== 'Posts' && activeTab !== 'Highlights' && (
-            <div className="p-8 text-center text-twitter-gray">
-                Content for {activeTab} would be displayed here.
-            </div>
-        )}
+        {renderContent()}
       </div>
     </div>
   );

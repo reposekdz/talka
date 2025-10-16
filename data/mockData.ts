@@ -1,4 +1,3 @@
-
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
 
 export const mockUser: User = {
@@ -245,7 +244,7 @@ export const mockTrendingTopics = [
     { category: 'Gaming', topic: 'New Console Release', tweets: '80K', imageUrl: 'https://picsum.photos/seed/tr4/200/200' },
 ];
 
-export const mockNotifications: Notification[] = [
+export let mockNotifications: Notification[] = [
     { id: 'n1', type: 'like', user: otherUsers[0], tweet: baseTweets[0], timestamp: '2024-07-22T10:05:00Z' },
     { id: 'n2', type: 'retweet', user: otherUsers[1], tweet: baseTweets[0], timestamp: '2024-07-22T10:02:00Z' },
     { id: 'n3', type: 'follow', user: otherUsers[2], timestamp: '2024-07-22T09:50:00Z' },
@@ -300,37 +299,36 @@ export const mockCommunities: Community[] = [
 export const initialUserStories: UserStory[] = [
     {
         user: mockUser, hasUnseen: true, stories: [
-            { id: 's1', mediaUrl: 'https://picsum.photos/seed/s1/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T10:00:00Z' },
-            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T11:00:00Z' }
+            { id: 's1', mediaUrl: 'https://picsum.photos/seed/s1/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T10:00:00Z', likeCount: 12, isLiked: false, comments: [] },
+            { id: 's2', mediaUrl: 'https://picsum.photos/seed/s2/400/700', type: 'image', duration: 5, timestamp: '2024-07-22T11:00:00Z', likeCount: 5, isLiked: true, comments: [{id: 'sc1', user: otherUsers[0], text: 'Nice!', timestamp: '2h'}] }
         ]
     },
     {
         user: otherUsers[0], hasUnseen: true, stories: [
-            { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z' },
-            { id: 's-u2-2', mediaUrl: `https://picsum.photos/seed/s-u2-2/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T13:00:00Z' }
+            { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z', likeCount: 25, isLiked: false, comments: [] },
+            { id: 's-u2-2', mediaUrl: `https://picsum.photos/seed/s-u2-2/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T13:00:00Z', likeCount: 30, isLiked: false, comments: [] }
         ]
     },
      {
         user: otherUsers[1], hasUnseen: false, stories: [ // Seen story
-            { id: 's-u3-1', mediaUrl: `https://picsum.photos/seed/s-u3-1/400/700`, type: 'image', duration: 6, timestamp: '2024-07-23T09:00:00Z' }
+            { id: 's-u3-1', mediaUrl: `https://picsum.photos/seed/s-u3-1/400/700`, type: 'image', duration: 6, timestamp: '2024-07-23T09:00:00Z', likeCount: 10, isLiked: false, comments: [] }
         ]
     },
     {
         user: otherUsers[2], hasUnseen: true, stories: [
-            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T15:00:00Z' }
+            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T15:00:00Z', likeCount: 150, isLiked: false, comments: [] }
         ]
     },
     {
         user: otherUsers[3], hasUnseen: true, stories: [
-            { id: 's-u5-1', mediaUrl: `https://picsum.photos/seed/s-u5-1/400/700`, type: 'image', duration: 8, timestamp: '2024-07-24T11:00:00Z' },
-            { id: 's-u5-2', mediaUrl: `https://picsum.photos/seed/s-u5-2/400/700`, type: 'image', duration: 4, timestamp: '2024-07-24T11:30:00Z' },
-            { id: 's-u5-3', mediaUrl: `https://picsum.photos/seed/s-u5-3/400/700`, type: 'image', duration: 6, timestamp: '2024-07-24T12:30:00Z' }
+            { id: 's-u5-1', mediaUrl: `https://picsum.photos/seed/s-u5-1/400/700`, type: 'image', duration: 8, timestamp: '2024-07-24T11:00:00Z', likeCount: 1002, isLiked: true, comments: [] },
+            { id: 's-u5-2', mediaUrl: `https://picsum.photos/seed/s-u5-2/400/700`, type: 'image', duration: 4, timestamp: '2024-07-24T11:30:00Z', likeCount: 867, isLiked: false, comments: [] },
+            { id: 's-u5-3', mediaUrl: `https://picsum.photos/seed/s-u5-3/400/700`, type: 'image', duration: 6, timestamp: '2024-07-24T12:30:00Z', likeCount: 950, isLiked: false, comments: [] }
         ]
     },
-    // FIX: Explicitly type the returned object in the map function as UserStory to ensure the 'type' property of stories is correctly inferred as 'image' | 'video' instead of a generic string.
     ...otherUsers.slice(4).map((user, i): UserStory => ({ // Remaining users
         user, hasUnseen: true, stories: [
-            { id: `s${i+6}`, mediaUrl: `https://picsum.photos/seed/s${i+6}/400/700`, type: 'image', duration: 5, timestamp: '2024-07-22T12:00:00Z' }
+            { id: `s${i+6}`, mediaUrl: `https://picsum.photos/seed/s${i+6}/400/700`, type: 'image', duration: 5, timestamp: '2024-07-22T12:00:00Z', likeCount: 50 + i, isLiked: false, comments: [] }
         ]
     }))
 ];
@@ -341,8 +339,8 @@ export const mockHighlights: Highlight[] = [
     title: 'Projects',
     coverUrl: 'https://picsum.photos/seed/h1/200/200',
     stories: [
-      { id: 's-h1-1', mediaUrl: 'https://picsum.photos/seed/s-h1-1/400/700', type: 'image', duration: 5, timestamp: '' },
-      { id: 's-h1-2', mediaUrl: 'https://picsum.photos/seed/s-h1-2/400/700', type: 'image', duration: 5, timestamp: '' },
+      { id: 's-h1-1', mediaUrl: 'https://picsum.photos/seed/s-h1-1/400/700', type: 'image', duration: 5, timestamp: '', likeCount: 0, isLiked: false, comments: [] },
+      { id: 's-h1-2', mediaUrl: 'https://picsum.photos/seed/s-h1-2/400/700', type: 'image', duration: 5, timestamp: '', likeCount: 0, isLiked: false, comments: [] },
     ]
   },
   {
@@ -350,7 +348,7 @@ export const mockHighlights: Highlight[] = [
     title: 'Travel',
     coverUrl: 'https://picsum.photos/seed/h2/200/200',
     stories: [
-       { id: 's-h2-1', mediaUrl: 'https://picsum.photos/seed/s-h2-1/400/700', type: 'image', duration: 5, timestamp: '' },
+       { id: 's-h2-1', mediaUrl: 'https://picsum.photos/seed/s-h2-1/400/700', type: 'image', duration: 5, timestamp: '', likeCount: 0, isLiked: false, comments: [] },
     ]
   },
 ];
@@ -373,7 +371,6 @@ export const mockReels: Reel[] = [
             { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h", likeCount: 8, isLiked: true },
         ]
     },
-    // FIX: Completed the Reel object with all required properties to match the 'Reel' type.
     { 
         id: 'r2', 
         user: mockUser, 
@@ -406,7 +403,6 @@ export const mockReels: Reel[] = [
     },
 ];
 
-// FIX: Added mockSpaces export to resolve import errors in components that use it.
 export const mockSpaces: Space[] = [
     {
         id: 'sp1',
@@ -417,3 +413,5 @@ export const mockSpaces: Space[] = [
         color: 'bg-gradient-to-br from-purple-500 to-indigo-600'
     }
 ];
+
+export const mockLiveParticipants = otherUsers.slice(0, 5);

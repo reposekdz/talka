@@ -82,11 +82,20 @@ export interface Tweet {
   quotedTweet?: Tweet;
 }
 
+export interface StoryComment {
+  id: string;
+  user: User;
+  text: string;
+  timestamp: string;
+}
+
 export interface Notification {
   id: string;
-  type: 'like' | 'retweet' | 'follow' | 'mention';
+  type: 'like' | 'retweet' | 'follow' | 'mention' | 'story_like' | 'story_comment';
   user: User;
   tweet?: Tweet;
+  story?: Story;
+  commentText?: string;
   timestamp: string;
 }
 
@@ -144,6 +153,9 @@ export interface Story {
   duration: number;
   timestamp: string;
   textOverlays?: TextOverlay[];
+  likeCount: number;
+  isLiked: boolean;
+  comments: StoryComment[];
 }
 
 export interface Highlight {
@@ -166,6 +178,7 @@ export interface ReelComment {
   timestamp: string;
   likeCount: number;
   isLiked: boolean;
+  replyToUsername?: string;
 }
 
 export interface Reel {
