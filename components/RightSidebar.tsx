@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import WhoToFollow from './WhoToFollow';
 import TrendingTopic from './TrendingTopic';
 import { mockTrendingTopics } from '../data/mockData';
 import { User } from '../types';
-import { RefreshIcon, SearchIcon, VerifiedIcon } from './Icon';
+import { RefreshIcon, SearchIcon, SparklesIcon, VerifiedIcon } from './Icon';
 
 interface RightSidebarProps {
   openSearchModal: () => void;
@@ -11,6 +12,7 @@ interface RightSidebarProps {
   onFollowToggle: (userId: string) => void;
   currentUser: User;
   otherUsers: User[];
+  openAiAssistant: () => void;
 }
 
 const PremiumCard: React.FC = () => (
@@ -25,8 +27,24 @@ const PremiumCard: React.FC = () => (
     </div>
 );
 
+const AiAssistantCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+    <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl p-4 text-center">
+        <SparklesIcon className="w-10 h-10 mx-auto text-twitter-blue" />
+        <h2 className="text-xl font-extrabold mt-2">Proto-AI Assistant</h2>
+        <p className="my-2 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+            Ask questions, summarize threads, and more with the power of AI.
+        </p>
+        <button 
+            onClick={onClick}
+            className="bg-twitter-blue text-white font-bold px-4 py-2 rounded-full hover:bg-opacity-90 w-full"
+        >
+            Ask AI
+        </button>
+    </div>
+);
 
-const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProfile, onFollowToggle, currentUser, otherUsers }) => {
+
+const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProfile, onFollowToggle, currentUser, otherUsers, openAiAssistant }) => {
   const [whoToFollowUsers, setWhoToFollowUsers] = useState(() => 
     [...otherUsers].sort(() => 0.5 - Math.random()).slice(0, 3)
   );
@@ -47,6 +65,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProf
       </div>
 
       <PremiumCard />
+
+      <AiAssistantCard onClick={openAiAssistant} />
 
       <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl">
         <h2 className="text-xl font-extrabold p-4">Trends for you</h2>

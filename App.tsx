@@ -32,6 +32,7 @@ import SpacesPlayer from './components/SpacesPlayer';
 import IncomingCallModal from './components/IncomingCallModal';
 import AudioCallView from './components/AudioCallView';
 import ShareReelModal from './components/ShareReelModal';
+import AiAssistantModal from './components/AiAssistantModal';
 import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message, Space, ChatTheme, Highlight, UserStory, Call } from './types';
 import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages, baseTweets, mockHighlights, mockNotifications, mockReels } from './data/mockData';
 import { AnimatePresence } from 'framer-motion';
@@ -74,6 +75,7 @@ function App() {
   const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[] | Highlight[], initialIndex: number, isHighlight?: boolean } | null>(null);
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
   const [sharingReel, setSharingReel] = useState<Reel | null>(null);
+  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
 
   // Profile/User List states
   const [profileUser, setProfileUser] = useState<User | null>(null);
@@ -617,6 +619,7 @@ function App() {
                     onFollowToggle={handleFollowToggle}
                     currentUser={currentUser}
                     otherUsers={otherUsers}
+                    openAiAssistant={() => setIsAiAssistantOpen(true)}
                 />
 
                 {viewingReelComments && (
@@ -630,6 +633,7 @@ function App() {
 
             {/* Modals and Overlays */}
             <AnimatePresence>
+                {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {sharingReel && <ShareReelModal reel={sharingReel} conversations={mockConversations} onClose={() => setSharingReel(null)} onShare={handleShareReelAsMessage} />}
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
