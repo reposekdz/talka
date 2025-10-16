@@ -92,6 +92,16 @@ export interface UserStory {
     hasUnseen: boolean;
 }
 
+export interface ReelComment {
+  id: string;
+  user: User;
+  text: string;
+  timestamp: string;
+  likeCount: number;
+  isLiked: boolean;
+  replies?: ReelComment[];
+}
+
 export interface Reel {
     id: string;
     user: User;
@@ -101,6 +111,7 @@ export interface Reel {
     commentCount: number;
     shareCount: number;
     isLiked: boolean;
+    comments: ReelComment[];
 }
 
 export enum Page {

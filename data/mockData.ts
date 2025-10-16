@@ -150,7 +150,42 @@ export const userStories: UserStory[] = [
 ];
 
 export const mockReels: Reel[] = [
-    { id: 'r1', user: otherUsers[0], videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', caption: 'Having fun with CSS animations!', likeCount: 1200, commentCount: 45, shareCount: 120, isLiked: false },
-    { id: 'r2', user: mockUser, videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', caption: 'My new setup is finally complete! What do you think? #desksetup #coding', likeCount: 5000, commentCount: 250, shareCount: 300, isLiked: true },
-    { id: 'r3', user: otherUsers[1], videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4', caption: 'Shipping a new feature on Vercel!', likeCount: 8000, commentCount: 400, shareCount: 600, isLiked: false },
+    { 
+        id: 'r1', 
+        user: otherUsers[0], 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', 
+        caption: 'Having fun with CSS animations!', 
+        likeCount: 1200, 
+        commentCount: 45, 
+        shareCount: 120, 
+        isLiked: false,
+        comments: [
+            { id: 'rc1-1', user: otherUsers[1], text: "So cool!", timestamp: "2h", likeCount: 15, isLiked: false },
+            { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h", likeCount: 8, isLiked: true },
+        ]
+    },
+    { 
+        id: 'r2', 
+        user: mockUser, 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', 
+        caption: 'My new setup is finally complete! What do you think? #desksetup #coding', 
+        likeCount: 5000, 
+        commentCount: 250, 
+        shareCount: 300, 
+        isLiked: true,
+        comments: [
+            { id: 'rc2-1', user: otherUsers[2], text: "Clean setup! 🚀", timestamp: "3h", likeCount: 50, isLiked: false },
+        ]
+    },
+    { 
+        id: 'r3', 
+        user: otherUsers[1], 
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4', 
+        caption: 'Shipping a new feature on Vercel!', 
+        likeCount: 8000, 
+        commentCount: 400, 
+        shareCount: 600, 
+        isLiked: false,
+        comments: [] 
+    },
 ];
