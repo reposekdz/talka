@@ -1,16 +1,24 @@
+
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import FloatingChatWindow from './FloatingChatWindow';
-import { Conversation, Page, User } from '../types';
+import { Conversation, Message, User } from '../types';
+
+type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string };
 
 interface FloatingChatManagerProps {
   chats: Conversation[];
+  allMessages: Record<string, Message[]>;
   onCloseChat: (conversationId: string) => void;
   onFocusChat: (user: User) => void;
   onNavigateToMessages: () => void;
+  onSendMessage: (conversationId: string, content: MessageContent, replyTo?: Message) => void;
+  onAddReaction: (conversationId: string, messageId: string, emoji: string) => void;
+  onStartVideoCall: (user: User) => void;
 }
 
-const FloatingChatManager: React.FC<FloatingChatManagerProps> = ({ chats, onCloseChat, onFocusChat, onNavigateToMessages }) => {
+const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
+  const { chats, allMessages, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onAddReaction, onStartVideoCall } = props;
   const focusedIndex = chats.length - 1;
 
   return (
@@ -20,11 +28,15 @@ const FloatingChatManager: React.FC<FloatingChatManagerProps> = ({ chats, onClos
           <FloatingChatWindow
             key={chat.id}
             conversation={chat}
+            messages={allMessages[chat.id] || []}
             onClose={() => onCloseChat(chat.id)}
             onFocus={() => onFocusChat(chat.participant)}
             onMaximize={onNavigateToMessages}
             isFocused={index === focusedIndex}
             positionRight={(chats.length - 1 - index) * 80}
+            onSendMessage={onSendMessage}
+            onAddReaction={onAddReaction}
+            onStartVideoCall={onStartVideoCall}
           />
         ))}
       </AnimatePresence>

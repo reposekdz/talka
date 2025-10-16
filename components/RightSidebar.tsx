@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import WhoToFollow from './WhoToFollow';
 import TrendingTopic from './TrendingTopic';
 import { mockTrendingTopics } from '../data/mockData';
 import { User } from '../types';
-import { SearchIcon } from './Icon';
+import { RefreshIcon, SearchIcon } from './Icon';
 
 interface RightSidebarProps {
   openSearchModal: () => void;
@@ -14,8 +14,17 @@ interface RightSidebarProps {
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProfile, onFollowToggle, currentUser, otherUsers }) => {
+  const [whoToFollowUsers, setWhoToFollowUsers] = useState(() => 
+    [...otherUsers].sort(() => 0.5 - Math.random()).slice(0, 3)
+  );
+
+  const refreshWhoToFollow = () => {
+    const shuffled = [...otherUsers].sort(() => 0.5 - Math.random());
+    setWhoToFollowUsers(shuffled.slice(0, 3));
+  };
+
   return (
-    <aside className="w-[350px] min-h-screen sticky top-0 px-6 py-2 flex-col gap-4 hidden lg:flex">
+    <aside className="w-[290px] xl:w-[350px] min-h-screen sticky top-0 px-6 py-2 flex-col gap-4 hidden md:flex">
       <div
         onClick={openSearchModal}
         className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray rounded-full px-4 py-2 cursor-pointer flex items-center gap-3 hover:bg-light-hover/80 dark:hover:bg-white/5 dim:hover:bg-dim-hover/80 transition-colors"
@@ -37,8 +46,13 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProf
       </div>
       
       <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl">
-        <h2 className="text-xl font-extrabold p-4">Who to follow</h2>
-        {otherUsers.slice(0, 3).map(user => (
+        <div className="flex justify-between items-center p-4">
+          <h2 className="text-xl font-extrabold">Who to follow</h2>
+          <button onClick={refreshWhoToFollow} className="p-2 text-twitter-blue hover:bg-twitter-blue/10 rounded-full">
+              <RefreshIcon />
+          </button>
+        </div>
+        {whoToFollowUsers.map(user => (
           <WhoToFollow 
             key={user.id} 
             user={user} 

@@ -9,20 +9,18 @@ interface StoryReelProps {
 }
 
 const CreateStoryCard: React.FC<{ user: User }> = ({ user }) => (
-    <div className="flex-shrink-0" onClick={() => { /* Placeholder for create story action */ }}>
-        <div className="relative w-28 h-48 rounded-xl overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover">
+    <div className="flex-shrink-0 w-28 h-48 flex flex-col items-center justify-center">
+        <div className="relative w-24 h-24 cursor-pointer group" onClick={() => { /* Placeholder for create story action */ }}>
             <img 
                 src={user.avatarUrl} 
-                alt="Create a story"
-                className="w-full h-2/3 object-cover"
+                alt="Your Story"
+                className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:brightness-90"
             />
-            <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg flex flex-col items-center justify-end pb-3">
-                 <p className="text-sm font-bold">Create Story</p>
-            </div>
-             <div className="absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-twitter-blue rounded-full flex items-center justify-center text-white border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <div className="absolute bottom-0 right-0 w-8 h-8 bg-twitter-blue rounded-full flex items-center justify-center text-white border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90">
+                <PlusIcon />
             </div>
         </div>
+        <p className="mt-2 text-sm font-semibold">Your Story</p>
     </div>
 );
 

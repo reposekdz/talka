@@ -24,8 +24,13 @@ import StoryViewer from './components/StoryViewer';
 import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
 import ReelCommentsPanel from './components/ReelCommentsPanel';
-import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel } from './types';
-import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations } from './data/mockData';
+import VideoCallView from './components/VideoCallView';
+import InAppNotification from './components/InAppNotification';
+import { Page, Theme, Tweet, User, AppSettings, Conversation, Reel, Message } from './types';
+import { mockUser, otherUsers as initialOtherUsers, mockTweets, userStories, mockConversations, mockMessages } from './data/mockData';
+import { AnimatePresence } from 'framer-motion';
+
+type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string };
 
 const initialSettings: AppSettings = {
   privacyAndSafety: {
@@ -59,6 +64,7 @@ function App() {
   const [replyingToTweet, setReplyingToTweet] = useState<Tweet | null>(null);
   const [storyViewerState, setStoryViewerState] = useState<{ stories: typeof userStories, index: number } | null>(null);
   const [viewingReelComments, setViewingReelComments] = useState<Reel | null>(null);
+  const [videoCallUser, setVideoCallUser] = useState<User | null>(null);
 
   // Profile/User List states
   const [profileUser, setProfileUser] = useState<User | null>(null);
@@ -66,9 +72,13 @@ function App() {
 
   // Floating chats
   const [openChats, setOpenChats] = useState<Conversation[]>([]);
+  const [allMessages, setAllMessages] = useState<Record<string, Message[]>>(mockMessages);
+  const [focusedChatId, setFocusedChatId] = useState<string | null>(null);
   
-  // Toast
+  // Toast & Notifications
   const [toast, setToast] = useState<{ message: string; isVisible: boolean }>({ message: '', isVisible: false });
+  const [inAppNotification, setInAppNotification] = useState<{ conversation: Conversation, message: Message } | null>(null);
+
 
   useEffect(() => {
     document.documentElement.className = theme;
@@ -167,16 +177,15 @@ function App() {
   const handleOpenChat = (user: User) => {
     const existingChat = openChats.find(c => c.participant.id === user.id);
     if (existingChat) {
-      // Bring to front
        setOpenChats(prev => [...prev.filter(c => c.participant.id !== user.id), existingChat]);
+       setFocusedChatId(existingChat.id);
     } else {
-      const newChat = mockConversations.find(c => c.participant.id === user.id) || {
-          id: `c-${user.id}`,
-          participant: user,
-          lastMessage: { id: 'm-new', senderId: '', type: 'text', text: 'Start a conversation', timestamp: new Date().toISOString(), isRead: true },
-          unreadCount: 0
-      };
+      const chatData = mockConversations.find(c => c.participant.id === user.id);
+      if (!chatData) return;
+
+      const newChat: Conversation = { ...chatData };
       setOpenChats(prev => [...prev, newChat]);
+      setFocusedChatId(newChat.id);
     }
   };
 
@@ -185,12 +194,83 @@ function App() {
   };
   
   const handleFocusChat = (user: User) => {
-    handleOpenChat(user); // brings to front
+    const chat = openChats.find(c => c.participant.id === user.id);
+    if (chat) {
+        setFocusedChatId(chat.id);
+        handleOpenChat(user); // brings to front
+    }
   };
   
   const handleNavigateToMessages = () => {
       setCurrentPage(Page.Messages);
       setOpenChats([]);
+  };
+
+  const handleSendMessage = (conversationId: string, content: MessageContent, replyTo?: Message) => {
+    const newMessage: Message = {
+      id: `m-${Date.now()}`,
+      senderId: mockUser.id,
+      timestamp: new Date().toISOString(),
+      isRead: true,
+      replyTo,
+      ...content,
+    };
+    
+    setAllMessages(prev => ({
+        ...prev,
+        [conversationId]: [...(prev[conversationId] || []), newMessage],
+    }));
+
+    // Simulate a reply to trigger notification
+    setTimeout(() => {
+        const conversation = openChats.find(c => c.id === conversationId) || mockConversations.find(c => c.id === conversationId);
+        if (!conversation) return;
+        
+        const replyMessage: Message = {
+            id: `m-reply-${Date.now()}`,
+            senderId: conversation.participant.id,
+            type: 'text',
+            text: 'This is a simulated reply!',
+            timestamp: new Date().toISOString(),
+            isRead: false,
+        };
+        
+        setAllMessages(prev => ({
+            ...prev,
+            [conversationId]: [...(prev[conversationId] || []), replyMessage],
+        }));
+
+        if (conversationId !== focusedChatId) {
+            setInAppNotification({ conversation, message: replyMessage });
+            setTimeout(() => setInAppNotification(null), 5000);
+        }
+
+    }, 2000);
+  };
+
+  const handleAddReaction = (conversationId: string, messageId: string, emoji: string) => {
+    setAllMessages(prevAllMessages => {
+        const messages = prevAllMessages[conversationId] || [];
+        const newMessages = messages.map(msg => {
+            if (msg.id === messageId) {
+                const newReactions = msg.reactions ? JSON.parse(JSON.stringify(msg.reactions)) : [];
+                const reactionIndex = newReactions.findIndex((r: any) => r.emoji === emoji);
+                if (reactionIndex > -1) {
+                    const userReacted = newReactions[reactionIndex].users.includes(mockUser.id);
+                    if (userReacted) {
+                        newReactions[reactionIndex].users = newReactions[reactionIndex].users.filter((id: string) => id !== mockUser.id);
+                    } else {
+                        newReactions[reactionIndex].users.push(mockUser.id);
+                    }
+                } else {
+                    newReactions.push({ emoji, users: [mockUser.id] });
+                }
+                return { ...msg, reactions: newReactions.filter((r: any) => r.users.length > 0) };
+            }
+            return msg;
+        });
+        return { ...prevAllMessages, [conversationId]: newMessages };
+    });
   };
 
   const renderPage = () => {
@@ -224,6 +304,7 @@ function App() {
     switch(currentPage) {
       case Page.Home: return <HomePage 
         tweets={tweets} 
+        currentUser={currentUser}
         onPostTweet={handlePostTweet}
         onImageClick={setLightboxImageUrl}
         onViewProfile={handleViewProfile}
@@ -263,6 +344,7 @@ function App() {
        />;
       default: return <HomePage 
         tweets={tweets} 
+        currentUser={currentUser}
         onPostTweet={handlePostTweet}
         onImageClick={setLightboxImageUrl}
         onViewProfile={handleViewProfile}
@@ -321,14 +403,33 @@ function App() {
             {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
             {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={handlePostReply} />}
             {storyViewerState && <StoryViewer stories={storyViewerState.stories} initialUserIndex={storyViewerState.index} onClose={() => setStoryViewerState(null)} />}
+            {videoCallUser && <VideoCallView user={videoCallUser} onEndCall={() => setVideoCallUser(null)} />}
+
 
             {/* Floating UI */}
             <FloatingChatManager 
                 chats={openChats}
+                allMessages={allMessages}
                 onCloseChat={handleCloseChat}
                 onFocusChat={handleFocusChat}
                 onNavigateToMessages={handleNavigateToMessages}
+                onSendMessage={handleSendMessage}
+                onAddReaction={handleAddReaction}
+                onStartVideoCall={setVideoCallUser}
             />
+
+            <AnimatePresence>
+                {inAppNotification && (
+                    <InAppNotification
+                        notification={inAppNotification}
+                        onClose={() => setInAppNotification(null)}
+                        onClick={() => {
+                            handleFocusChat(inAppNotification.conversation.participant);
+                            setInAppNotification(null);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
             <Toast message={toast.message} isVisible={toast.isVisible} onClose={() => setToast(prev => ({...prev, isVisible: false}))} />
             <BottomNav 
                 currentPage={currentPage}

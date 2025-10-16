@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Conversation, Message, User } from '../types';
-import { mockMessages, mockUser } from '../data/mockData';
-import { CloseIcon, ExpandIcon } from './Icon';
+import { mockUser } from '../data/mockData';
+import { CloseIcon, ExpandIcon, VideoCallIcon } from './Icon';
 import AvatarWithStatus from './AvatarWithStatus';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
@@ -14,59 +15,34 @@ type MessageContent =
 
 interface FloatingChatWindowProps {
   conversation: Conversation;
+  messages: Message[];
   onClose: () => void;
   onFocus: () => void;
   onMaximize: () => void;
   isFocused: boolean;
   positionRight: number;
+  onSendMessage: (conversationId: string, content: MessageContent, replyTo?: Message) => void;
+  onAddReaction: (conversationId: string, messageId: string, emoji: string) => void;
+  onStartVideoCall: (user: User) => void;
 }
 
-const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, onClose, onFocus, onMaximize, isFocused, positionRight }) => {
+const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
+  const { conversation, messages, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onAddReaction, onStartVideoCall } = props;
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(mockMessages[conversation.id] || []);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   }, [messages]);
 
   const handleSendMessage = (content: MessageContent, replyTo?: Message) => {
-    const newMessage: Message = {
-      id: `m-${Date.now()}`,
-      senderId: mockUser.id,
-      timestamp: new Date().toISOString(),
-      isRead: true,
-      replyTo,
-      ...content,
-    };
-    setMessages(prev => [...prev, newMessage]);
+    onSendMessage(conversation.id, content, replyTo);
     setReplyingTo(null);
   };
   
   const handleAddReaction = (messageId: string, emoji: string) => {
-    setMessages(prevMessages => 
-        prevMessages.map(msg => {
-            if (msg.id === messageId) {
-                const newReactions = msg.reactions ? JSON.parse(JSON.stringify(msg.reactions)) : [];
-                const reactionIndex = newReactions.findIndex((r: any) => r.emoji === emoji);
-
-                if (reactionIndex > -1) {
-                    const userReacted = newReactions[reactionIndex].users.includes(mockUser.id);
-                    if (userReacted) {
-                        newReactions[reactionIndex].users = newReactions[reactionIndex].users.filter((id: string) => id !== mockUser.id);
-                    } else {
-                        newReactions[reactionIndex].users.push(mockUser.id);
-                    }
-                } else {
-                    newReactions.push({ emoji, users: [mockUser.id] });
-                }
-
-                return { ...msg, reactions: newReactions.filter((r: any) => r.users.length > 0) };
-            }
-            return msg;
-        })
-    );
+    onAddReaction(conversation.id, messageId, emoji);
   };
   
   const handleHeaderClick = () => {
@@ -115,7 +91,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, o
           </div>
         </div>
         <div className="flex items-center">
-          <button onClick={onMaximize} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><ExpandIcon /></button>
+          <button onClick={() => onStartVideoCall(conversation.participant)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><VideoCallIcon /></button>
           <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full text-lg font-bold">⎯</button>
           <button onClick={onClose} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
         </div>
