@@ -101,6 +101,7 @@ export interface Message {
   imageUrl?: string;
   timestamp: string;
   isRead: boolean;
+  isEdited?: boolean;
   replyTo?: Message;
   reactions?: { emoji: string; users: string[] }[];
   isPinned?: boolean;

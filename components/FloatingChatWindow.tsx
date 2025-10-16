@@ -26,6 +26,8 @@ interface FloatingChatWindowProps {
   isFocused: boolean;
   positionRight: number;
   onSendMessage: (conversationId: string, content: MessageContent, replyTo?: Message) => void;
+  onEditMessage: (conversationId: string, messageId: string, newText: string) => void;
+  onDeleteMessage: (conversationId: string, messageId: string) => void;
   onAddReaction: (conversationId: string, messageId: string, emoji: string) => void;
   onPinMessage: (conversationId: string, messageId: string) => void;
   onStartVideoCall: (user: User) => void;
@@ -73,9 +75,10 @@ const ChatOptionsMenu: React.FC<{onSelectTheme: (theme: ChatTheme) => void; onCl
 }
 
 const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
-  const { conversation, messages, reels, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
+  const { conversation, messages, reels, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
   const [isMinimized, setIsMinimized] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [showWave, setShowWave] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -89,8 +92,13 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
   }, [messages, isMinimized]);
 
   const handleSendMessage = (content: MessageContent, replyTo?: Message) => {
-    onSendMessage(conversation.id, content, replyTo);
+    if (editingMessage && content.type === 'text') {
+        onEditMessage(conversation.id, editingMessage.id, content.text);
+    } else {
+        onSendMessage(conversation.id, content, replyTo);
+    }
     setReplyingTo(null);
+    setEditingMessage(null);
     if (content.type === 'wave') {
         setShowWave(true);
         setTimeout(() => setShowWave(false), 1500);
@@ -222,7 +230,9 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
             message={msg} 
             reels={reels}
             isOwnMessage={msg.senderId === mockUser.id} 
-            onReply={setReplyingTo} 
+            onReply={setReplyingTo}
+            onStartEdit={setEditingMessage}
+            onDeleteMessage={(messageId) => onDeleteMessage(conversation.id, messageId)}
             onAddReaction={handleAddReaction} 
             onPinMessage={(messageId) => onPinMessage(conversation.id, messageId)}
             chatTheme={conversation.chatTheme || 'default-blue'}
@@ -235,6 +245,8 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
         onSendMessage={handleSendMessage}
         replyingTo={replyingTo}
         onCancelReply={() => setReplyingTo(null)}
+        editingMessage={editingMessage}
+        onCancelEdit={() => setEditingMessage(null)}
       />
     </motion.div>
   );

@@ -379,6 +379,24 @@ function App() {
     }, 2000);
   };
 
+  const handleEditMessage = (conversationId: string, messageId: string, newText: string) => {
+      setAllMessages(prev => ({
+          ...prev,
+          [conversationId]: (prev[conversationId] || []).map(msg => 
+              msg.id === messageId 
+                ? { ...msg, text: newText, isEdited: true, type: 'text' } // Ensure type is text
+                : msg
+          ),
+      }));
+  };
+
+  const handleDeleteMessage = (conversationId: string, messageId: string) => {
+      setAllMessages(prev => ({
+          ...prev,
+          [conversationId]: (prev[conversationId] || []).filter(msg => msg.id !== messageId),
+      }));
+  };
+
   const handleAddReaction = (conversationId: string, messageId: string, emoji: string) => {
     setAllMessages(prevAllMessages => {
         const messages = prevAllMessages[conversationId] || [];
@@ -753,7 +771,8 @@ function App() {
                 onFocusChat={handleFocusChat}
                 onNavigateToMessages={handleNavigateToMessages}
                 onSendMessage={handleSendMessage}
-                // FIX: Corrected handler name from onAddReaction to handleAddReaction.
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
                 onAddReaction={handleAddReaction}
                 onPinMessage={handlePinMessage}
                 onStartVideoCall={handleStartVideoCall}

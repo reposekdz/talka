@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, ExploreIcon, MessagesIcon, PlusIcon, ProfileIcon, CreateIcon, ReelsIcon } from './Icon';
+import { HomeIcon, ExploreIcon, MessagesIcon, PlusIcon, ProfileIcon, CreateIcon, ReelsIcon, SearchIcon } from './Icon';
 import { Page, User } from '../types';
 import { motion } from 'framer-motion';
 
@@ -38,10 +38,10 @@ const NavItem: React.FC<{
 const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, activeChatCount, onOpenCreator }) => {
   const navItems = [
     { page: Page.Home, icon: <HomeIcon isActive={currentPage === Page.Home} /> },
-    { page: Page.Explore, icon: <ExploreIcon isActive={currentPage === Page.Explore}/> },
+    { page: Page.Explore, icon: <SearchIcon/> },
     { page: Page.Reels, icon: <ReelsIcon isActive={currentPage === Page.Reels} /> },
     { page: Page.Messages, icon: <MessagesIcon isActive={currentPage === Page.Messages} />, notificationCount: activeChatCount },
-    { page: Page.Profile, icon: <ProfileIcon /> },
+    { page: Page.Profile, icon: <ProfileIcon isActive={currentPage === Page.Profile}/> },
   ];
 
   return (

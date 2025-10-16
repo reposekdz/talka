@@ -14,6 +14,8 @@ interface FloatingChatManagerProps {
   onFocusChat: (user: User) => void;
   onNavigateToMessages: () => void;
   onSendMessage: (conversationId: string, content: MessageContent, replyTo?: Message) => void;
+  onEditMessage: (conversationId: string, messageId: string, newText: string) => void;
+  onDeleteMessage: (conversationId: string, messageId: string) => void;
   onAddReaction: (conversationId: string, messageId: string, emoji: string) => void;
   onPinMessage: (conversationId: string, messageId: string) => void;
   onStartVideoCall: (user: User) => void;
@@ -22,7 +24,7 @@ interface FloatingChatManagerProps {
 }
 
 const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
-  const { chats, allMessages, reels, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
+  const { chats, allMessages, reels, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
   const focusedIndex = chats.length - 1;
 
   return (
@@ -40,6 +42,8 @@ const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
             isFocused={index === focusedIndex}
             positionRight={(chats.length - 1 - index) * 100}
             onSendMessage={onSendMessage}
+            onEditMessage={onEditMessage}
+            onDeleteMessage={onDeleteMessage}
             onAddReaction={onAddReaction}
             onPinMessage={onPinMessage}
             onStartVideoCall={onStartVideoCall}

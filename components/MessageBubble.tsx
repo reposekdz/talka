@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Message, ChatTheme, Reel } from '../types';
-import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon, PlayIcon } from './Icon';
+import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon, PlayIcon, MoreIcon, EditIcon, TrashIcon } from './Icon';
 import AudioPlayer from './AudioPlayer';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ReactionPicker from './ReactionPicker';
 
 interface MessageBubbleProps {
@@ -11,6 +11,8 @@ interface MessageBubbleProps {
   reels: Reel[];
   isOwnMessage: boolean;
   onReply: (message: Message) => void;
+  onStartEdit: (message: Message) => void;
+  onDeleteMessage: (messageId: string) => void;
   onAddReaction: (messageId: string, emoji: string) => void;
   onPinMessage: (messageId: string) => void;
   chatTheme: ChatTheme;
@@ -41,11 +43,41 @@ const ReelShareContent: React.FC<{ reel: Reel }> = ({ reel }) => (
     </div>
 );
 
+const MessageOptionsMenu: React.FC<{onEdit: () => void; onDelete: () => void; onClose: () => void;}> = ({ onEdit, onDelete, onClose }) => {
+    const menuRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [onClose]);
+
+    return (
+        <motion.div
+            ref={menuRef}
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="absolute bottom-full mb-1 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg border border-light-border dark:border-twitter-border z-20 text-sm w-28"
+        >
+            <button onClick={onEdit} className="w-full text-left flex items-center gap-2 p-2 hover:bg-light-hover dark:hover:bg-white/10">
+                <EditIcon/> Edit
+            </button>
+            <button onClick={onDelete} className="w-full text-left flex items-center gap-2 p-2 text-red-500 hover:bg-red-500/10">
+                <TrashIcon/> Delete
+            </button>
+        </motion.div>
+    );
+}
+
 
 const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
-  const { message, reels, isOwnMessage, onReply, onAddReaction, onPinMessage, chatTheme } = props;
-  const { text, type, replyTo, reactions, audioUrl, duration, gifUrl, imageUrl, isRead, reelId } = message;
+  const { message, reels, isOwnMessage, onReply, onStartEdit, onDeleteMessage, onAddReaction, onPinMessage, chatTheme } = props;
+  const { text, type, replyTo, reactions, audioUrl, duration, gifUrl, imageUrl, isRead, reelId, isEdited } = message;
   const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
 
   const renderContent = () => {
     switch(type) {
@@ -94,7 +126,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
         }}
         className={`flex items-end gap-2 group ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
     >
-      <div className={`relative max-w-xs md:max-w-md p-1 ${isOwnMessage ? 'order-2' : 'order-1'}`}>
+      <div className={`relative max-w-xs md:max-w-md ${isOwnMessage ? 'order-2' : 'order-1'}`}>
         <div className={`${paddingClass} rounded-t-2xl ${isOwnMessage ? `${bubbleThemeClass} rounded-l-2xl` : `${bubbleThemeClass} rounded-r-2xl`}`}>
             {replyTo && (
                 <div className={`border-l-2 ${isOwnMessage ? 'border-white/50' : 'border-twitter-blue'} pl-2 opacity-80 mb-2`}>
@@ -108,7 +140,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
             )}
 
             {renderContent()}
-
+            
+             {isEdited && <span className="text-xs opacity-70 italic ml-2">(edited)</span>}
         </div>
          {reactions && reactions.length > 0 && (
             <div className="absolute -bottom-3 right-2 flex gap-1 z-10">
@@ -122,9 +155,19 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
       </div>
 
        <div className={`relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'order-1' : 'order-2'}`}>
+            <AnimatePresence>
+                {isOptionsMenuOpen && isOwnMessage && (
+                    <MessageOptionsMenu 
+                        onEdit={() => { onStartEdit(message); setIsOptionsMenuOpen(false); }}
+                        onDelete={() => onDeleteMessage(message.id)}
+                        onClose={() => setIsOptionsMenuOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
             <button onClick={() => onPinMessage(message.id)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><PinIcon /></button>
             <button onClick={() => setIsReactionPickerOpen(true)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><AddReactionIcon /></button>
             <button onClick={() => onReply(message)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><ReplyIcon /></button>
+            {isOwnMessage && <button onClick={() => setIsOptionsMenuOpen(true)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><MoreIcon /></button>}
             {isReactionPickerOpen && (
                 <ReactionPicker 
                     onSelect={handleSelectReaction}
