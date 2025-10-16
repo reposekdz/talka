@@ -3,7 +3,8 @@ import { Message } from '../types';
 import { PhotoIcon, GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, StopIcon } from './Icon';
 import EmojiPicker from './EmojiPicker';
 import GifPickerModal from './GifPickerModal';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import AudioPlayer from './AudioPlayer';
 
 type MessageContent = 
     | { type: 'text'; text: string }
@@ -18,8 +19,10 @@ interface MessageInputProps {
 
 const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, onCancelReply }) => {
   const [inputText, setInputText] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
+  const [recordingState, setRecordingState] = useState<'idle' | 'recording' | 'preview'>('idle');
+  const [recordedAudio, setRecordedAudio] = useState<{ url: string, duration: number } | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
+
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isGifModalOpen, setIsGifModalOpen] = useState(false);
   
@@ -36,6 +39,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   const handleSelectGif = (url: string) => {
     onSendMessage({ type: 'gif', gifUrl: url }, replyingTo || undefined);
     setIsGifModalOpen(false);
+  };
+  
+  const resetRecording = () => {
+    if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
+    if (mediaRecorderRef.current?.stream) {
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+    mediaRecorderRef.current = null;
+    setRecordingState('idle');
+    setRecordedAudio(null);
+    setRecordingTime(0);
   };
 
   const startRecording = async () => {
@@ -54,7 +68,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
         }
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = recorder;
       
       const audioChunks: Blob[] = [];
@@ -63,12 +77,13 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       recorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
-        onSendMessage({ type: 'voice', audioUrl, duration: recordingTime }, replyingTo || undefined);
+        setRecordedAudio({ url: audioUrl, duration: recordingTime });
+        setRecordingState('preview');
         stream.getTracks().forEach(track => track.stop());
       };
 
       recorder.start();
-      setIsRecording(true);
+      setRecordingState('recording');
       setRecordingTime(0);
       recordingIntervalRef.current = window.setInterval(() => setRecordingTime(prev => prev + 1), 1000);
     } catch (err) {
@@ -82,21 +97,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && recordingState === 'recording') {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
       if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
     }
   };
 
-  const cancelRecording = () => {
-    if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-        mediaRecorderRef.current = null;
+  const sendVoiceMessage = () => {
+    if (recordedAudio) {
+      onSendMessage({ type: 'voice', audioUrl: recordedAudio.url, duration: recordedAudio.duration }, replyingTo || undefined);
+      resetRecording();
     }
-    setIsRecording(false);
-    if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
-    setRecordingTime(0);
   };
   
   const formatTime = (seconds: number) => {
@@ -104,6 +115,56 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  const renderInputState = () => {
+    switch(recordingState) {
+        case 'recording':
+            return (
+                <div className="flex items-center justify-between gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-4 py-1 mx-2 w-full">
+                   <div className="flex items-center gap-2 flex-1">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text font-mono">{formatTime(recordingTime)}</span>
+                   </div>
+                   <button onClick={stopRecording} className="p-2 text-twitter-blue bg-twitter-blue/20 rounded-full"><StopIcon /></button>
+                </div>
+            );
+        case 'preview':
+            if (!recordedAudio) return null;
+            return (
+                <div className="flex items-center justify-between gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-4 py-1 mx-2 w-full">
+                    <button onClick={resetRecording} className="p-2 text-red-500 hover:bg-red-500/10 rounded-full"><TrashIcon /></button>
+                    <div className="flex-1">
+                        <AudioPlayer src={recordedAudio.url} duration={recordedAudio.duration} isOwnMessage={false} />
+                    </div>
+                    <button onClick={sendVoiceMessage} className="p-2 text-twitter-blue"><SendIcon /></button>
+                </div>
+            );
+        case 'idle':
+        default:
+            return (
+                 <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1 mx-2">
+                    <div className="flex gap-1 text-twitter-blue">
+                        <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><PhotoIcon /></button>
+                        <button onClick={() => setIsGifModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
+                        <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Start a new message"
+                        className="bg-transparent w-full focus:outline-none text-light-text dark:text-white dim:text-dim-text"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    />
+                    {inputText ? (
+                        <button onClick={handleSendMessage} className="p-2 text-twitter-blue"><SendIcon /></button>
+                    ) : (
+                        <button onClick={startRecording} className="p-2 text-twitter-blue"><MicrophoneIcon /></button>
+                    )}
+                </div>
+            );
+    }
+  }
 
   return (
     <div className="p-2 border-t border-light-border dark:border-twitter-border dim:border-dim-border relative">
@@ -116,37 +177,10 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
           <button onClick={onCancelReply} className="font-bold text-xl">&times;</button>
         </div>
       )}
-      {!isRecording ? (
-        <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1 mx-2">
-          <div className="flex gap-1 text-twitter-blue">
-            <button className="p-2 hover:bg-twitter-blue/10 rounded-full"><PhotoIcon /></button>
-            <button onClick={() => setIsGifModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
-            <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
-          </div>
-          <input
-            type="text"
-            placeholder="Start a new message"
-            className="bg-transparent w-full focus:outline-none text-light-text dark:text-white dim:text-dim-text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-          />
-          {inputText ? (
-            <button onClick={handleSendMessage} className="p-2 text-twitter-blue"><SendIcon /></button>
-          ) : (
-            <button onClick={startRecording} className="p-2 text-twitter-blue"><MicrophoneIcon /></button>
-          )}
-        </div>
-      ) : (
-        <div className="flex items-center justify-between gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-4 py-1 mx-2">
-           <button onClick={cancelRecording} className="p-2 text-red-500 hover:bg-red-500/10 rounded-full"><TrashIcon /></button>
-           <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text font-mono">{formatTime(recordingTime)}</span>
-           </div>
-           <button onClick={stopRecording} className="p-2 text-twitter-blue bg-twitter-blue/20 rounded-full"><StopIcon /></button>
-        </div>
-      )}
+     
+      <div className="flex items-center">
+         {renderInputState()}
+      </div>
       
       {isEmojiPickerOpen && (
           <EmojiPicker 

@@ -1,28 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Message } from '../types';
 import { ReplyIcon, AddReactionIcon, ReadReceiptIcon } from './Icon';
 import AudioPlayer from './AudioPlayer';
 import { motion } from 'framer-motion';
+import ReactionPicker from './ReactionPicker';
 
 interface MessageBubbleProps {
   message: Message;
   isOwnMessage: boolean;
   onReply: (message: Message) => void;
+  onAddReaction: (messageId: string, emoji: string) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, onReply }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, onReply, onAddReaction }) => {
   const { text, type, replyTo, reactions, audioUrl, duration, gifUrl, isRead } = message;
+  const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
 
   const renderContent = () => {
     switch(type) {
         case 'voice':
             return <AudioPlayer src={audioUrl!} duration={duration!} isOwnMessage={isOwnMessage} />;
         case 'gif':
-            return <img src={gifUrl} alt="gif" className="rounded-lg max-w-full h-auto" />;
+            return <img src={gifUrl} alt="gif" className="rounded-lg max-w-sm h-auto" />;
         case 'text':
         default:
             return <p className="whitespace-pre-wrap break-words">{text}</p>;
     }
+  }
+  
+  const handleSelectReaction = (emoji: string) => {
+    onAddReaction(message.id, emoji);
+    setIsReactionPickerOpen(false);
   }
 
   return (
@@ -50,8 +58,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, on
         </div>
          {reactions && reactions.length > 0 && (
             <div className="absolute -bottom-3 right-2 flex gap-1 z-10">
-                {reactions.map((reaction, index) => (
-                    <div key={index} className="bg-light-bg dark:bg-twitter-light-dark dim:bg-dim-bg px-2 py-0.5 rounded-full text-xs shadow border border-light-border dark:border-twitter-border dim:border-dim-border">
+                {reactions.filter(r => r.users.length > 0).map((reaction, index) => (
+                    <div key={index} className="bg-light-bg dark:bg-twitter-light-dark dim:bg-dim-bg px-2 py-0.5 rounded-full text-xs shadow border border-light-border dark:border-twitter-border dim:border-dim-border cursor-pointer">
                         {reaction.emoji} {reaction.users.length}
                     </div>
                 ))}
@@ -59,9 +67,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage, on
         )}
       </div>
 
-       <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'order-1' : 'order-2'}`}>
-            <button className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><AddReactionIcon /></button>
+       <div className={`relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'order-1' : 'order-2'}`}>
+            <button onClick={() => setIsReactionPickerOpen(true)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><AddReactionIcon /></button>
             <button onClick={() => onReply(message)} className="p-1.5 bg-light-hover dark:bg-white/10 dim:bg-dim-hover rounded-full text-light-secondary-text dark:text-twitter-gray"><ReplyIcon /></button>
+            {isReactionPickerOpen && (
+                <ReactionPicker 
+                    onSelect={handleSelectReaction}
+                    onClose={() => setIsReactionPickerOpen(false)}
+                />
+            )}
         </div>
 
         {isOwnMessage && isRead && (

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PlayIcon, PauseIcon } from './Icon';
+import AudioWaveform from './AudioWaveform';
 
 interface AudioPlayerProps {
   src: string;
@@ -57,14 +58,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, duration, isOwnMessage, 
   }, []);
   
   const formatTime = (seconds: number) => {
-      if (isNaN(seconds)) return '0:00';
+      if (isNaN(seconds) || seconds === Infinity) return '0:00';
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
-
-  const barBg = isTweetPlayer ? 'bg-twitter-gray/30' : 'bg-black/20 dark:bg-white/20';
-  const barFg = isOwnMessage ? 'bg-white' : 'bg-twitter-blue';
+  
   const textClass = isOwnMessage 
     ? 'text-white/80' 
     : isTweetPlayer 
@@ -77,12 +76,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, duration, isOwnMessage, 
       <button onClick={togglePlayPause} className="flex-shrink-0">
         {isPlaying ? <PauseIcon /> : <PlayIcon />}
       </button>
-      <div className={`w-full h-1.5 ${barBg} rounded-full overflow-hidden`}>
-        <div 
-          className={`h-full rounded-full ${barFg}`}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      <AudioWaveform 
+        progress={progress}
+        isOwnMessage={isOwnMessage}
+        isTweetPlayer={isTweetPlayer}
+      />
       <span className={`text-xs font-mono flex-shrink-0 ${textClass}`}>
         {formatTime(actualDuration)}
       </span>

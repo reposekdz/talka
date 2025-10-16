@@ -22,7 +22,7 @@ interface FloatingChatWindowProps {
 }
 
 const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, onClose, onFocus, onMaximize, isFocused, positionRight }) => {
-  const [isMinimized, setIsMinimized] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>(mockMessages[conversation.id] || []);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,6 +44,31 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, o
     setReplyingTo(null);
   };
   
+  const handleAddReaction = (messageId: string, emoji: string) => {
+    setMessages(prevMessages => 
+        prevMessages.map(msg => {
+            if (msg.id === messageId) {
+                const newReactions = msg.reactions ? JSON.parse(JSON.stringify(msg.reactions)) : [];
+                const reactionIndex = newReactions.findIndex((r: any) => r.emoji === emoji);
+
+                if (reactionIndex > -1) {
+                    const userReacted = newReactions[reactionIndex].users.includes(mockUser.id);
+                    if (userReacted) {
+                        newReactions[reactionIndex].users = newReactions[reactionIndex].users.filter((id: string) => id !== mockUser.id);
+                    } else {
+                        newReactions[reactionIndex].users.push(mockUser.id);
+                    }
+                } else {
+                    newReactions.push({ emoji, users: [mockUser.id] });
+                }
+
+                return { ...msg, reactions: newReactions.filter((r: any) => r.users.length > 0) };
+            }
+            return msg;
+        })
+    );
+  };
+  
   const handleHeaderClick = () => {
     if (isMinimized) {
       setIsMinimized(false);
@@ -54,8 +79,8 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, o
   if (isMinimized) {
     return (
         <motion.div 
-            className="pointer-events-auto"
-            style={{ zIndex: isFocused ? 110 : 100, right: positionRight }}
+            className="pointer-events-auto fixed"
+            style={{ zIndex: isFocused ? 110 : 100, right: positionRight + 16, bottom: 0 }}
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1, x: 0 }}
             exit={{ y: 100, opacity: 0, scale: 0.8 }}
@@ -74,7 +99,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, o
       dragMomentum={false}
       dragConstraints={{ top: -400, bottom: 0, left: -800, right: 400 }}
       onDragStart={onFocus}
-      className="w-80 h-96 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-t-lg shadow-2xl flex flex-col pointer-events-auto"
+      className="w-80 h-[450px] bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-t-lg shadow-2xl flex flex-col pointer-events-auto"
       style={{ zIndex: isFocused ? 110 : 100, right: positionRight, bottom: 0, position: 'fixed' }}
       initial={{ y: "100%", opacity: 0.8 }}
       animate={{ y: 0, opacity: 1 }}
@@ -98,7 +123,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ conversation, o
       
       <div className="flex-1 p-2 space-y-2 overflow-y-auto">
         {messages.map(msg => (
-          <MessageBubble key={msg.id} message={msg} isOwnMessage={msg.senderId === mockUser.id} onReply={setReplyingTo} />
+          <MessageBubble key={msg.id} message={msg} isOwnMessage={msg.senderId === mockUser.id} onReply={setReplyingTo} onAddReaction={handleAddReaction} />
         ))}
         <div ref={messagesEndRef} />
       </div>
