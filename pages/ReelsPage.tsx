@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import ReelCard from '../components/ReelCard';
 import { Reel, AppSettings, User } from '../types';
@@ -28,15 +27,15 @@ const ReelsPage: React.FC<ReelsPageProps> = (props) => {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    const video = entry.target.querySelector('video');
-                    if (video) {
+                    const videos = entry.target.querySelectorAll('video');
+                    videos.forEach((video) => {
                         if (entry.isIntersecting) {
-                            // Simple check for Wi-Fi vs cellular could be implemented here
-                            // For this prototype, we'll assume 'on-wifi-only' and 'on-cellular-wifi' both allow play
                             const playPromise = video.play();
                             if (playPromise !== undefined) {
                                 playPromise.catch(error => {
-                                    if (error.name !== 'AbortError') {
+                                    // Ignore errors that happen when the video is removed from the DOM during play.
+                                    // This is a common, non-critical error in async media handling in React.
+                                    if (error.name !== 'AbortError' && error.name !== 'NotSupportedError') {
                                       console.error("Autoplay error:", error);
                                     }
                                 });
@@ -44,7 +43,7 @@ const ReelsPage: React.FC<ReelsPageProps> = (props) => {
                         } else {
                             video.pause();
                         }
-                    }
+                    });
                 });
             },
             { threshold: 0.6 }
@@ -54,7 +53,11 @@ const ReelsPage: React.FC<ReelsPageProps> = (props) => {
         reelElements?.forEach((reel) => observer.observe(reel));
 
         return () => {
-            reelElements?.forEach((reel) => observer.unobserve(reel));
+            reelElements?.forEach((reel) => {
+                const videos = reel.querySelectorAll('video');
+                videos.forEach(video => video.pause());
+                observer.unobserve(reel);
+            });
         };
     }, [autoplaySetting, reels, activeTab]);
     

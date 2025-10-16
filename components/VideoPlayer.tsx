@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon } from './Icon';
@@ -25,7 +24,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src }) => {
     const observer = new IntersectionObserver(
         (entries) => {
             if (entries[0].isIntersecting) {
-                video.play().catch(e => console.error("Autoplay failed", e));
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        // Ignore errors from unmounting during play, which is a common race condition.
+                        if (error.name !== 'AbortError' && error.name !== 'NotSupportedError') {
+                           console.error("Autoplay failed", error);
+                        }
+                    });
+                }
             } else {
                 video.pause();
             }
@@ -36,6 +43,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src }) => {
     observer.observe(video);
 
     return () => {
+        if (video) {
+            video.pause();
+        }
         observer.disconnect();
     };
   }, [src]);
