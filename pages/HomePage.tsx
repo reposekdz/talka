@@ -24,10 +24,11 @@ interface HomePageProps {
   onOpenCreator: () => void;
   onJoinSpace: (space: Space) => void;
   onGrok: (tweet: Tweet) => void;
+  onTranslateTweet: (tweetId: string) => void;
 }
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [isLoading] = useState(false);
 
@@ -72,6 +73,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
               onQuote={onQuote}
               onEdit={onEdit}
               onGrok={onGrok}
+              onTranslateTweet={onTranslateTweet}
               liveReactions={[]}
             />
           ))

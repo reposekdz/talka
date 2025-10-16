@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Conversation, Message, User, ChatTheme, Reel } from '../types';
 import { mockUser } from '../data/mockData';
-import { CloseIcon, VideoCallIcon, PhoneIcon, ChevronLeftIcon, SearchIcon } from './Icon';
+import { CloseIcon, VideoCallIcon, PhoneIcon, ChevronLeftIcon, SearchIcon, PinFillIcon } from './Icon';
 import AvatarWithStatus from './AvatarWithStatus';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
@@ -38,6 +39,8 @@ const MobileChatView: React.FC<MobileChatViewProps> = (props) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const pinnedMessage = useMemo(() => messages.find(m => m.isPinned), [messages]);
 
   const filteredMessages = useMemo(() => {
     if (!searchTerm) return messages;
@@ -45,8 +48,10 @@ const MobileChatView: React.FC<MobileChatViewProps> = (props) => {
   }, [messages, searchTerm]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if(!isSearching) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isSearching]);
 
   const handleSendMessage = (content: MessageContent, replyTo?: Message) => {
     if (editingMessage && content.type === 'text') {
@@ -108,6 +113,15 @@ const MobileChatView: React.FC<MobileChatViewProps> = (props) => {
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
                 >
                     <span className="text-9xl drop-shadow-lg">👋</span>
+                </motion.div>
+            )}
+            {pinnedMessage && (
+                <motion.div layout className="sticky top-0 z-10 bg-light-hover/80 dark:bg-white/10 backdrop-blur-sm p-2 rounded-lg mb-2 text-sm cursor-pointer">
+                    <div className="flex items-center gap-1 text-twitter-blue">
+                        <PinFillIcon className="w-4 h-4" />
+                        <span className="font-bold">Pinned</span>
+                    </div>
+                    <p className="truncate text-light-secondary-text dark:text-dim-secondary-text mt-1">{pinnedMessage.text || "Pinned message"}</p>
                 </motion.div>
             )}
         </AnimatePresence>

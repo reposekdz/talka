@@ -11,9 +11,10 @@ import { marked } from 'marked';
 interface GrokAnalysisModalProps {
   tweet: Tweet;
   onClose: () => void;
+  onTranslateTweet: (tweetId: string) => void;
 }
 
-const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose }) => {
+const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet }) => {
     const [analysis, setAnalysis] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -71,7 +72,7 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose })
                     <div className="w-10"></div>
                 </header>
                 <div className="flex-1 overflow-y-auto">
-                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} liveReactions={[]} />
+                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} liveReactions={[]} onTranslateTweet={onTranslateTweet} />
                     <div className="p-4">
                         {isLoading && <p>Analyzing...</p>}
                         {error && <p className="text-red-500">{error}</p>}

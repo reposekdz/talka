@@ -14,10 +14,12 @@ interface ProfilePageProps {
   onViewUserList: (user: User, type: 'followers' | 'following') => void;
   onEditProfile: () => void;
   onHighlightClick: (index: number) => void;
+  onTranslateTweet: (tweetId: string) => void;
+  onGrok: (tweet: Tweet) => void;
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onHighlightClick } = props;
+  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onHighlightClick, onTranslateTweet, onGrok } = props;
   const [activeTab, setActiveTab] = useState('Posts');
 
   const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
@@ -82,7 +84,8 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 onVote={() => {}}
                 onQuote={() => {}}
                 onEdit={() => {}}
-                onGrok={() => {}}
+                onGrok={onGrok}
+                onTranslateTweet={onTranslateTweet}
                 liveReactions={[]}
             />
         ))}

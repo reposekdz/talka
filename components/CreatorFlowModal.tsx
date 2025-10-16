@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CloseIcon, ComposeIcon, StoryIcon, ReelsIcon, ChevronLeftIcon } from './Icon';
-import { Tweet, Story } from '../types';
+import { Tweet, Story, Reel } from '../types';
 import Composer from './Composer';
 import StoryCreator from './StoryCreator';
 import ReelCreator from './ReelCreator';

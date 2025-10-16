@@ -1,13 +1,15 @@
+
 import React, { useState } from 'react';
 import { AccountIcon, SecurityIcon, PrivacyIcon, NotificationsIcon, ChevronRightIcon, DisplayIcon } from '../components/Icon';
 import SettingsDetailView from '../components/SettingsDetailView';
 import { AnimatePresence } from 'framer-motion';
-import { AppSettings } from '../types';
+import { AppSettings, User } from '../types';
 
 interface SettingsPageProps {
   settings: AppSettings;
   onUpdateSettings: (newSettings: AppSettings) => void;
   openDisplayModal: () => void;
+  onUpdateProfileDetails: (updatedUser: Partial<User>) => void;
 }
 
 interface SettingsItemProps {
@@ -32,7 +34,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, subtitle, onCl
   </div>
 );
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings, openDisplayModal }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings, openDisplayModal, onUpdateProfileDetails }) => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const settingsSections = [
@@ -100,6 +102,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings,
                     onBack={() => setActiveSection(null)}
                     settings={settings}
                     onUpdateSettings={onUpdateSettings}
+                    onUpdateProfileDetails={onUpdateProfileDetails}
                 />
             )}
         </AnimatePresence>

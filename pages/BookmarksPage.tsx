@@ -10,9 +10,10 @@ interface BookmarksPageProps {
   onViewProfile: (user: User) => void;
   onImageClick: (url: string) => void;
   onGrok: (tweet: Tweet) => void;
+  onTranslateTweet: (tweetId: string) => void;
 }
 
-const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok }) => {
+const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet }) => {
   return (
     <div>
       <div className="sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10 p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
@@ -34,6 +35,7 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onVi
             onQuote={() => {}}
             onEdit={() => {}}
             onGrok={onGrok}
+            onTranslateTweet={onTranslateTweet}
             liveReactions={[]}
           />
         ))

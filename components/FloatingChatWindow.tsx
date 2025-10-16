@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Conversation, Message, User, ChatTheme, Reel } from '../types';
@@ -89,10 +90,10 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
   }, [messages, searchTerm]);
 
   useEffect(() => {
-    if (!isMinimized) {
+    if (!isMinimized && !isSearching) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
     }
-  }, [messages, isMinimized]);
+  }, [messages, isMinimized, isSearching]);
 
   const handleSendMessage = (content: MessageContent, replyTo?: Message) => {
     if (editingMessage && content.type === 'text') {
@@ -216,7 +217,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
         </AnimatePresence>
         <AnimatePresence>
             {pinnedMessage && (
-                <motion.div layout initial={{opacity: 0, y: -20}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -20}} className="sticky top-0 z-10 bg-light-hover/80 dark:bg-white/10 backdrop-blur-sm p-2 rounded-lg mb-2 text-sm">
+                <motion.div layout initial={{opacity: 0, y: -20}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -20}} className="sticky top-0 z-10 bg-light-hover/80 dark:bg-white/10 backdrop-blur-sm p-2 rounded-lg mb-2 text-sm cursor-pointer">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-1 text-twitter-blue">
                            <PinFillIcon className="w-4 h-4" />

@@ -1,21 +1,23 @@
+
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
-import TweetCard from './TweetCard';
-import WhoToFollow from './WhoToFollow';
+import TweetCard from '../components/TweetCard';
+import WhoToFollow from '../components/WhoToFollow';
 import { Tweet, User } from '../types';
-import { SearchIcon } from './Icon';
+import { SearchIcon } from '../components/Icon';
 
 interface SearchModalProps {
   onClose: () => void;
   onImageClick: (url: string) => void;
   onViewProfile: (user: User) => void;
   onGrok: (tweet: Tweet) => void;
+  onTranslateTweet: (tweetId: string) => void;
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -107,7 +109,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
           <AnimatePresence>
             {searchTerm.trim() === '' ? (
               <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="text-center p-16 text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
-                <h2 className="text-xl font-bold mb-2">Try searching for people or keywords</h2>
+                <h2 className="text-xl font-bold mb-2">Try searching for people, keywords, or topics</h2>
                 <p>Find what's happening on Talka.</p>
               </motion.div>
             ) : results.length > 0 ? (
@@ -126,9 +128,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
                     onEdit={() => {}}
                     liveReactions={[]}
                     onGrok={onGrok}
+                    onTranslateTweet={onTranslateTweet}
                     />;
                 } else {
-                  // This part is not fully functional in the prototype; needs follow state management
                   return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={mockUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;
                 }
               })

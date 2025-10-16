@@ -42,8 +42,9 @@ import MobileExploreDrawer from './components/MobileExploreDrawer';
 import CallView from './components/CallView';
 
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment } from './types';
-import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights, mockReels as initialMockReels } from './data/mockData';
+import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations as initialMockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights, mockReels as initialMockReels } from './data/mockData';
 import { AnimatePresence } from 'framer-motion';
+import { GoogleGenAI } from '@google/genai';
 
 type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string };
 
@@ -66,7 +67,7 @@ const App: React.FC = () => {
     const [replyingToTweet, setReplyingToTweet] = useState<Tweet | null>(null);
     const [quotingTweet, setQuotingTweet] = useState<Tweet | null>(null);
     const [editingTweet, setEditingTweet] = useState<Tweet | null>(null);
-    const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[] | Highlight[], index: number, isHighlight?: boolean } | null>(null);
+    const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[] | Highlight[], initialUserIndex: number, isHighlight?: boolean } | null>(null);
     const [isCreatorOpen, setIsCreatorOpen] = useState(false);
     const [creatorMode, setCreatorMode] = useState<'select' | 'story' | 'reel' | 'post' | undefined>(undefined);
     const [grokTweet, setGrokTweet] = useState<Tweet | null>(null);
@@ -74,7 +75,7 @@ const App: React.FC = () => {
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
     // Chat state
-    const [activeChats, setActiveChats] = useState<Conversation[]>([]);
+    const [activeChats, setActiveChats] = useState<Conversation[]>(initialMockConversations);
     const [allMessages, setAllMessages] = useState<Record<string, Message[]>>(initialMockMessages);
     const [inAppNotification, setInAppNotification] = useState<{ conversation: Conversation; message: Message; } | null>(null);
     
@@ -102,8 +103,9 @@ const App: React.FC = () => {
 
     const [appSettings, setAppSettings] = useState<AppSettings>({
         privacyAndSafety: { protectPosts: false, photoTagging: 'everyone', dmRequests: 'everyone' },
-        notifications: { mutedWords: [] },
-        accessibilityDisplayAndLanguages: { reduceMotion: false, videoAutoplay: 'on-cellular-wifi' },
+        security: { twoFactorEnabled: false },
+        notifications: { mutedWords: [], likes: true, retweets: true, dms: true },
+        accessibilityDisplayAndLanguages: { reduceMotion: false, videoAutoplay: 'on-cellular-wifi', language: 'English' },
     });
     
     useEffect(() => {
@@ -129,6 +131,70 @@ const App: React.FC = () => {
         setTweets(prev => [newTweet, ...prev]);
         showToast("Your Post was sent.");
         setIsCreatorOpen(false);
+    };
+
+     const handlePostStory = (newStoryData: Omit<Story, 'id' | 'timestamp'>) => {
+        const newStory: Story = {
+            ...newStoryData,
+            id: `s-new-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+        };
+
+        setUserStories(prev => {
+            const userStoryIndex = prev.findIndex(us => us.user.id === currentUser.id);
+            if (userStoryIndex > -1) {
+                const updatedStories = [...prev];
+                updatedStories[userStoryIndex].stories.push(newStory);
+                updatedStories[userStoryIndex].hasUnseen = true;
+                return updatedStories;
+            } else {
+                return [{ user: currentUser, stories: [newStory], hasUnseen: true }, ...prev];
+            }
+        });
+
+        showToast("Your story was posted.");
+        setIsCreatorOpen(false);
+    };
+
+    const handlePostReel = (videoUrl: string, caption: string) => {
+        const newReel: Reel = {
+            id: `r-new-${Date.now()}`,
+            user: currentUser,
+            videoUrl,
+            caption,
+            likeCount: 0,
+            dislikeCount: 0,
+            commentCount: 0,
+            shareCount: 0,
+            isLiked: false,
+            isDisliked: false,
+            isBookmarked: false,
+            comments: [],
+        };
+        setReels(prev => [newReel, ...prev]);
+        showToast("Your reel was shared.");
+        setIsCreatorOpen(false);
+    };
+
+    const handleUpdateProfileDetails = (updatedUser: Partial<User>) => {
+        setCurrentUser(prev => ({ ...prev, ...updatedUser }));
+        showToast("Profile details updated.");
+    };
+
+    const handleTranslateTweet = async (tweetId: string) => {
+        const tweetToTranslate = tweets.find(t => t.id === tweetId);
+        if (!tweetToTranslate || tweetToTranslate.translation) return;
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const prompt = `Translate the following text to English: "${tweetToTranslate.content}"`;
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+            
+            setTweets(prev => prev.map(t => t.id === tweetId ? { ...t, translation: { text: response.text, sourceLang: 'unknown', targetLang: 'en' } } : t));
+        } catch (error) {
+            console.error("Translation failed:", error);
+            showToast("Failed to translate post.");
+        }
     };
 
     const handleFollowToggle = (userId: string) => {
@@ -176,10 +242,11 @@ const App: React.FC = () => {
                     onQuote={setQuotingTweet}
                     onEdit={setEditingTweet}
                     userStories={userStories}
-                    onStoryClick={(index) => setStoryViewerState({ stories: userStories, index })}
+                    onStoryClick={(index) => setStoryViewerState({ stories: userStories, initialUserIndex: index })}
                     onOpenCreator={() => {setIsCreatorOpen(true); setCreatorMode('story')}}
                     onJoinSpace={setActiveSpace}
                     onGrok={setGrokTweet}
+                    onTranslateTweet={handleTranslateTweet}
                 />;
             case Page.Explore:
                 return <ExplorePage 
@@ -192,12 +259,12 @@ const App: React.FC = () => {
             case Page.Notifications:
                 return <NotificationsPage />;
             case Page.Messages:
-                return <MessagesPage openChat={(user) => {
+                return <MessagesPage conversations={activeChats} openChat={(user) => {
                     const existingChat = activeChats.find(c => c.participant.id === user.id);
                     if (existingChat) {
                         setActiveChats(prev => [...prev.filter(c => c.id !== existingChat.id), existingChat]);
                     } else {
-                        const newChat = mockConversations.find(c => c.participant.id === user.id) || {
+                        const newChat: Conversation = {
                             id: `c-new-${user.id}`,
                             participant: user,
                             lastMessage: { id: 'm-placeholder', senderId: '', timestamp: new Date().toISOString(), isRead: true, type: 'text', text: 'Start a new conversation' },
@@ -208,7 +275,7 @@ const App: React.FC = () => {
                     }
                 }} />;
             case Page.Bookmarks:
-                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} />;
+                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} />;
             case Page.Profile:
                 return <ProfilePage 
                     user={currentUser} 
@@ -218,7 +285,9 @@ const App: React.FC = () => {
                     onViewProfile={(user) => setCurrentPage(Page.Profile)} 
                     onViewUserList={(user, type) => setUserList({user, type})}
                     onEditProfile={() => setIsEditProfileOpen(true)}
-                    onHighlightClick={(index) => setStoryViewerState({stories: highlights, index, isHighlight: true})}
+                    onHighlightClick={(index) => setStoryViewerState({stories: highlights, initialUserIndex: index, isHighlight: true})}
+                    onTranslateTweet={handleTranslateTweet}
+                    onGrok={setGrokTweet}
                 />;
             case Page.Communities:
                 return <CommunitiesPage />;
@@ -228,12 +297,12 @@ const App: React.FC = () => {
                     onPostComment={(reelId: string, text: string, replyTo?: ReelComment) => showToast('Comment posted!')}
                     onLikeComment={(reelId: string, commentId: string) => showToast('Comment liked!')}
                     onShareReel={(reelId, convos) => showToast(`Shared to ${convos.length} chats.`)}
-                    conversations={mockConversations}
+                    conversations={activeChats}
                 />;
             case Page.CreatorStudio:
                 return <CreatorStudioPage />;
             case Page.Settings:
-                return <SettingsPage settings={appSettings} onUpdateSettings={setAppSettings} openDisplayModal={() => setIsDisplayModalOpen(true)} />;
+                return <SettingsPage settings={appSettings} onUpdateSettings={setAppSettings} openDisplayModal={() => setIsDisplayModalOpen(true)} onUpdateProfileDetails={handleUpdateProfileDetails} />;
             case Page.HelpCenter:
                 return <HelpCenterPage />;
             case Page.Lists:
@@ -251,10 +320,11 @@ const App: React.FC = () => {
                     onQuote={setQuotingTweet}
                     onEdit={setEditingTweet}
                     userStories={userStories}
-                    onStoryClick={(index) => setStoryViewerState({ stories: userStories, index })}
+                    onStoryClick={(index) => setStoryViewerState({ stories: userStories, initialUserIndex: index })}
                     onOpenCreator={() => {setIsCreatorOpen(true); setCreatorMode('story')}}
                     onJoinSpace={setActiveSpace}
                     onGrok={setGrokTweet}
+                    onTranslateTweet={handleTranslateTweet}
                 />;
         }
     }
@@ -310,14 +380,14 @@ const App: React.FC = () => {
             
             <AnimatePresence>
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={(reply) => {handlePostTweet({ content: reply, isBookmarked: false }); setReplyingToTweet(null); }} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={(tweet) => {handlePostTweet(tweet); setQuotingTweet(null);}} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={(id, content) => {setTweets(prev => prev.map(t => t.id === id ? {...t, content, isEdited: true} : t)); setEditingTweet(null); showToast('Your Post has been updated.'); }} />}
                 {storyViewerState && <StoryViewer {...storyViewerState} onClose={() => setStoryViewerState(null)} showToast={showToast} />}
-                {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={() => showToast('Story posted!')} onPostReel={() => showToast('Reel shared!')} />}
-                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} />}
+                {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
+                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isEditProfileOpen && <EditProfileModal user={currentUser} onClose={() => setIsEditProfileOpen(false)} onSave={(updatedUser) => { setCurrentUser(updatedUser); setIsEditProfileOpen(false); showToast('Profile updated!'); }} />}
                 {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserList(null);}} />}
@@ -358,10 +428,24 @@ const App: React.FC = () => {
                     showToast('Message deleted');
                 }}
                 onAddReaction={(convoId, msgId, emoji) => showToast('Reaction added')}
-                onPinMessage={(convoId, msgId) => showToast('Message pinned')}
+                onPinMessage={(convoId, msgId) => {
+                    setAllMessages(prev => {
+                        const newMessages = prev[convoId].map(m => {
+                            if (m.id === msgId) return { ...m, isPinned: !m.isPinned };
+                            // Ensure only one message is pinned
+                            if (m.isPinned) return { ...m, isPinned: false };
+                            return m;
+                        });
+                        return { ...prev, [convoId]: newMessages };
+                    });
+                    showToast('Message pin updated');
+                }}
                 onStartVideoCall={(user) => setActiveCall({ user, type: 'video', status: 'outgoing' })}
                 onStartAudioCall={(user) => setActiveCall({ user, type: 'audio', status: 'outgoing' })}
-                handleUpdateChatTheme={(convoId, theme) => showToast(`Theme changed to ${theme}`)}
+                handleUpdateChatTheme={(convoId, theme) => {
+                    setActiveChats(prev => prev.map(c => c.id === convoId ? {...c, chatTheme: theme} : c));
+                    showToast(`Theme changed!`);
+                }}
             />
         </div>
     );

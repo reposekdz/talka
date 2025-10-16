@@ -26,12 +26,19 @@ export interface AppSettings {
     photoTagging: 'everyone' | 'following' | 'off';
     dmRequests: 'everyone' | 'following';
   };
+  security: {
+      twoFactorEnabled: boolean;
+  };
   notifications: {
     mutedWords: string[];
+    likes: boolean;
+    retweets: boolean;
+    dms: boolean;
   };
   accessibilityDisplayAndLanguages: {
     reduceMotion: boolean;
     videoAutoplay: 'on-cellular-wifi' | 'on-wifi-only' | 'never';
+    language: 'English' | 'Spanish' | 'Japanese' | 'French';
   }
 }
 
@@ -86,7 +93,8 @@ export interface Tweet {
   audioUrl?: string;
   isEdited?: boolean;
   originalContent?: string;
-  translationInfo?: {
+  translation?: {
+    text: string;
     sourceLang: string;
     targetLang: string;
   };

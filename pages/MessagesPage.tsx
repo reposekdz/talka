@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-import { mockConversations } from '../data/mockData';
 import { Conversation, User } from '../types';
 import AvatarWithStatus from '../components/AvatarWithStatus';
 import { VerifiedIcon, MoreIcon, PlusIcon } from '../components/Icon';
@@ -27,6 +27,9 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onCli
     const getLastMessageText = () => {
         if (lastMessage.type === 'voice') return '🎤 Voice message';
         if (lastMessage.type === 'gif') return '🖼️ GIF';
+        if (lastMessage.type === 'image') return '📷 Image';
+        if (lastMessage.type === 'reel-share') return '🎬 Reel';
+        if (lastMessage.type === 'wave') return '👋';
         return lastMessage.text;
     }
 
@@ -58,10 +61,10 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onCli
 
 interface MessagesPageProps {
     openChat: (user: User) => void;
+    conversations: Conversation[];
 }
 
-const MessagesPage: React.FC<MessagesPageProps> = ({ openChat }) => {
-    const [conversations] = useState(mockConversations);
+const MessagesPage: React.FC<MessagesPageProps> = ({ openChat, conversations }) => {
 
     return (
         <div className="flex h-full flex-col">

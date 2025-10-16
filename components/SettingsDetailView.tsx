@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon } from './Icon';
-import { AppSettings } from '../types';
+import { AppSettings, User } from '../types';
 import ToggleSwitch from './ToggleSwitch';
 
 interface SettingsDetailViewProps {
@@ -9,6 +10,7 @@ interface SettingsDetailViewProps {
   onBack: () => void;
   settings: AppSettings;
   onUpdateSettings: (settings: AppSettings) => void;
+  onUpdateProfileDetails: (updatedUser: Partial<User>) => void;
 }
 
 const SettingsSection: React.FC<{title: string; description: string; children: React.ReactNode}> = ({ title, description, children }) => (
@@ -30,8 +32,10 @@ const SettingsRow: React.FC<{title: string; description: string; control: React.
 )
 
 
-const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, settings, onUpdateSettings }) => {
+const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, settings, onUpdateSettings, onUpdateProfileDetails }) => {
     const [mutedWordInput, setMutedWordInput] = useState('');
+    const [displayName, setDisplayName] = useState('');
+    const [username, setUsername] = useState('');
 
     const handleUpdate = (key: keyof AppSettings, value: any) => {
         onUpdateSettings({
@@ -59,6 +63,40 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
 
   const renderContent = () => {
     switch(title) {
+        case "Your account":
+            return (
+                 <div>
+                    <SettingsSection title="Account Information" description="Update your public profile information.">
+                        <div className="space-y-4">
+                            <input type="text" placeholder="Display Name" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full bg-light-border dark:bg-twitter-light-dark rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue" />
+                            <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-light-border dark:bg-twitter-light-dark rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue" />
+                            <button onClick={() => onUpdateProfileDetails({ displayName, username })} className="w-full bg-twitter-blue text-white font-bold py-2 rounded-full">Save Changes</button>
+                        </div>
+                    </SettingsSection>
+                    <SettingsSection title="Deactivate your account" description="This is a temporary deactivation. Your profile, Posts, and other data will be hidden until you reactivate by logging back in.">
+                        <button className="text-red-500 font-bold">Deactivate (Prototype)</button>
+                    </SettingsSection>
+                 </div>
+            );
+        case "Security and account access":
+            return (
+                <div>
+                    <SettingsSection title="Security" description="Manage your account's security.">
+                         <SettingsRow
+                            title="Two-factor authentication"
+                            description="Help protect your account from unauthorized access."
+                            control={<ToggleSwitch
+                                labelId="2fa-toggle"
+                                isOn={settings.security.twoFactorEnabled}
+                                handleToggle={() => handleUpdate('security', {...settings.security, twoFactorEnabled: !settings.security.twoFactorEnabled})}
+                            />}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title="Connected apps" description="These apps are connected to your account.">
+                        <p className="text-sm text-light-secondary-text dark:text-twitter-gray">No apps connected. (This is a prototype feature).</p>
+                    </SettingsSection>
+                </div>
+            );
         case "Privacy and safety":
             return (
                  <div>
@@ -107,6 +145,11 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
         case "Notifications":
              return (
                  <div>
+                     <SettingsSection title="Preferences" description="Select your preferences for push notifications.">
+                        <SettingsRow title="Likes" description="Receive notifications when someone likes your post." control={<ToggleSwitch labelId="likes-toggle" isOn={settings.notifications.likes} handleToggle={() => handleUpdate('notifications', {...settings.notifications, likes: !settings.notifications.likes})} />} />
+                        <SettingsRow title="Retweets" description="Receive notifications when someone retweets your post." control={<ToggleSwitch labelId="retweets-toggle" isOn={settings.notifications.retweets} handleToggle={() => handleUpdate('notifications', {...settings.notifications, retweets: !settings.notifications.retweets})} />} />
+                        <SettingsRow title="Direct Messages" description="Receive notifications for new direct messages." control={<ToggleSwitch labelId="dms-toggle" isOn={settings.notifications.dms} handleToggle={() => handleUpdate('notifications', {...settings.notifications, dms: !settings.notifications.dms})} />} />
+                     </SettingsSection>
                     <SettingsSection title="Muted words" description="Mute words, phrases, usernames, emojis, or hashtags from your Home timeline.">
                         <div className="flex gap-2">
                              <input
@@ -132,6 +175,24 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
          case "Accessibility, display, and languages":
             return (
                  <div>
+                     <SettingsSection title="Display" description="Manage your display and language settings.">
+                        <SettingsRow
+                            title="Language"
+                            description="Select your preferred language for headlines, buttons, and other text."
+                            control={
+                                <select
+                                    value={settings.accessibilityDisplayAndLanguages.language}
+                                    onChange={(e) => handleUpdate('accessibilityDisplayAndLanguages', {...settings.accessibilityDisplayAndLanguages, language: e.target.value as any})}
+                                    className="bg-transparent border border-light-border dark:border-twitter-border rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
+                                >
+                                    <option value="English">English</option>
+                                    <option value="Spanish">Español</option>
+                                    <option value="Japanese">日本語</option>
+                                    <option value="French">Français</option>
+                                </select>
+                            }
+                        />
+                    </SettingsSection>
                     <SettingsSection title="Data usage" description="Control how Talka uses your mobile data.">
                         <SettingsRow
                             title="Video autoplay"
