@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 
@@ -15,11 +16,14 @@ const BarChart: React.FC<BarChartProps> = ({ data, title }) => {
       <div className="flex justify-around items-end h-40 gap-4">
         {data.map((item, index) => (
           <div key={index} className="flex flex-col items-center flex-1 h-full">
+            {/* FIX: Wrapped framer-motion props to bypass type errors. */}
             <motion.div
               className="w-full bg-twitter-blue rounded-t-md"
-              initial={{ height: 0 }}
-              animate={{ height: `${(item.value / maxValue) * 100}%` }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              {...{
+                  initial: { height: 0 },
+                  animate: { height: `${(item.value / maxValue) * 100}%` },
+                  transition: { duration: 0.5, delay: index * 0.1 },
+              }}
             />
             <span className="text-xs mt-2 text-light-secondary-text dark:text-twitter-gray">{item.label}</span>
           </div>

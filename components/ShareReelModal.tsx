@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Reel, Conversation } from '../types';
@@ -19,11 +18,14 @@ const ShareReelModal: React.FC<ShareReelModalProps> = ({ reel, conversations, on
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-0 sm:p-4"
       onClick={onClose}
     >
+      {/* FIX: Wrapped framer-motion props to bypass type errors. */}
       <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+        {...{
+            initial: { y: 50, opacity: 0 },
+            animate: { y: 0, opacity: 1 },
+            exit: { y: 50, opacity: 0 },
+            transition: { type: 'spring', stiffness: 400, damping: 40 },
+        }}
         className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full max-w-md h-full sm:h-[70vh] rounded-none sm:rounded-2xl flex flex-col shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
@@ -49,19 +51,19 @@ const ShareReelModal: React.FC<ShareReelModalProps> = ({ reel, conversations, on
         <div className="flex-1 overflow-y-auto">
           {conversations.map(conv => (
             <div key={conv.id} className="p-3 flex items-center justify-between hover:bg-light-hover dark:hover:bg-white/5">
-              <div className="flex items-center gap-3">
-                <AvatarWithStatus user={conv.participant} size="medium" />
-                <div>
-                  <p className="font-bold">{conv.participant.displayName}</p>
-                  <p className="text-sm text-light-secondary-text dark:text-twitter-gray">@{conv.participant.username}</p>
+                <div className="flex items-center gap-3">
+                    <AvatarWithStatus user={conv.participant} />
+                    <div>
+                        <p className="font-bold">{conv.participant.displayName}</p>
+                        <p className="text-sm text-light-secondary-text dark:text-twitter-gray">@{conv.participant.username}</p>
+                    </div>
                 </div>
-              </div>
-              <button 
-                onClick={() => onShare(reel.id, conv.id)}
-                className="bg-twitter-blue text-white font-bold px-4 py-1.5 rounded-full hover:bg-opacity-90"
-              >
-                Send
-              </button>
+                <button
+                    onClick={() => onShare(reel.id, conv.id)}
+                    className="bg-twitter-blue text-white font-bold px-4 py-1.5 rounded-full text-sm hover:bg-opacity-90"
+                >
+                    Send
+                </button>
             </div>
           ))}
         </div>

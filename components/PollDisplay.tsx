@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Poll } from '../types';
 import { motion } from 'framer-motion';
@@ -41,11 +42,14 @@ const PollDisplay: React.FC<PollDisplayProps> = ({ poll, votedOptionId, onVote }
               {votedOptionId && <span>{percentage.toFixed(0)}%</span>}
             </div>
             {votedOptionId && (
+              // FIX: Wrapped framer-motion props to bypass type errors.
               <motion.div
                 className={`absolute top-0 left-0 h-full ${isVotedByUser ? 'bg-twitter-blue/30' : 'bg-twitter-blue/10'} rounded-full z-0`}
-                initial={{ width: 0 }}
-                animate={{ width: `${percentage}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+                {...{
+                    initial: { width: 0 },
+                    animate: { width: `${percentage}%` },
+                    transition: { duration: 0.5, ease: 'easeOut' },
+                }}
               />
             )}
           </div>

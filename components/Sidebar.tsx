@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProtoIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, ComposeIcon, ReelsIcon } from './Icon';
+import { ProtoIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, CreateIcon, ReelsIcon } from './Icon';
 import MoreMenu from './MoreMenu';
 import { Page } from '../types';
 
@@ -9,9 +9,10 @@ interface SidebarProps {
   onLogout: () => void;
   openDisplayModal: () => void;
   activeChatCount: number;
+  onOpenCreator: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout, openDisplayModal, activeChatCount }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout, openDisplayModal, activeChatCount, onOpenCreator }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const navItems = [
@@ -66,9 +67,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
               </li>
           </ul>
         </nav>
-        <button className="bg-twitter-blue w-14 h-14 xl:w-56 mt-4 text-white font-bold text-lg p-3 rounded-full hover:bg-opacity-90 flex items-center justify-center">
-            <span className="hidden xl:inline">Post</span>
-            <span className="xl:hidden"><ComposeIcon /></span>
+        <button onClick={onOpenCreator} className="bg-twitter-blue w-14 h-14 xl:w-56 mt-4 text-white font-bold text-lg p-3 rounded-full hover:bg-opacity-90 flex items-center justify-center">
+            <span className="hidden xl:inline">Create</span>
+            <span className="xl:hidden"><CreateIcon /></span>
         </button>
       </div>
 

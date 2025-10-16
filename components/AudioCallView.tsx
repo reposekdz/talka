@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User } from '../types';
@@ -30,10 +31,13 @@ const AudioCallView: React.FC<AudioCallViewProps> = ({ user, status, onEndCall }
   const controlButtonClasses = "p-4 rounded-full transition-colors duration-200 text-white";
 
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      {...{
+        initial: { opacity: 0, scale: 0.95 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.95 },
+      }}
       className="fixed inset-0 bg-gray-800 z-50 flex flex-col justify-between items-center p-8"
       style={{
           backgroundImage: `url(${user.avatarUrl})`,

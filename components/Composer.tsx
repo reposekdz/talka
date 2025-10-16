@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Avatar from './Avatar';
-import { PhotoIcon, GifIcon, ChartBarIcon, EmojiIcon, CalendarIcon, GlobeIcon, MicrophoneIcon, StopIcon, TrashIcon, CloseIcon } from './Icon';
+import { PhotoIcon, GifIcon, ChartBarIcon, EmojiIcon, CalendarIcon, GlobeIcon, MicrophoneIcon, StopIcon, TrashIcon, CloseIcon, PlayIcon, MusicNoteIcon } from './Icon';
 import { mockUser } from '../data/mockData';
 import { Tweet } from '../types';
 import GifComposerModal from './GifComposerModal';
@@ -15,15 +14,27 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [isGifModalOpen, setIsGifModalOpen] = useState(false);
-    const [selectedGif, setSelectedGif] = useState<string | null>(null);
+    const [mediaPreview, setMediaPreview] = useState<{ url: string, type: 'image' | 'video' | 'gif' | 'audio' } | null>(null);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const recordingIntervalRef = useRef<number | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
-    const isDisabled = tweetText.trim().length === 0 && !selectedGif;
+    const isDisabled = tweetText.trim().length === 0 && !mediaPreview;
 
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            let type: 'image' | 'video' | 'audio' = 'image';
+            if (file.type.startsWith('video/')) type = 'video';
+            if (file.type.startsWith('audio/')) type = 'audio';
+            setMediaPreview({ url, type });
+        }
+    };
+    
     const iconButtons = [
-        { icon: <PhotoIcon />, label: 'Media' },
+        { icon: <PhotoIcon />, label: 'Media', action: () => fileInputRef.current?.click() },
         { icon: <GifIcon />, label: 'GIF', action: () => setIsGifModalOpen(true) },
         { icon: <ChartBarIcon />, label: 'Poll' },
         { icon: <EmojiIcon />, label: 'Emoji' },
@@ -34,15 +45,15 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
         if (!isDisabled) {
             onPostTweet({ 
                 content: tweetText,
-                mediaUrls: selectedGif ? [selectedGif] : undefined,
+                mediaUrls: mediaPreview ? [mediaPreview.url] : undefined,
             });
             setTweetText('');
-            setSelectedGif(null);
+            setMediaPreview(null);
         }
     };
 
     const handleSelectGif = (url: string) => {
-        setSelectedGif(url);
+        setMediaPreview({ url, type: 'gif' });
         setIsGifModalOpen(false);
     }
     
@@ -109,8 +120,37 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
+    const renderMediaPreview = () => {
+        if (!mediaPreview) return null;
+        switch (mediaPreview.type) {
+            case 'image':
+            case 'gif':
+                return <img src={mediaPreview.url} alt="Selected media" className="rounded-2xl w-full h-auto" />;
+            case 'video':
+                return (
+                    <div className="relative">
+                        <video src={mediaPreview.url} controls className="rounded-2xl w-full h-auto" />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
+                            <PlayIcon className="w-12 h-12 text-white" />
+                        </div>
+                    </div>
+                );
+            case 'audio':
+                 return (
+                    <div className="flex items-center gap-3 my-2 p-3 bg-light-hover dark:bg-white/5 rounded-lg">
+                        <MusicNoteIcon />
+                        <span className="flex-1 text-sm text-light-secondary-text dark:text-twitter-gray">Audio file ready</span>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
+
     return (
         <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border flex gap-4">
+            <input type="file" accept="image/*,video/*,audio/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
             {isGifModalOpen && <GifComposerModal onSelectGif={handleSelectGif} onClose={() => setIsGifModalOpen(false)} />}
             <Avatar src={mockUser.avatarUrl} alt={mockUser.displayName} />
             <div className="flex-1 relative">
@@ -119,14 +159,14 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet }) => {
                     value={tweetText}
                     onChange={(e) => setTweetText(e.target.value)}
                     className="w-full bg-transparent text-xl resize-none focus:outline-none placeholder-light-secondary-text dark:placeholder-twitter-gray dim:placeholder-dim-secondary-text"
-                    rows={isRecording ? 1 : 2}
+                    rows={isRecording ? 1 : (mediaPreview ? 2 : 3)}
                 />
                 
-                {selectedGif && (
+                {mediaPreview && (
                     <div className="relative mt-2 max-w-sm">
-                        <img src={selectedGif} alt="Selected GIF" className="rounded-2xl w-full h-auto" />
+                        {renderMediaPreview()}
                         <button 
-                            onClick={() => setSelectedGif(null)}
+                            onClick={() => setMediaPreview(null)}
                             className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
                         >
                             <CloseIcon />

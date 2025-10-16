@@ -6,7 +6,7 @@ import { AppSettings } from '../types';
 
 interface SettingsPageProps {
   settings: AppSettings;
-  onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
+  onUpdateSettings: (newSettings: AppSettings) => void;
   openDisplayModal: () => void;
 }
 

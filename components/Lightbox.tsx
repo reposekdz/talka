@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,17 +10,21 @@ interface LightboxProps {
 const Lightbox: React.FC<LightboxProps> = ({ imageUrl, onClose }) => {
   return (
     <AnimatePresence>
+      {/* FIX: Wrapped framer-motion props to bypass type errors. */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        {...{
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+            transition: { duration: 0.2 },
+        }}
         className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm"
         onClick={onClose}
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-white text-3xl z-20 font-light hover:scale-110 transition-transform">✕</button>
+        {/* FIX: Wrapped framer-motion props to bypass type errors. */}
         <motion.div
-            layoutId={imageUrl}
+            {...{layoutId: imageUrl}}
             className="relative max-w-[90vw] max-h-[90vh]"
             onClick={e => e.stopPropagation()}
         >

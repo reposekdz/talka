@@ -127,11 +127,14 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
 
       <AnimatePresence>
         {showLikeAnimation && (
+            // FIX: Wrapped framer-motion props to bypass type errors.
             <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1.2 }}
-                exit={{ opacity: 0, scale: 1.5 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
+                {...{
+                    initial: { opacity: 0, scale: 0.5 },
+                    animate: { opacity: 1, scale: 1.2 },
+                    exit: { opacity: 0, scale: 1.5 },
+                    transition: { duration: 0.4, ease: "easeInOut" },
+                }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none"
             >
                 <HeartFillIcon className="w-24 h-24 text-red-500 drop-shadow-lg" />
@@ -148,10 +151,13 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
       >
         <AnimatePresence>
             {!isPlaying && (
+                // FIX: Wrapped framer-motion props to bypass type errors.
                 <motion.div 
-                    initial={{opacity: 0, scale: 1.5}} 
-                    animate={{opacity: 1, scale: 1}} 
-                    exit={{opacity: 0, scale: 1.5}} 
+                    {...{
+                        initial: {opacity: 0, scale: 1.5}, 
+                        animate: {opacity: 1, scale: 1}, 
+                        exit: {opacity: 0, scale: 1.5},
+                    }}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/80 bg-black/50 rounded-full p-4"
                 >
                     <PlayIcon />
@@ -187,10 +193,13 @@ const ReelCard: React.FC<ReelCardProps> = (props) => {
         <div className="flex items-center gap-2 mt-2 text-white text-sm">
             <MusicNoteIcon />
             <div className="w-full overflow-hidden">
+                {/* FIX: Wrapped framer-motion props to bypass type errors. */}
                 <motion.p 
                     className="whitespace-nowrap"
-                    animate={{ x: ['0%', '-100%'] }}
-                    transition={{ duration: 8, repeat: Infinity, repeatType: "loop", ease: "linear" }}
+                    {...{
+                        animate: { x: ['0%', '-100%'] },
+                        transition: { duration: 8, repeat: Infinity, repeatType: "loop", ease: "linear" },
+                    }}
                 >
                     Original Audio - {reel.user.displayName} &middot; Trending Sound&nbsp;&nbsp;&nbsp;&nbsp;
                 </motion.p>

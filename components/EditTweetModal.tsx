@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tweet } from '../types';
@@ -24,11 +25,14 @@ const EditTweetModal: React.FC<EditTweetModalProps> = ({ tweet, onClose, onSave 
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center pt-10"
       onClick={onClose}
     >
+      {/* FIX: Wrapped framer-motion props to bypass type errors. */}
       <motion.div
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -50, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+        {...{
+            initial: { y: -50, opacity: 0 },
+            animate: { y: 0, opacity: 1 },
+            exit: { y: -50, opacity: 0 },
+            transition: { type: 'spring', stiffness: 400, damping: 40 },
+        }}
         className="bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg w-full max-w-[600px] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >

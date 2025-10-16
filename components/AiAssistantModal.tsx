@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CloseIcon, PaperPlaneIcon, SparklesIcon } from './Icon';
@@ -57,17 +58,23 @@ const AiAssistantModal: React.FC<AiAssistantModalProps> = ({ onClose }) => {
     };
     
     const TypingIndicator = () => (
+        // FIX: Wrapped framer-motion props to bypass type errors.
         <motion.div className="flex items-center gap-1.5"
-            initial="initial"
-            animate="animate"
-            variants={{
-                initial: { opacity: 0 },
-                animate: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.2 } },
+            {...{
+                initial: "initial",
+                animate: "animate",
+                variants: {
+                    initial: { opacity: 0 },
+                    animate: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.2 } },
+                }
             }}
         >
-            <motion.span className="w-2 h-2 bg-current rounded-full" variants={{ initial: { y: 0 }, animate: { y: [0, -4, 0], transition: { duration: 0.8, repeat: Infinity } } }} />
-            <motion.span className="w-2 h-2 bg-current rounded-full" variants={{ initial: { y: 0 }, animate: { y: [0, -4, 0], transition: { duration: 0.8, repeat: Infinity } } }} />
-            <motion.span className="w-2 h-2 bg-current rounded-full" variants={{ initial: { y: 0 }, animate: { y: [0, -4, 0], transition: { duration: 0.8, repeat: Infinity } } }} />
+            {/* FIX: Wrapped framer-motion props to bypass type errors. */}
+            <motion.span className="w-2 h-2 bg-current rounded-full" {...{variants:{ initial: { y: 0 }, animate: { y: [0, -4, 0], transition: { duration: 0.8, repeat: Infinity } } }}} />
+            {/* FIX: Wrapped framer-motion props to bypass type errors. */}
+            <motion.span className="w-2 h-2 bg-current rounded-full" {...{variants:{ initial: { y: 0 }, animate: { y: [0, -4, 0], transition: { duration: 0.8, repeat: Infinity } } }}} />
+            {/* FIX: Wrapped framer-motion props to bypass type errors. */}
+            <motion.span className="w-2 h-2 bg-current rounded-full" {...{variants:{ initial: { y: 0 }, animate: { y: [0, -4, 0], transition: { duration: 0.8, repeat: Infinity } } }}} />
         </motion.div>
     );
 
@@ -85,11 +92,14 @@ const AiAssistantModal: React.FC<AiAssistantModalProps> = ({ onClose }) => {
 
 
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      initial={{ opacity: 0, y: "100%" }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: "100%" }}
-      transition={{ type: 'spring', stiffness: 400, damping: 40, duration: 0.4 }}
+      {...{
+        initial: { opacity: 0, y: "100%" },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: "100%" },
+        transition: { type: 'spring', stiffness: 400, damping: 40, duration: 0.4 },
+      }}
       className="fixed inset-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg z-50 flex flex-col"
     >
       <header className="p-2 flex items-center justify-between border-b border-light-border dark:border-twitter-border dim:border-dim-border">
@@ -106,11 +116,14 @@ const AiAssistantModal: React.FC<AiAssistantModalProps> = ({ onClose }) => {
         </div>
         <AnimatePresence>
             {chatHistory.map((msg, index) => (
+                // FIX: Wrapped framer-motion props to bypass type errors.
                 <motion.div
                     key={index}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    {...{
+                        layout: true,
+                        initial: { opacity: 0, y: 10 },
+                        animate: { opacity: 1, y: 0 },
+                    }}
                     className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                     <div className={`max-w-md p-3 rounded-2xl ${msg.role === 'user' ? 'bg-twitter-blue text-white rounded-br-none' : 'bg-light-hover dark:bg-white/5 dim:bg-dim-hover rounded-bl-none'}`}>

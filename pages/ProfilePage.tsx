@@ -8,6 +8,7 @@ import { Tweet, User, Highlight } from '../types';
 interface ProfilePageProps {
   user: User;
   currentUser: User;
+  tweets: Tweet[];
   onImageClick: (url: string) => void;
   onBack: () => void;
   onViewProfile: (user: User) => void;
@@ -23,16 +24,14 @@ interface ProfilePageProps {
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick } = props;
+  const { user, currentUser, tweets, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList, onOpenChat, onReply, onToggleBookmark, onVote, onQuote, onEdit, onHighlightClick } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
-  const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(false);
-  const [tipsEnabled, setTipsEnabled] = useState(false);
   
-  const userTweets = baseTweets.filter(t => t.user.id === user.id);
+  const userTweets = tweets;
   const isCurrentUserProfile = user.id === currentUser.id;
   const isFollowing = currentUser.followingIds.includes(user.id);
-  const isFollowedBy = user.followingIds.includes(currentUser.id);
+  const isFollowedBy = user.followerIds.includes(currentUser.id);
   
   const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
   

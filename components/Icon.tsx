@@ -1,5 +1,5 @@
-
 import React from 'react';
+import AnimatedLogo from './AnimatedLogo';
 
 const IconWrapper: React.FC<{ children: React.ReactNode, className?: string, viewBox?: string }> = ({ children, className = "w-6 h-6", viewBox = "0 0 24 24" }) => (
   <svg className={className} viewBox={viewBox} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -7,14 +7,10 @@ const IconWrapper: React.FC<{ children: React.ReactNode, className?: string, vie
   </svg>
 );
 
-export const ProtoIcon: React.FC = () => (
-    <IconWrapper className="w-8 h-8 text-twitter-blue" viewBox="0 0 24 24">
-        <path d="M11.96 14.94c-.13 0-.26-.05-.35-.15l-3.23-3.23c-.2-.2-.2-.51 0-.71.2-.2.51-.2.71 0l2.12 2.12 4.24-4.24c.2-.2.51-.2.71 0 .2.2.2.51 0 .71l-5.3 5.3c-.1.1-.23.15-.35.15zM22.15 6.31l-3.37-3.37c-.56-.56-1.46-.56-2.02 0l-1.37 1.37c-.2.2-.2.51 0 .71.2.2.51.2.71 0l1.37-1.37c.18-.18.47-.18.65 0l3.37 3.37c.18.18.18.47 0 .65l-1.37 1.37c-.2.2-.2.51 0 .71.1.1.23.15.35.15s.26-.05.35-.15l1.37-1.37c.56-.56.56-1.46 0-2.02zm-15.69 9.66l-1.37 1.37c-.18-.18-.47-.18-.65 0l-3.37-3.37c-.18-.18-.18-.47 0-.65l1.37-1.37c.2-.2.51-.2.71 0 .2.2.2.51 0 .71l-1.37 1.37c-.01 0-.01.01 0 .01l3.37 3.37c.01 0 .01.01.01 0l1.37-1.37c.2-.2.51-.2.71 0 .2.2.2.51 0 .71zm4.24 4.24c-.13 0-.26-.05-.35-.15l-5.3-5.3c-.2-.2-.2-.51 0-.71.2-.2.51-.2.71 0l5.3 5.3c.2.2.2.51 0 .71-.1.1-.23.15-.35.15zm8.48-11.31l-9.9 9.9c-.2-.2-.51.2-.71 0-.2-.2-.2-.51 0-.71l9.9-9.9c.2-.2.51-.2.71 0 .2.2.2.51 0 .71z"/>
-    </IconWrapper>
-);
+export const ProtoIcon: React.FC = () => <AnimatedLogo className="w-8 h-8" />;
 
 export const HomeIcon: React.FC<{isActive?: boolean}> = ({isActive}) => <IconWrapper><path d={isActive ? "M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" : "M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3 2 12h3v8h6v-6h2v6h6v-8h3L12 3z"}/></IconWrapper>;
-export const ExploreIcon: React.FC<{isActive?: boolean}> = ({isActive}) => <IconWrapper><path d={isActive ? "M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" : "m15.5 14-1.08-1.08c.55-.9.88-1.95.88-3.02 0-3.31-2.69-6-6-6s-6 2.69-6 6 2.69 6 6 6c1.07 0 2.12-.33 3.02-.88L14 15.5l5.5 5.5 1.5-1.5-5.5-5.5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"}/></IconWrapper>;
+export const ExploreIcon: React.FC<{isActive?: boolean}> = ({isActive}) => <IconWrapper><path d={isActive ? "m12 12-3 8 8-3-8-8 3 8z" : "M14.5 12c0-1.38-1.12-2.5-2.5-2.5S9.5 10.62 9.5 12s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"}/></IconWrapper>;
 export const NotificationsIcon: React.FC<{isActive?: boolean}> = ({isActive}) => <IconWrapper><path d={isActive ? "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" : "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"}/></IconWrapper>;
 export const MessagesIcon: React.FC<{isActive?: boolean; className?: string}> = ({isActive, className}) => <IconWrapper className={className}><path d={isActive ? "M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" : "M22 6.98V16c0 1.1-.9 2-2 2H6l-4 4V4c0-1.1.9-2 2-2h12.1A5.002 5.002 0 0 1 22 6.98zM20 4H4v12h14l2 2V4h-2z"}/></IconWrapper>;
 export const ProfileIcon: React.FC = () => <IconWrapper><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></IconWrapper>;
@@ -86,5 +82,7 @@ export const SpacesIcon: React.FC = () => <IconWrapper><path d="M11.99 2C6.47 2 
 export const SparklesIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><path d="M18 8h-2.59l-1.41-1.41L12 4l-2 2-1.41 1.41H6l-2 2 2 2h2.59l1.41 1.41L12 20l2-2 1.41-1.41H18l2-2-2-2zM12 15.17L10.83 14 12 12.83 13.17 14 12 15.17zM15.17 12L14 10.83 12.83 12 14 13.17 15.17 12zM8.83 12L10 13.17 11.17 12 10 10.83 8.83 12zM12 8.83L13.17 10 12 11.17 10.83 10 12 8.83z"/></IconWrapper>;
 export const HandRaiseIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><path d="M18.5 12c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5c0 .61.22 1.16.58 1.59L12 18.5V21h8v-6.5c0-1.08-.6-2.03-1.5-2.5zM4 12c0-2.21 1.79-4 4-4s4 1.79 4 4v10H0v-4c0-3.31 2.69-6 6-6h2V9C7.79 9 6 7.21 6 5s1.79-4 4-4 4 1.79 4 4v3h2c1.1 0 2 .9 2 2v2.68c.9.84 1.5 2.01 1.5 3.32V23h-6v-5.07l-2.61-2.61C10.7 14.63 11 13.86 11 13V12H4z"/></IconWrapper>;
 export const LeaveIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></IconWrapper>;
+export const StoryIcon: React.FC = () => <IconWrapper><path d="M16.5 4.5c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5c0 .61.22 1.16.58 1.59L12 8.5V11h5V8.5L14.42 6.09c.36-.43.58-.98.58-1.59zM4.5 2C3.12 2 2 3.12 2 4.5v15C2 20.88 3.12 22 4.5 22h15c1.38 0 2.5-1.12 2.5-2.5V14h-7v-2.5c0-1.08-.6-2.03-1.5-2.5L9.5 7.41V4.5C9.5 3.12 8.38 2 7 2h-2.5zM7 13.5c-1.93 0-3.5 1.57-3.5 3.5S5.07 20.5 7 20.5s3.5-1.57 3.5-3.5S8.93 13.5 7 13.5z"/></IconWrapper>;
+export const CreateIcon: React.FC = () => <IconWrapper><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.8-.8-2.07-.8-2.83 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></IconWrapper>;
 
 export default IconWrapper;

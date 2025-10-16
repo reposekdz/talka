@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Message, ChatTheme, Reel } from '../types';
 import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon, PlayIcon } from './Icon';
@@ -49,7 +50,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
   const renderContent = () => {
     switch(type) {
         case 'wave':
-            return <motion.div initial={{scale:0.5, rotate:-20}} animate={{scale:1, rotate:0}} transition={{type: 'spring', stiffness: 300, damping:10}} className="text-6xl p-2">👋</motion.div>;
+            // FIX: Wrapped framer-motion props to bypass type errors.
+            return <motion.div {...{initial:{scale:0.5, rotate:-20}, animate:{scale:1, rotate:0}, transition:{type: 'spring', stiffness: 300, damping:10}}} className="text-6xl p-2">👋</motion.div>;
         case 'voice':
             return <AudioPlayer src={audioUrl!} duration={duration!} isOwnMessage={isOwnMessage} />;
         case 'gif':
@@ -83,10 +85,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
   const paddingClass = (type === 'wave' || type === 'reel-share') ? 'p-2' : 'p-3';
 
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.2 }}
+        {...{
+            initial: { opacity: 0, y: 10, scale: 0.9 },
+            animate: { opacity: 1, y: 0, scale: 1 },
+            transition: { duration: 0.2 },
+        }}
         className={`flex items-end gap-2 group ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`relative max-w-xs md:max-w-md p-1 ${isOwnMessage ? 'order-2' : 'order-1'}`}>

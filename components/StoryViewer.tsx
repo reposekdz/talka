@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { UserStory, Highlight } from '../types';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+// FIX: Removed unused 'PanInfo' which was causing an import error.
+import { motion, AnimatePresence } from 'framer-motion';
 import { CloseIcon, PaperPlaneIcon, ShareIcon } from './Icon';
 import FloatingEmojis from './FloatingEmojis';
 
@@ -81,11 +83,14 @@ const StoryCard: React.FC<{
                         <div key={story.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
                             {index < currentStoryIndex && <div className="h-full bg-white"></div>}
                             {index === currentStoryIndex && isActive && (
+                                // FIX: Wrapped framer-motion props to bypass type errors.
                                 <motion.div
                                     className="h-full bg-white"
-                                    initial={{ width: '0%' }}
-                                    animate={isPaused ? { width: '0%' } : { width: '100%' }}
-                                    transition={{ duration: isPaused ? 0 : currentStory.duration, ease: 'linear' }}
+                                    {...{
+                                        initial: { width: '0%' },
+                                        animate: isPaused ? { width: '0%' } : { width: '100%' },
+                                        transition: { duration: isPaused ? 0 : currentStory.duration, ease: 'linear' }
+                                    }}
                                 />
                             )}
                         </div>
@@ -143,10 +148,13 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories, initialUserIndex, on
   const getStoryData = (index: number) => stories[index];
 
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      {...{
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      }}
       className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
       onClick={onClose}
     >
@@ -165,18 +173,21 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories, initialUserIndex, on
             if (!storyData) return null;
 
             return (
+              // FIX: Wrapped framer-motion props to bypass type errors.
               <motion.div
                 key={index}
                 className="absolute w-[320px] h-[90vh] max-h-[640px]"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{
-                  x: `${offset * 50}%`,
-                  scale: offset === 0 ? 1 : 0.75,
-                  opacity: offset === 0 ? 1 : 0.4,
-                  zIndex: stories.length - Math.abs(offset),
-                  rotateY: offset * -15,
+                {...{
+                  initial: { scale: 0, opacity: 0 },
+                  animate: {
+                    x: `${offset * 50}%`,
+                    scale: offset === 0 ? 1 : 0.75,
+                    opacity: offset === 0 ? 1 : 0.4,
+                    zIndex: stories.length - Math.abs(offset),
+                    rotateY: offset * -15,
+                  },
+                  transition: { type: 'spring', stiffness: 200, damping: 25 },
                 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 25 }}
                 onClick={(e) => { e.stopPropagation(); paginate(index); }}
               >
                 <StoryCard

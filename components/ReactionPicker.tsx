@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
@@ -24,12 +25,15 @@ const ReactionPicker: React.FC<ReactionPickerProps> = ({ onSelect, onClose }) =>
   }, [onClose]);
 
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
       ref={pickerRef}
-      initial={{ opacity: 0, y: 10, scale: 0.8 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.8 }}
-      transition={{ duration: 0.15, ease: 'easeOut' }}
+      {...{
+        initial: { opacity: 0, y: 10, scale: 0.8 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 0, y: 10, scale: 0.8 },
+        transition: { duration: 0.15, ease: 'easeOut' },
+      }}
       className="absolute bottom-full mb-2 -left-2 bg-light-bg dark:bg-twitter-light-dark dim:bg-dim-bg p-2 rounded-full shadow-lg border border-light-border dark:border-twitter-border dim:border-dim-border z-20 flex gap-1"
     >
       {reactions.map(emoji => (

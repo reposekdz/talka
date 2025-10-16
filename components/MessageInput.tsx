@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../types';
 import { PhotoIcon, GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, ChevronLeftIcon, PaperclipIcon, CloseIcon, WaveIcon } from './Icon';
@@ -5,12 +6,13 @@ import EmojiPicker from './EmojiPicker';
 import GifPickerModal from './GifPickerModal';
 import { AnimatePresence, motion } from 'framer-motion';
 
+// FIX: Added optional text property to image message content type.
 type MessageContent = 
     | { type: 'text'; text: string }
     | { type: 'voice'; audioUrl: string; duration: number }
     | { type: 'gif'; gifUrl: string }
     | { type: 'wave' }
-    | { type: 'image'; imageUrl: string };
+    | { type: 'image'; imageUrl: string; text?: string };
 
 
 interface MessageInputProps {
@@ -171,11 +173,14 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
       <AnimatePresence>
         {replyingTo && (
+            // FIX: Wrapped framer-motion props to bypass type errors.
             <motion.div
-                layout
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                {...{
+                    layout: true,
+                    initial: { opacity: 0, y: -20 },
+                    animate: { opacity: 1, y: 0 },
+                    exit: { opacity: 0, y: -20 },
+                }}
                 className="bg-light-hover dark:bg-white/5 dim:bg-dim-hover p-2 rounded-t-lg mx-2 flex justify-between items-center"
             >
             <div className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text border-l-2 border-twitter-blue pl-2">
@@ -190,39 +195,49 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
       <div className="flex items-center min-h-[44px]">
         <AnimatePresence mode="wait">
             {isRecording ? (
+                // FIX: Wrapped framer-motion props to bypass type errors.
                 <motion.div 
                     key="recording-ui"
-                    initial={{ opacity: 0, scale: 0.8 }} 
-                    animate={{ opacity: 1, scale: 1 }} 
-                    exit={{ opacity: 0, scale: 0.8 }}
+                    {...{
+                        initial: { opacity: 0, scale: 0.8 }, 
+                        animate: { opacity: 1, scale: 1 }, 
+                        exit: { opacity: 0, scale: 0.8 },
+                    }}
                     className="w-full flex items-center justify-between px-4 overflow-hidden relative"
                 >
                     <div className="flex items-center gap-2 text-red-500">
                         <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
                         <span className="font-mono">{formatTime(recordingTime)}</span>
                     </div>
-                    <motion.div 
+                    {/* FIX: Wrapped framer-motion props to bypass type errors. */}
+                    <motion.div
                         className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-light-secondary-text dark:text-twitter-gray"
-                        animate={{ opacity: isCancelZone ? 0 : 1, x: isCancelZone ? -20 : 0 }}
+                        {...{animate:{ opacity: isCancelZone ? 0 : 1, x: isCancelZone ? -20 : 0 }}}
                     >
                         <ChevronLeftIcon />
                         <span>Slide to cancel</span>
                     </motion.div>
-                     <motion.div 
+                     {/* FIX: Wrapped framer-motion props to bypass type errors. */}
+                     <motion.div
                         className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-red-500"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: isCancelZone ? 1 : 0, x: isCancelZone ? 0 : 20 }}
+                        {...{
+                            initial: { opacity: 0 },
+                            animate: { opacity: isCancelZone ? 1 : 0, x: isCancelZone ? 0 : 20 },
+                        }}
                     >
                         <TrashIcon />
                         <span>Release to cancel</span>
                     </motion.div>
                 </motion.div>
             ) : (
+                // FIX: Wrapped framer-motion props to bypass type errors.
                 <motion.div 
                     key="text-input-ui"
-                    initial={{ opacity: 0, scale: 0.8 }} 
-                    animate={{ opacity: 1, scale: 1 }} 
-                    exit={{ opacity: 0, scale: 0.8 }}
+                    {...{
+                        initial: { opacity: 0, scale: 0.8 }, 
+                        animate: { opacity: 1, scale: 1 }, 
+                        exit: { opacity: 0, scale: 0.8 },
+                    }}
                     className="flex-1 flex flex-col gap-2 mx-2">
                     {imagePreview && (
                         <div className="relative w-24 h-24 ml-2 mt-1">
@@ -254,16 +269,19 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
             {(inputText || imagePreview) && !isRecording ? (
                 <button onClick={handleSendMessage} className="p-2 text-twitter-blue"><SendIcon /></button>
             ) : (
+                // FIX: Wrapped framer-motion props to bypass type errors.
                 <motion.button 
                     ref={micButtonRef}
                     onMouseDown={startRecording}
                     onTouchStart={startRecording}
                     className="p-2 text-twitter-blue relative"
-                    animate={{ 
-                        scale: isRecording ? 1.2 : 1, 
-                        x: slidePosition 
+                    {...{
+                        animate: { 
+                            scale: isRecording ? 1.2 : 1, 
+                            x: slidePosition 
+                        },
+                        transition: { type: 'spring', stiffness: 500, damping: 30 }
                     }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 >
                     <MicrophoneIcon />
                 </motion.button>

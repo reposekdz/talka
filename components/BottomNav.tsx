@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, ExploreIcon, MessagesIcon, PlusIcon, ProfileIcon } from './Icon';
+import { HomeIcon, ExploreIcon, MessagesIcon, PlusIcon, ProfileIcon, CreateIcon, ReelsIcon } from './Icon';
 import { Page, User } from '../types';
 import { motion } from 'framer-motion';
 
@@ -9,7 +9,7 @@ interface BottomNavProps {
   currentUser: User;
   activeChatCount: number;
   notificationCount: number;
-  onOpenComposer: () => void;
+  onOpenCreator: () => void;
 }
 
 const NavItem: React.FC<{
@@ -35,10 +35,11 @@ const NavItem: React.FC<{
 );
 
 
-const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, activeChatCount, onOpenComposer }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, activeChatCount, onOpenCreator }) => {
   const navItems = [
     { page: Page.Home, icon: <HomeIcon isActive={currentPage === Page.Home} /> },
     { page: Page.Explore, icon: <ExploreIcon isActive={currentPage === Page.Explore}/> },
+    { page: Page.Reels, icon: <ReelsIcon isActive={currentPage === Page.Reels} /> },
     { page: Page.Messages, icon: <MessagesIcon isActive={currentPage === Page.Messages} />, notificationCount: activeChatCount },
     { page: Page.Profile, icon: <ProfileIcon /> },
   ];
@@ -50,12 +51,12 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, acti
             <NavItem page={navItems[0].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[0].icon} />
             <NavItem page={navItems[1].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[1].icon} />
             <div className="w-16" /> {/* Spacer for FAB */}
-            <NavItem page={navItems[2].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[2].icon} notificationCount={navItems[2].notificationCount}/>
-            <NavItem page={navItems[3].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[3].icon} />
+            <NavItem page={navItems[3].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[3].icon} notificationCount={navItems[3].notificationCount}/>
+            <NavItem page={navItems[4].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[4].icon} />
         </nav>
         <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2">
-            <button onClick={onOpenComposer} className="w-16 h-16 bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 active:scale-95 transition-transform">
-               <PlusIcon className="w-8 h-8"/>
+            <button onClick={onOpenCreator} className="w-16 h-16 bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 active:scale-95 transition-transform">
+               <CreateIcon />
             </button>
         </div>
       </div>

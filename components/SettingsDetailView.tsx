@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon } from './Icon';
@@ -90,13 +91,16 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
                     </SettingsSection>
                     <SettingsSection title="Direct Messages" description="Control who can message you directly.">
                         <SettingsRow
-                            title="Allow message requests from everyone"
+                            title="Allow message requests from"
                             description="Let people who you don’t follow send you message requests and add you to group conversations."
-                            control={<ToggleSwitch
-                                labelId="Allow-message-requests-from-everyone"
-                                isOn={settings.privacyAndSafety.dmRequests === 'everyone'}
-                                handleToggle={() => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, dmRequests: settings.privacyAndSafety.dmRequests === 'everyone' ? 'following' : 'everyone'})}
-                            />}
+                            control={<select 
+                                    value={settings.privacyAndSafety.dmRequests}
+                                    onChange={(e) => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, dmRequests: e.target.value as any})}
+                                    className="bg-transparent border border-light-border dark:border-twitter-border rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
+                                >
+                                    <option value="everyone">Everyone</option>
+                                    <option value="following">People you follow</option>
+                                </select>}
                         />
                     </SettingsSection>
                  </div>
@@ -165,11 +169,14 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
   }
   
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+      {...{
+        initial: { x: '100%' },
+        animate: { x: 0 },
+        exit: { x: '100%' },
+        transition: { type: 'tween', ease: 'easeInOut', duration: 0.3 },
+      }}
       className="absolute top-0 left-0 w-full h-full bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg flex flex-col"
     >
       <div className="sticky top-0 flex items-center gap-4 p-2 md:p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">

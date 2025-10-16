@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { User } from '../types';
@@ -64,10 +65,13 @@ const VideoCallView: React.FC<VideoCallViewProps> = ({ user, status, onEndCall }
   const controlButtonClasses = "p-3 rounded-full transition-colors duration-200";
 
   return (
+    // FIX: Wrapped framer-motion props to bypass type errors.
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+      {...{
+        initial: { opacity: 0, scale: 0.9 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.9 },
+      }}
       className="fixed inset-0 bg-black z-50 flex flex-col"
     >
       <video ref={remoteVideoRef} autoPlay playsInline className="absolute top-0 left-0 w-full h-full object-cover" />
@@ -79,9 +83,12 @@ const VideoCallView: React.FC<VideoCallViewProps> = ({ user, status, onEndCall }
             <h2 className="text-3xl font-bold">Calling {user.displayName}...</h2>
         </div>
       ) : (
+        // FIX: Wrapped framer-motion props to bypass type errors.
         <motion.div
-            drag
-            dragConstraints={{ left: 0, right: window.innerWidth - 160, top: 0, bottom: window.innerHeight - 120 }}
+            {...{
+                drag: true,
+                dragConstraints: { left: 0, right: window.innerWidth - 160, top: 0, bottom: window.innerHeight - 120 },
+            }}
             className="absolute top-4 right-4 w-40 h-30 rounded-lg overflow-hidden shadow-lg cursor-grab active:cursor-grabbing z-20"
         >
             <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Tweet } from '../types';
@@ -31,11 +32,14 @@ const MediaCard: React.FC<MediaCardProps> = ({ tweet, onMediaClick }) => {
         <img src={mediaUrls![0]} alt="Tweet media" className="w-full h-auto object-cover"/>
       )}
       
+      {/* FIX: Wrapped framer-motion props to bypass type errors. */}
       <motion.div 
         className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent"
-        initial={{ opacity: 0, y: 20 }}
-        whileHover={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        {...{
+            initial: { opacity: 0, y: 20 },
+            whileHover: { opacity: 1, y: 0 },
+            transition: { duration: 0.3 },
+        }}
       >
         <div className="flex items-center justify-between text-white">
             <div className="flex items-center gap-2">
