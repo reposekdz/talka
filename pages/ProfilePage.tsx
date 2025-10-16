@@ -17,6 +17,8 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, onImageClick, onBack, onViewProfile, onFollowToggle, onViewUserList }) => {
   const [activeTab, setActiveTab] = useState('Posts');
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
+  const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(false);
+  const [tipsEnabled, setTipsEnabled] = useState(false);
   
   const userTweets = baseTweets.filter(t => t.user.id === user.id);
   const isCurrentUserProfile = user.id === currentUser.id;
@@ -61,16 +63,38 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, onImageCli
             <div className="bg-light-hover dark:bg-white/5 p-4 rounded-lg">
                 <h3 className="font-bold">Subscriptions</h3>
                 <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mt-1">
-                    Offer monthly subscriptions to your most engaged followers for exclusive content.
+                    {subscriptionsEnabled
+                        ? 'Manage your subscription offerings and view your monthly earnings.'
+                        : 'Offer monthly subscriptions to your most engaged followers for exclusive content.'
+                    }
                 </p>
-                <button className="mt-4 bg-twitter-blue text-white font-bold py-2 px-4 rounded-full text-sm">Set up Subscriptions</button>
+                {subscriptionsEnabled ? (
+                    <div className="mt-4">
+                        <p className="text-lg font-bold">Status: <span className="text-green-400">Active</span></p>
+                        <p className="text-sm">Monthly Price: $4.99</p>
+                         <button onClick={() => setSubscriptionsEnabled(false)} className="mt-2 bg-red-500/80 text-white font-bold py-2 px-4 rounded-full text-sm w-full">Disable Subscriptions</button>
+                    </div>
+                ) : (
+                    <button onClick={() => setSubscriptionsEnabled(true)} className="mt-4 bg-twitter-blue text-white font-bold py-2 px-4 rounded-full text-sm">Set up Subscriptions</button>
+                )}
             </div>
             <div className="bg-light-hover dark:bg-white/5 p-4 rounded-lg">
                 <h3 className="font-bold">Tips</h3>
                 <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mt-1">
-                   Allow your followers to show their support by sending you one-time tips.
+                    {tipsEnabled
+                        ? 'Your tips are enabled. Followers can now send you money directly.'
+                        : 'Allow your followers to show their support by sending you one-time tips.'
+                    }
                 </p>
-                 <button className="mt-4 bg-twitter-blue text-white font-bold py-2 px-4 rounded-full text-sm">Enable Tips</button>
+                 {tipsEnabled ? (
+                     <div className="mt-4">
+                        <p className="text-lg font-bold">Status: <span className="text-green-400">Active</span></p>
+                        <p className="text-sm">Total Tipped: $125.00</p>
+                         <button onClick={() => setTipsEnabled(false)} className="mt-2 bg-red-500/80 text-white font-bold py-2 px-4 rounded-full text-sm w-full">Disable Tips</button>
+                    </div>
+                 ) : (
+                    <button onClick={() => setTipsEnabled(true)} className="mt-4 bg-twitter-blue text-white font-bold py-2 px-4 rounded-full text-sm">Enable Tips</button>
+                 )}
             </div>
         </div>
     </div>

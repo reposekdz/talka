@@ -7,6 +7,7 @@ import { AppSettings } from '../types';
 interface SettingsPageProps {
   settings: AppSettings;
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
+  openDisplayModal: () => void;
 }
 
 interface SettingsItemProps {
@@ -31,34 +32,45 @@ const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, subtitle, onCl
   </div>
 );
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings, openDisplayModal }) => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const settingsSections = [
     {
       icon: <AccountIcon />,
       title: "Your account",
-      subtitle: "See information about your account, download an archive of your data, or learn about your account deactivation options"
+      subtitle: "See information about your account, download an archive of your data, or learn about your account deactivation options",
+      action: () => setActiveSection("Your account")
     },
     {
       icon: <SecurityIcon />,
       title: "Security and account access",
-      subtitle: "Manage your account’s security and keep track of your account’s usage including apps that you have connected to your account."
+      subtitle: "Manage your account’s security and keep track of your account’s usage including apps that you have connected to your account.",
+      action: () => setActiveSection("Security and account access")
     },
     {
       icon: <PrivacyIcon />,
       title: "Privacy and safety",
-      subtitle: "Manage what information you see and share on Proto-Twitter."
+      subtitle: "Manage what information you see and share on Proto-Twitter.",
+      action: () => setActiveSection("Privacy and safety")
     },
     {
       icon: <NotificationsIcon />,
       title: "Notifications",
-      subtitle: "Select the kinds of notifications you get about your activities, interests, and recommendations."
+      subtitle: "Select the kinds of notifications you get about your activities, interests, and recommendations.",
+      action: () => setActiveSection("Notifications")
     },
     {
       icon: <DisplayIcon />,
       title: "Accessibility, display, and languages",
-      subtitle: "Manage how Proto-Twitter content is displayed to you."
+      subtitle: "Manage how Proto-Twitter content is displayed to you.",
+      action: () => setActiveSection("Accessibility, display, and languages")
+    },
+     {
+      icon: <DisplayIcon />,
+      title: "Display",
+      subtitle: "Customize your view. These settings affect all accounts on this browser.",
+      action: openDisplayModal
     }
   ];
 
@@ -77,7 +89,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings 
             </div>
             <div className="flex-1 overflow-y-auto">
                 {settingsSections.map(item => (
-                <SettingsItem key={item.title} {...item} onClick={() => setActiveSection(item.title)} />
+                <SettingsItem key={item.title} icon={item.icon} title={item.title} subtitle={item.subtitle} onClick={item.action} />
                 ))}
             </div>
         </div>

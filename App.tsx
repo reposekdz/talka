@@ -22,7 +22,6 @@ import ReelCommentsPanel from './components/ReelCommentsPanel';
 import { userStories, mockUser as initialUser, otherUsers as initialOtherUsers, mockTweets as initialTweets } from './data/mockData';
 import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
-import MobileMenu from './components/MobileMenu';
 import { Page, Theme, User, Tweet, Reel, AppSettings } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -60,7 +59,6 @@ function App() {
 
   const [isDisplayModalOpen, setIsDisplayModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
   const [storyViewerIndex, setStoryViewerIndex] = useState<number | null>(null);
   
@@ -75,14 +73,12 @@ function App() {
 
   const navigateTo = (page: Page) => {
     setPageHistory(prev => [...prev, page]);
-    setIsMobileMenuOpen(false);
   };
   
   const handleSetCurrentPage = (page: Page) => {
     setViewingProfileFor(null);
     setUserListInfo(null);
     setPageHistory([page]);
-    setIsMobileMenuOpen(false);
   };
 
   const handleBack = () => {
@@ -206,7 +202,7 @@ function App() {
       case Page.CreatorStudio:
         return <CreatorStudioPage />;
       case Page.Settings:
-        return <SettingsPage settings={appSettings} onUpdateSettings={setAppSettings} />;
+        return <SettingsPage settings={appSettings} onUpdateSettings={setAppSettings} openDisplayModal={() => setIsDisplayModalOpen(true)} />;
       case Page.HelpCenter:
         return <HelpCenterPage />;
       default:
@@ -222,10 +218,10 @@ function App() {
     <div className="bg-light-bg text-light-text dark:bg-twitter-dark dark:text-white dim:bg-dim-bg dim:text-dim-text h-screen">
       <div className="container mx-auto flex justify-center h-full">
         
-        <MobileHeader 
-          user={currentUser}
+        <MobileHeader
+          pageHistory={pageHistory}
+          onBack={handleBack}
           setCurrentPage={handleSetCurrentPage}
-          onMenuClick={() => setIsMobileMenuOpen(true)}
         />
         
         <Sidebar 
@@ -272,21 +268,13 @@ function App() {
           </AnimatePresence>
         </div>
 
-        <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} />
+        <BottomNav currentPage={currentPage} setCurrentPage={handleSetCurrentPage} currentUser={currentUser} />
       </div>
 
       {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
       {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={handleViewProfile} />}
       {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
       {storyViewerIndex !== null && <StoryViewer stories={userStories} initialUserIndex={storyViewerIndex} onClose={() => setStoryViewerIndex(null)} />}
-      {isMobileMenuOpen && (
-        <MobileMenu 
-          onClose={() => setIsMobileMenuOpen(false)}
-          setCurrentPage={handleSetCurrentPage}
-          onLogout={handleLogout}
-          openDisplayModal={() => setIsDisplayModalOpen(true)}
-        />
-      )}
     </div>
   );
 }

@@ -1,30 +1,32 @@
 import React from 'react';
-import { TwitterIcon, NotificationsIcon, MoreIcon } from './Icon';
-import Avatar from './Avatar';
-import { User, Page } from '../types';
+import { ProtoIcon, SettingsIcon, ChevronLeftIcon } from './Icon';
+import { Page } from '../types';
 
 interface MobileHeaderProps {
-  user: User;
+  pageHistory: Page[];
+  onBack: () => void;
   setCurrentPage: (page: Page) => void;
-  onMenuClick: () => void;
 }
 
-const MobileHeader: React.FC<MobileHeaderProps> = ({ user, setCurrentPage, onMenuClick }) => {
+const MobileHeader: React.FC<MobileHeaderProps> = ({ pageHistory, onBack, setCurrentPage }) => {
+  const showBackButton = pageHistory.length > 1;
+
   return (
     <header className="fixed top-0 left-0 right-0 h-14 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-30 sm:hidden border-b border-light-border dark:border-twitter-border dim:border-dim-border">
-      <div className="container mx-auto flex items-center justify-between px-4 h-full max-w-[600px] ">
-        <button onClick={() => setCurrentPage(Page.Profile)}>
-          <Avatar src={user.avatarUrl} alt={user.displayName} size="small" />
-        </button>
-        <div className="text-current">
-          <TwitterIcon />
-        </div>
-        <div className="flex items-center gap-2">
-            <button onClick={() => setCurrentPage(Page.Notifications)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">
-                <NotificationsIcon />
+      <div className="container mx-auto flex items-center justify-between px-4 h-full max-w-[600px] relative">
+        <div className="absolute left-4">
+          {showBackButton && (
+            <button onClick={onBack} className="p-2 -ml-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">
+              <ChevronLeftIcon />
             </button>
-            <button onClick={onMenuClick} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">
-                <MoreIcon />
+          )}
+        </div>
+        <div className="absolute left-1/2 -translate-x-1/2 text-current">
+          <ProtoIcon />
+        </div>
+        <div className="absolute right-4">
+            <button onClick={() => setCurrentPage(Page.Settings)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">
+                <SettingsIcon />
             </button>
         </div>
       </div>

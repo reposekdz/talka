@@ -1,19 +1,29 @@
 import React from 'react';
-import { HomeIcon, ExploreIcon, MessagesIcon, ReelsIcon, ProfileIcon } from './Icon';
-import { Page } from '../types';
+import { HomeIcon, ExploreIcon, MessagesIcon, ReelsIcon } from './Icon';
+import { Page, User } from '../types';
 
 interface BottomNavProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
+  currentUser: User;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, currentUser }) => {
   const navItems = [
     { page: Page.Home, icon: <HomeIcon /> },
     { page: Page.Explore, icon: <ExploreIcon /> },
     { page: Page.Messages, icon: <MessagesIcon /> },
     { page: Page.Reels, icon: <ReelsIcon /> },
-    { page: Page.Profile, icon: <ProfileIcon /> },
+    { 
+      page: Page.Profile, 
+      icon: (
+        <img 
+          src={currentUser.avatarUrl} 
+          alt="Profile"
+          className={`w-6 h-6 rounded-full object-cover transition-all duration-200 ${currentPage === Page.Profile ? 'ring-2 ring-twitter-blue' : ''}`}
+        />
+      ) 
+    },
   ];
 
   return (
@@ -23,7 +33,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage }) =>
           <button
             key={item.page}
             onClick={() => setCurrentPage(item.page)}
-            className={`flex-1 flex justify-center items-center p-2 ${currentPage === item.page ? 'text-current font-bold' : 'text-light-secondary-text dark:text-twitter-gray'}`}
+            className={`flex-1 flex justify-center items-center p-2 h-full ${currentPage === item.page ? 'text-current font-bold' : 'text-light-secondary-text dark:text-twitter-gray'}`}
           >
             {item.icon}
           </button>

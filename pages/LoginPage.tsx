@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { TwitterIcon } from '../components/Icon';
+import { ProtoIcon } from '../components/Icon';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -11,7 +10,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     <div className="min-h-screen flex items-center justify-center bg-twitter-dark">
       <div className="bg-twitter-light-dark p-8 rounded-2xl max-w-sm w-full text-center shadow-lg">
         <div className="text-twitter-blue mx-auto mb-6">
-            <TwitterIcon />
+            <ProtoIcon />
         </div>
         <h1 className="text-3xl font-extrabold mb-2">Welcome to Proto-Twitter</h1>
         <p className="text-twitter-gray mb-8">This is a frontend prototype. Click below to log in with a mock user.</p>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TwitterIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, ComposeIcon, ReelsIcon } from './Icon';
+import { ProtoIcon, HomeIcon, ExploreIcon, NotificationsIcon, MessagesIcon, ProfileIcon, MoreIcon, BookmarkIcon, ListIcon, CommunityIcon, ComposeIcon, ReelsIcon } from './Icon';
 import MoreMenu from './MoreMenu';
 import { Page } from '../types';
 
@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onLogout
     <header className="w-[88px] xl:w-[275px] h-screen sticky top-0 px-2 flex-col justify-between items-center xl:items-stretch hidden sm:flex transition-all duration-300">
       <div>
         <div className="p-3 my-2 text-current hover:bg-light-hover dark:hover:bg-twitter-blue/10 rounded-full w-min">
-          <TwitterIcon />
+          <ProtoIcon />
         </div>
         <nav>
           <ul>
