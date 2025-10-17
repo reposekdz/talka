@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UserStory, User } from '../types';
 import { PlusIcon } from './Icon';
