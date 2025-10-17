@@ -76,7 +76,8 @@ const App: React.FC = () => {
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
     // Chat state
-    const [activeChats, setActiveChats] = useState<Conversation[]>(initialMockConversations);
+    const [allKnownConversations, setAllKnownConversations] = useState<Conversation[]>(initialMockConversations);
+    const [activeChats, setActiveChats] = useState<Conversation[]>([]);
     const [allMessages, setAllMessages] = useState<Record<string, Message[]>>(initialMockMessages);
     const [inAppNotification, setInAppNotification] = useState<{ conversation: Conversation; message: Message; } | null>(null);
     const [aiSuggestedReply, setAiSuggestedReply] = useState<{ convoId: string, text: string } | null>(null);
@@ -219,23 +220,37 @@ const App: React.FC = () => {
     
     const handleOpenChat = useCallback((user: User) => {
         if (user.id === currentUser.id) return;
-        const existingChat = activeChats.find(c => c.participant.id === user.id);
-        if (existingChat) {
-            setActiveChats(prev => [...prev.filter(c => c.id !== existingChat.id), existingChat]);
+
+        // Check if chat is already active
+        const existingActiveChat = activeChats.find(c => c.participant.id === user.id);
+        if (existingActiveChat) {
+            // Bring to front if not already focused
+            if (activeChats.length > 0 && activeChats[activeChats.length - 1].id !== existingActiveChat.id) {
+                setActiveChats(prev => [...prev.filter(c => c.id !== existingActiveChat.id), existingActiveChat]);
+            }
+            return;
+        }
+
+        // Check if it's a known conversation that's not active
+        const knownChat = allKnownConversations.find(c => c.participant.id === user.id);
+        if (knownChat) {
+            setActiveChats(prev => [...prev, knownChat]);
         } else {
+            // It's a brand new conversation
             const newChat: Conversation = {
-                id: `c-new-${user.id}`,
+                id: `c-new-${Date.now()}-${user.id}`,
                 participant: user,
                 lastMessage: { id: 'm-placeholder', senderId: '', timestamp: new Date().toISOString(), isRead: true, type: 'text', text: 'Start a new conversation' },
                 unreadCount: 0,
                 chatTheme: 'default-blue',
             };
+            setAllKnownConversations(prev => [...prev, newChat]);
             setActiveChats(prev => [...prev, newChat]);
             if (!allMessages[newChat.id]) {
                 setAllMessages(prev => ({ ...prev, [newChat.id]: [] }));
             }
         }
-    }, [activeChats, allMessages, currentUser.id]);
+    }, [activeChats, allKnownConversations, allMessages, currentUser.id]);
 
     const handleAiChatAction = async (action: 'suggest-reply' | 'summarize', context: Message[], conversationId: string) => {
         const aiUser = allUsers.find(u => u.id === 'ai-assistant');
@@ -327,7 +342,7 @@ const App: React.FC = () => {
                 return <NotificationsPage />;
             case Page.Messages:
 // FIX: Changed prop 'onOpenChat' to 'openChat' to match the expected prop in MessagesPage.
-                return <MessagesPage conversations={activeChats} openChat={handleOpenChat} />;
+                return <MessagesPage conversations={allKnownConversations} openChat={handleOpenChat} />;
             case Page.Bookmarks:
                 return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />;
             case Page.Profile:
@@ -397,7 +412,7 @@ const App: React.FC = () => {
                     setCurrentPage={(page) => { setUserList(null); setCurrentPage(page); }}
                     onLogout={handleLogout}
                     openDisplayModal={() => setIsDisplayModalOpen(true)}
-                    activeChatCount={activeChats.reduce((sum, chat) => sum + chat.unreadCount, 0)}
+                    activeChatCount={allKnownConversations.reduce((sum, chat) => sum + chat.unreadCount, 0)}
                     onOpenCreator={(mode) => { setIsCreatorOpen(true); setCreatorMode(mode); }}
                 />
                 <main className="flex-1 min-w-0 max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border relative">
@@ -428,7 +443,7 @@ const App: React.FC = () => {
                         }
                     }}
                     currentUser={currentUser}
-                    activeChatCount={activeChats.reduce((sum, chat) => sum + chat.unreadCount, 0)}
+                    activeChatCount={allKnownConversations.reduce((sum, chat) => sum + chat.unreadCount, 0)}
                     notificationCount={mockNotifications.length}
                     onOpenCreator={(mode) => { setIsCreatorOpen(true); setCreatorMode(mode); }}
                 />
@@ -474,6 +489,10 @@ const App: React.FC = () => {
                         ...content
                     } as Message;
                     setAllMessages(prev => ({...prev, [convoId]: [...(prev[convoId] || []), newMessage]}));
+                    
+                    const updateLastMessage = (c: Conversation) => c.id === convoId ? { ...c, lastMessage: newMessage } : c;
+                    setAllKnownConversations(prev => prev.map(updateLastMessage));
+                    setActiveChats(prev => prev.map(updateLastMessage));
                 }}
                 onEditMessage={(convoId, msgId, newText) => {
                     setAllMessages(prev => ({ ...prev, [convoId]: prev[convoId].map(m => m.id === msgId ? {...m, text: newText, isEdited: true} : m) }));
