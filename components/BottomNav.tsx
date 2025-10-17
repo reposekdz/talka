@@ -55,9 +55,15 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, setCurrentPage, acti
             <NavItem page={navItems[4].page} currentPage={currentPage} setCurrentPage={setCurrentPage} icon={navItems[4].icon} />
         </nav>
         <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2">
-            <button onClick={() => onOpenCreator('select')} className="w-16 h-16 bg-twitter-blue rounded-full flex items-center justify-center text-white shadow-lg transform hover:scale-105 active:scale-95 transition-transform">
+            <motion.button 
+                onClick={() => onOpenCreator('select')} 
+                className="w-16 h-16 bg-create-gradient rounded-full flex items-center justify-center text-white shadow-lg animate-pulse-glow"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+            >
                <CreateIcon />
-            </button>
+            </motion.button>
         </div>
       </div>
     </footer>

@@ -125,7 +125,7 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
               <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
                 {tab}
               </span>
-              {activeTab === tab && <motion.div layoutId="searchTabIndicator" className="absolute bottom-0 left-0 right-0 h-1 bg-twitter-blue rounded-full"></motion.div>}
+              {activeTab === tab && <motion.div layoutId="searchTabIndicator" className="absolute bottom-0 left-0 right-0 h-1 bg-twitter-blue rounded-full" transition={{ type: "spring", stiffness: 350, damping: 30 }}></motion.div>}
             </div>
           ))}
         </div>

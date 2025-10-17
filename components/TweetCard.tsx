@@ -216,15 +216,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                     {poll && <PollDisplay poll={poll} votedOptionId={tweet.votedOnPollId} onVote={(optionId) => onVote(tweet.id, optionId)} />}
                     
                     <div className="flex justify-between items-center mt-3 text-light-secondary-text dark:text-twitter-gray">
-                        <button onClick={(e) => handleActionClick(e, () => onReply(tweet))} className="flex items-center gap-2 group">
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => onReply(tweet))} className="flex items-center gap-2 group">
                             <div className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ReplyIcon /></div>
                             <span className="text-xs">{tweet.replyCount > 0 ? tweet.replyCount : ''}</span>
-                        </button>
-                        <button onClick={(e) => handleActionClick(e, () => onRetweet(tweet.id))} className={`flex items-center gap-2 group ${isRetweeted ? 'text-green-500' : ''}`}>
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => onRetweet(tweet.id))} className={`flex items-center gap-2 group ${isRetweeted ? 'text-green-500' : ''}`}>
                             <div className="p-2 rounded-full group-hover:bg-green-500/10">{isRetweeted ? <RetweetFillIcon/> : <RetweetIcon />}</div>
                             <span className="text-xs">{tweet.retweetCount > 0 ? tweet.retweetCount : ''}</span>
-                        </button>
-                        <div className="relative">
+                        </motion.button>
+                        <motion.div className="relative" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             <AnimatePresence>
                                 {relevantReactions.map(reaction => (
                                     <motion.div
@@ -243,15 +243,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                                 <div className="p-2 rounded-full group-hover:bg-red-500/10">{isLiked ? <HeartFillIcon/> : <LikeIcon />}</div>
                                 <span className="text-xs">{tweet.likeCount > 0 ? tweet.likeCount : ''}</span>
                             </button>
-                        </div>
+                        </motion.div>
                          <div className="flex items-center">
-                            <button onClick={handleTranslate} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleTranslate} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
                                 <TranslateIcon />
-                            </button>
-                            <button onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
                                 {isBookmarked ? <BookmarkFillIcon className="text-twitter-blue"/> : <BookmarkIcon />}
-                            </button>
-                            <button onClick={(e) => handleActionClick(e, () => onQuote(tweet))} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></button>
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => onQuote(tweet))} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></motion.button>
                          </div>
                     </div>
                 </div>

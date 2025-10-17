@@ -32,9 +32,44 @@ export const ProfileIcon: React.FC<{isActive?: boolean; className?: string}> = (
 export const MoreIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></IconWrapper>;
 export const BookmarkIcon: React.FC<{isActive?: boolean; className?: string}> = ({isActive, className}) => <IconWrapper isSolid={isActive} className={className}>{isActive ? <path fillRule="evenodd" d="M6 3a3 3 0 013-3h6a3 3 0 013 3v12a3 3 0 01-3 3h-1.5a.75.75 0 00-.75.75v3.44l-2.72-2.72a.75.75 0 00-1.06 0l-2.72 2.72V18.75a.75.75 0 00-.75-.75H6a3 3 0 01-3-3V6a3 3 0 013-3z" clipRule="evenodd" /> : <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />}</IconWrapper>;
 export const ListIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12M8.25 17.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></IconWrapper>;
-export const CommunityIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.286 0a3 3 0 00-4.682 2.72A9.094 9.094 0 006 18.72m0-13.826A3 3 0 000 8.1v1.182a3 3 0 004.682 2.72m6.286 0a3 3 0 004.682-2.72V8.1a3 3 0 00-6.286 0m-3.143 0a3 3 0 00-4.682 2.72m6.286 0a3 3 0 004.682-2.72M6 18.72v3.38A1.5 1.5 0 007.5 24h9a1.5 1.5 0 001.5-1.5v-3.38" /></IconWrapper>;
+export const CommunityIcon: React.FC<{isActive?: boolean}> = ({isActive}) => {
+    if (isActive) {
+        return (
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#community-gradient)" className="w-6 h-6">
+                <defs>
+                    <linearGradient id="community-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                         <stop offset="0%" style={{stopColor: '#3b82f6'}} />
+                         <stop offset="100%" style={{stopColor: '#14b8a6'}} />
+                    </linearGradient>
+                </defs>
+                <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clipRule="evenodd" />
+            </svg>
+        )
+    }
+    return <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.286 0a3 3 0 00-4.682 2.72A9.094 9.094 0 006 18.72m0-13.826A3 3 0 000 8.1v1.182a3 3 0 004.682 2.72m6.286 0a3 3 0 004.682-2.72V8.1a3 3 0 00-6.286 0m-3.143 0a3 3 0 00-4.682 2.72m6.286 0a3 3 0 004.682-2.72M6 18.72v3.38A1.5 1.5 0 007.5 24h9a1.5 1.5 0 001.5-1.5v-3.38" /></IconWrapper>
+};
 export const ComposeIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM16.862 4.487L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></IconWrapper>;
-export const ReelsIcon: React.FC<{isActive?: boolean}> = ({isActive}) => <IconWrapper isSolid={isActive}>{isActive ? <path d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" /> : <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />}</IconWrapper>;
+export const ReelsIcon: React.FC<{isActive?: boolean}> = ({isActive}) => {
+    if (isActive) {
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#reels-gradient)" className="w-6 h-6">
+                <defs>
+                    <linearGradient id="reels-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{stopColor: '#f43f5e'}} />
+                        <stop offset="50%" style={{stopColor: '#a855f7'}} />
+                        <stop offset="100%" style={{stopColor: '#3b82f6'}} />
+                    </linearGradient>
+                </defs>
+                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.99c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+            </svg>
+        );
+    }
+    return (
+        <IconWrapper>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+        </IconWrapper>
+    );
+};
 export const PhotoIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm1.5-6a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></IconWrapper>;
 export const GifIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M12.75 8.25v7.5m6-7.5h-3.75m3.75 0a3.75 3.75 0 01-7.5 0h-3.75a3.75 3.75 0 017.5 0zM3 15.75h3.75v-7.5H3v7.5z" /></IconWrapper>;
 export const ChartBarIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></IconWrapper>;

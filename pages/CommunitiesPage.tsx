@@ -58,7 +58,7 @@ const CommunitiesPage: React.FC = () => {
                       <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
                           {tab}
                       </span>
-                      {activeTab === tab && <motion.div layoutId="communityTabIndicator" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-twitter-blue rounded-full"></motion.div>}
+                      {activeTab === tab && <motion.div layoutId="communityTabIndicator" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-twitter-blue rounded-full" transition={{ type: "spring", stiffness: 350, damping: 30 }}></motion.div>}
                   </div>
               ))}
             </div>

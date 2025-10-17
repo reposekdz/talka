@@ -4,6 +4,7 @@ import TrendingTopic from './TrendingTopic';
 import { mockTrendingTopics } from '../data/mockData';
 import { User } from '../types';
 import { RefreshIcon, SearchIcon, SparklesIcon, VerifiedIcon } from './Icon';
+import { motion } from 'framer-motion';
 
 interface RightSidebarProps {
   onViewProfile: (user: User) => void;
@@ -14,31 +15,43 @@ interface RightSidebarProps {
 }
 
 const PremiumCard: React.FC = () => (
-    <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl p-4">
+    <motion.div 
+        className="bg-premium-gradient rounded-2xl p-4 text-white"
+        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+    >
         <h2 className="text-xl font-extrabold">Subscribe to Premium</h2>
         <p className="my-2 font-semibold">
             Subscribe to unlock new features and if eligible, receive a share of ads revenue.
         </p>
-        <button className="bg-twitter-blue text-white font-bold px-4 py-2 rounded-full hover:bg-opacity-90">
+        <motion.button 
+            className="bg-white text-black font-bold px-4 py-2 rounded-full"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
             Subscribe
-        </button>
-    </div>
+        </motion.button>
+    </motion.div>
 );
 
 const AiAssistantCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-    <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl p-4 text-center">
+    <motion.div 
+        className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl p-4 text-center"
+        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+    >
         <SparklesIcon className="w-10 h-10 mx-auto text-twitter-blue" />
         <h2 className="text-xl font-extrabold mt-2">Talka AI</h2>
         <p className="my-2 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
             Ask questions, summarize threads, and more with the power of AI.
         </p>
-        <button 
+        <motion.button 
             onClick={onClick}
-            className="bg-twitter-blue text-white font-bold px-4 py-2 rounded-full hover:bg-opacity-90 w-full"
+            className="bg-twitter-blue text-white font-bold px-4 py-2 rounded-full w-full"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
         >
             Ask AI
-        </button>
-    </div>
+        </motion.button>
+    </motion.div>
 );
 
 

@@ -41,6 +41,20 @@
               'dim-secondary-text': '#8899A6',
               'dim-border': '#2F3336',
               'dim-hover': 'rgba(247, 249, 249, 0.1)',
+            },
+            backgroundImage: {
+              'premium-gradient': 'linear-gradient(to right top, #8e44ad, #e94057)',
+              'create-gradient': 'linear-gradient(to right, #1DA1F2, #188ae8)',
+              'space-gradient': 'linear-gradient(to right top, #654ea3, #eaafc8)',
+            },
+            animation: {
+              'pulse-glow': 'pulse-glow 4s infinite ease-in-out',
+            },
+            keyframes: {
+                'pulse-glow': {
+                    '0%, 100%': { boxShadow: '0 0 10px 0px rgba(29, 161, 242, 0.3)' },
+                    '50%': { boxShadow: '0 0 20px 5px rgba(29, 161, 242, 0.3)' },
+                }
             }
           }
         }

@@ -3,6 +3,7 @@ import { Tweet, User, Reel } from '../types';
 import TweetCard from '../components/TweetCard';
 import { BookmarkIcon, ReelsIcon } from '../components/Icon';
 import TweetSkeleton from '../components/TweetSkeleton';
+import { motion } from 'framer-motion';
 
 interface BookmarksPageProps {
   tweets: Tweet[];
@@ -56,7 +57,7 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
             <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
               {tab}
             </span>
-            {activeTab === tab && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-twitter-blue rounded-full"></div>}
+            {activeTab === tab && <motion.div layoutId="bookmarksTabIndicator" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-twitter-blue rounded-full" transition={{ type: "spring", stiffness: 350, damping: 30 }}></motion.div>}
           </div>
         ))}
       </div>

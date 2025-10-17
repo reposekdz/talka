@@ -4,6 +4,7 @@ import { CalendarIcon, MoreIcon, PinIcon, MessagesIcon } from '../components/Ico
 import TweetCard from '../components/TweetCard';
 import ProfileHighlights from '../components/ProfileHighlights';
 import TweetSkeleton from '../components/TweetSkeleton';
+import { motion } from 'framer-motion';
 
 interface ProfilePageProps {
   user: User;
@@ -115,7 +116,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
                     {tab}
                 </span>
-                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-1 bg-twitter-blue rounded-full"></div>}
+                {activeTab === tab && <motion.div layoutId="profileTabIndicator" className="absolute bottom-0 left-0 w-full h-1 bg-twitter-blue rounded-full" transition={{ type: "spring", stiffness: 350, damping: 30 }}></motion.div>}
             </div>
           ))}
       </div>

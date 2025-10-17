@@ -102,7 +102,7 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet, placeholder = "What is
           </div>
           <button 
             onClick={handlePost}
-            className="bg-twitter-blue text-white font-bold px-6 py-2 rounded-full hover:bg-opacity-90 disabled:opacity-50"
+            className="bg-create-gradient text-white font-bold px-6 py-2 rounded-full hover:shadow-lg hover:shadow-twitter-blue/40 disabled:opacity-50 disabled:shadow-none transition-all"
             disabled={isDisabled}
           >
             Post

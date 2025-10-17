@@ -2,6 +2,7 @@ import React from 'react';
 import { mockSpaces } from '../data/mockData';
 import { Space } from '../types';
 import { SpacesIcon } from './Icon';
+import { motion } from 'framer-motion';
 
 interface SpacesCardProps {
     onJoinSpace: (space: Space) => void;
@@ -11,8 +12,12 @@ const SpacesCard: React.FC<SpacesCardProps> = ({ onJoinSpace }) => {
     const space = mockSpaces[0]; // For demo, always show the first space
 
     return (
-        <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
-            <div className={`relative p-4 rounded-2xl overflow-hidden text-white ${space.color}`}>
+        <motion.div 
+            className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+        >
+            <div className={`relative p-4 rounded-2xl overflow-hidden text-white bg-space-gradient`}>
                 <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
                 <div className="relative z-10">
                     <div className="flex items-center gap-2">
@@ -36,7 +41,7 @@ const SpacesCard: React.FC<SpacesCardProps> = ({ onJoinSpace }) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
