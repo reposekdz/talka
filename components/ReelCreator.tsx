@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+
+
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhotoIcon, MusicNoteIcon } from './Icon';
 
@@ -11,6 +13,16 @@ const ReelCreator: React.FC<ReelCreatorProps> = ({ onPostReel }) => {
     const [step, setStep] = useState<'upload' | 'caption'>('upload');
     const [caption, setCaption] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video) {
+            video.play().catch(() => {
+                // Autoplay was interrupted.
+            });
+        }
+    }, [videoUrl]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -60,7 +72,7 @@ const ReelCreator: React.FC<ReelCreatorProps> = ({ onPostReel }) => {
                         className="h-full flex flex-col md:flex-row gap-4 p-4"
                     >
                         <div className="w-full md:w-1/2 aspect-[9/16] bg-black rounded-lg overflow-hidden flex-shrink-0">
-                            <video src={videoUrl} autoPlay loop muted className="w-full h-full object-contain" />
+                            <video ref={videoRef} src={videoUrl} loop muted className="w-full h-full object-contain" playsInline />
                         </div>
                         <div className="flex-1 flex flex-col">
                             <h2 className="text-xl font-bold mb-2">Final touches</h2>

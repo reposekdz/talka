@@ -1,6 +1,7 @@
 
+
 import React, { useState, useMemo } from 'react';
-import { User, Tweet, Highlight } from '../types';
+import { User, Tweet, Highlight, AppSettings } from '../types';
 import { CalendarIcon, MoreIcon, PinIcon, MessagesIcon, SparklesIcon } from '../components/Icon';
 import TweetCard from '../components/TweetCard';
 import ProfileHighlights from '../components/ProfileHighlights';
@@ -33,12 +34,13 @@ interface ProfilePageProps {
   onEdit: (tweet: Tweet) => void;
   onToggleBookmark: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
+  appSettings: AppSettings;
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, allUsers, allTweets, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onOpenAiSummary, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions, onFeatureTweet } = props;
+  const { user, allUsers, allTweets, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onOpenAiSummary, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions, onFeatureTweet, appSettings } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -94,6 +96,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
     onEdit,
     onReply: () => {},
     onToggleBookmark,
+    appSettings,
   };
 
   const renderContent = () => {

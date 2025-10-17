@@ -1,6 +1,7 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { Tweet, User, UserStory, Space, Moment } from '../types';
+import { Tweet, User, UserStory, Space, Moment, AppSettings } from '../types';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
 import StoryReel from '../components/StoryReel';
@@ -37,12 +38,13 @@ interface HomePageProps {
   onRetweet: (tweetId: string) => void;
   onFollowToggle: (userId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
+  appSettings: AppSettings;
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, moments, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, onFeatureTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, otherUsers, onFollowToggle } = props;
+  const { tweets, moments, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, onFeatureTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, otherUsers, onFollowToggle, appSettings } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -116,6 +118,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
                   onLikeTweet={onLikeTweet}
                   onRetweet={onRetweet}
                   liveReactions={liveReactions}
+                  appSettings={appSettings}
                 />
               ))}
               {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}

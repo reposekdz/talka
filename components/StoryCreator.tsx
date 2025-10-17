@@ -1,6 +1,6 @@
 
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, PanInfo } from 'framer-motion';
 import { Story, TextOverlay, User } from '../types';
 import { PencilIcon, PhotoIcon } from './Icon';
@@ -21,6 +21,16 @@ const StoryCreator: React.FC<StoryCreatorProps> = ({ onPostStory }) => {
     const [textStyle, setTextStyle] = useState<'classic' | 'neon'>('classic');
     const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video) {
+            video.play().catch(() => {
+                // Autoplay was interrupted.
+            });
+        }
+    }, [mediaUrl]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -89,7 +99,7 @@ const StoryCreator: React.FC<StoryCreatorProps> = ({ onPostStory }) => {
                 {mediaType === 'image' ? (
                      <img src={mediaUrl} alt="Story preview" className="max-h-full max-w-full object-contain" />
                 ) : (
-                    <video src={mediaUrl} autoPlay loop muted className="max-h-full max-w-full object-contain" />
+                    <video ref={videoRef} src={mediaUrl} loop muted className="max-h-full max-w-full object-contain" playsInline />
                 )}
                 
                 <motion.div

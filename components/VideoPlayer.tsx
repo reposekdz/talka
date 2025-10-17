@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon } from './Icon';
@@ -27,11 +28,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src }) => {
             if (entries[0].isIntersecting) {
                 const playPromise = video.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        // Ignore errors from unmounting during play, which is a common race condition.
-                        if (error.name !== 'AbortError' && error.name !== 'NotSupportedError') {
-                           console.error("Autoplay failed", error);
-                        }
+                    playPromise.catch(() => {
+                        // Autoplay was interrupted. This is a normal occurrence when scrolling fast.
                     });
                 }
             } else {

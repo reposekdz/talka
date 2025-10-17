@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Highlight, Story } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +12,7 @@ interface HighlightViewerModalProps {
 
 const HighlightStory: React.FC<{ story: Story, isActive: boolean, onNext: () => void }> = ({ story, isActive, onNext }) => {
     const [isPaused, setIsPaused] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
     
     useEffect(() => {
         let timer: number;
@@ -18,6 +21,18 @@ const HighlightStory: React.FC<{ story: Story, isActive: boolean, onNext: () => 
         }
         return () => clearTimeout(timer);
     }, [isActive, isPaused, story, onNext]);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (story.type === 'video' && video) {
+            if (isActive) {
+                video.currentTime = 0;
+                video.play().catch(() => {});
+            } else {
+                video.pause();
+            }
+        }
+    }, [story, isActive]);
 
     return (
         <div 
@@ -43,7 +58,7 @@ const HighlightStory: React.FC<{ story: Story, isActive: boolean, onNext: () => 
             {story.type === 'image' ? (
                 <img src={story.mediaUrl} className="w-full h-full object-contain" alt="Highlight story"/>
             ) : (
-                <video src={story.mediaUrl} autoPlay loop muted className="w-full h-full object-contain" />
+                <video ref={videoRef} src={story.mediaUrl} loop muted className="w-full h-full object-contain" playsInline />
             )}
         </div>
     );

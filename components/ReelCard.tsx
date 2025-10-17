@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Reel, Conversation, ReelComment } from '../types';
 import { PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon, LikeIcon, HeartFillIcon, DislikeIcon, DislikeFillIcon, MessagesIcon, ShareIcon, MoreIcon, BookmarkFillIcon, BookmarkIcon } from './Icon';
@@ -30,7 +31,14 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onL
 
     useEffect(() => {
         if (isCurrent && videoRef.current) {
-            videoRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error("Autoplay failed", e));
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => setIsPlaying(true))
+                .catch(() => {
+                    // Autoplay was interrupted.
+                    setIsPlaying(false);
+                });
+            }
         } else if (videoRef.current) {
             videoRef.current.pause();
             setIsPlaying(false);
@@ -57,6 +65,7 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onL
                 muted={isMuted}
                 onClick={handleVideoClick}
                 className="w-full h-full object-contain"
+                playsInline
             />
 
             {!isPlaying && (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tweet, User } from '../types';
+import { Tweet, User, AppSettings } from '../types';
 import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon, MessagesIcon, RetweetFillIcon } from './Icon';
 import Avatar from './Avatar';
 import PollDisplay from './PollDisplay';
@@ -78,12 +78,13 @@ interface TweetCardProps {
     onLikeTweet: (tweetId: string) => void;
     onRetweet: (tweetId: string) => void;
     liveReactions: { id: number, emoji: string, tweetId: string }[];
+    appSettings: AppSettings;
 }
 
 const TRUNCATE_LENGTH = 250;
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions } = props;
+    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, appSettings } = props;
     const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isRetweeted, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);

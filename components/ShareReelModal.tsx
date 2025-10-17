@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Reel, Conversation } from '../types';
 import { CloseIcon, SearchIcon, SendIcon, CheckmarkCircleIcon } from './Icon';
@@ -14,6 +16,14 @@ interface ShareReelModalProps {
 const ShareReelModal: React.FC<ShareReelModalProps> = ({ reel, conversations, onClose, onShare }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [message, setMessage] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video) {
+            video.play().catch(() => {});
+        }
+    }, [reel.videoUrl]);
 
   const handleToggleSelection = (conversationId: string) => {
     setSelectedIds(prev =>
@@ -50,7 +60,7 @@ const ShareReelModal: React.FC<ShareReelModalProps> = ({ reel, conversations, on
 
         <div className="p-4 flex gap-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
             <div className="w-20 h-32 rounded-lg overflow-hidden bg-black flex-shrink-0">
-                <video src={reel.videoUrl} loop muted autoPlay className="w-full h-full object-cover" />
+                <video ref={videoRef} src={reel.videoUrl} loop muted className="w-full h-full object-cover" playsInline />
             </div>
             <textarea
                 value={message}

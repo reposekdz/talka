@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { UserStory, Highlight, Story, User } from '../types';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
@@ -53,6 +54,7 @@ const StoryContent: React.FC<{
   const [isPaused, setIsPaused] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [emojis, setEmojis] = useState<{ id: number; emoji: string }[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     let timer: number;
@@ -60,6 +62,18 @@ const StoryContent: React.FC<{
     timer = window.setTimeout(onNext, story.duration * 1000);
     return () => clearTimeout(timer);
   }, [story, isPaused, isActive, onNext]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (story.type === 'video' && video) {
+        if (isActive) {
+            video.currentTime = 0;
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
+    }
+  }, [story, isActive]);
 
   const handleReply = () => {
     if (replyText.trim()) {
@@ -84,7 +98,7 @@ const StoryContent: React.FC<{
       <FloatingEmojis emojis={emojis} onComplete={onEmojiComplete} />
       <div className="absolute inset-0 bg-cover bg-center blur-2xl scale-110" style={{ backgroundImage: `url(${story.mediaUrl})` }} />
       {story.type === 'video' ? (
-        <video src={story.mediaUrl} autoPlay loop muted={!isActive} className="w-full h-full object-contain z-10" />
+        <video ref={videoRef} src={story.mediaUrl} loop muted={!isActive} className="w-full h-full object-contain z-10" playsInline />
       ) : (
         <img src={story.mediaUrl} className="w-full h-full object-contain z-10" alt="Story content" />
       )}
