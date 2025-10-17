@@ -1,19 +1,21 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { User, Page } from '../types';
-import { CloseIcon, ProfileIcon, BookmarkIcon, ListIcon, CommunityIcon, SettingsIcon, HelpIcon } from './Icon';
+import { CloseIcon, ProfileIcon, BookmarkIcon, ListIcon, CommunityIcon, SettingsIcon, HelpIcon, NotificationsIcon } from './Icon';
 
 interface MobileDrawerProps {
   user: User;
   onClose: () => void;
   onNavigate: (page: Page) => void;
+  notificationCount: number;
 }
 
-const MobileDrawer: React.FC<MobileDrawerProps> = ({ user, onClose, onNavigate }) => {
+const MobileDrawer: React.FC<MobileDrawerProps> = ({ user, onClose, onNavigate, notificationCount }) => {
   const navItems = [
     { icon: <ProfileIcon />, text: 'Profile', page: Page.Profile },
+    { icon: <NotificationsIcon />, text: 'Notifications', page: Page.Notifications, count: notificationCount },
     { icon: <BookmarkIcon />, text: 'Bookmarks', page: Page.Bookmarks },
+    { icon: <ListIcon />, text: 'Lists', page: Page.Lists },
     { icon: <CommunityIcon />, text: 'Communities', page: Page.Communities },
   ];
 
@@ -62,7 +64,14 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ user, onClose, onNavigate }
             {navItems.map(item => (
               <li key={item.text}>
                 <button onClick={() => handleNavigate(item.page)} className="w-full flex items-center gap-4 p-4 text-xl hover:bg-light-hover dark:hover:bg-white/10">
-                  {item.icon}
+                  <div className="relative">
+                      {item.icon}
+                      {item.count && item.count > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                              {item.count}
+                          </span>
+                      )}
+                  </div>
                   <span className="font-bold">{item.text}</span>
                 </button>
               </li>

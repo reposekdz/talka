@@ -537,7 +537,7 @@ const App: React.FC = () => {
                 {isCreateHighlightModalOpen && <CreateHighlightModal onClose={() => setIsCreateHighlightModalOpen(false)} onCreate={handleCreateHighlight} userStories={userStories.find(us => us.user.id === currentUser.id)?.stories || []} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isEditProfileOpen && <EditProfileModal user={currentUser} onClose={() => setIsEditProfileOpen(false)} onSave={(updatedUser) => { setCurrentUser(updatedUser); setIsEditProfileOpen(false); showToast('Profile updated!'); }} />}
-                {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserListModal(null);}} />}
+                {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserListModal(null);}} notificationCount={mockNotifications.length} />}
                 {isMobileExploreOpen && <MobileExploreDrawer onClose={() => setIsMobileExploreOpen(false)} />}
                 {toast && <Toast key={toast.id} {...toast} onClose={() => setToast(null)} />}
                 {activeSpace && <SpacesPlayer space={activeSpace} onClose={() => setActiveSpace(null)} />}
