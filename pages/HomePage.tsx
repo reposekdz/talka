@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// FIX: Import useEffect from react.
+import React, { useState, useMemo, useEffect } from 'react';
 import { Tweet, User, UserStory, Space } from '../types';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
@@ -26,26 +27,40 @@ interface HomePageProps {
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
+  onLikeTweet: (tweetId: string) => void;
+  liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onPinTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onPinTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, liveReactions } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const visibleTweets = tweets.slice(0, visibleCount);
-  const hasMore = visibleCount < tweets.length;
+  const displayedTweets = useMemo(() => {
+    if (activeTab === 'Following') {
+      return tweets.filter(tweet => currentUser.followingIds.includes(tweet.user.id) || tweet.user.id === currentUser.id);
+    }
+    return tweets; // "For you" tab
+  }, [activeTab, tweets, currentUser]);
+
+  const visibleTweets = displayedTweets.slice(0, visibleCount);
+  const hasMore = visibleCount < displayedTweets.length;
 
   const loadMore = () => {
     setIsLoadingMore(true);
     setTimeout(() => {
-        setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, tweets.length));
+        setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, displayedTweets.length));
         setIsLoadingMore(false);
     }, 1000); // Simulate network delay
   };
+
+  // Reset visible count when tab changes
+  useEffect(() => {
+    setVisibleCount(TWEETS_PER_PAGE);
+  }, [activeTab]);
 
 
   return (
@@ -89,7 +104,8 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             onTranslateTweet={onTranslateTweet}
             onPinTweet={onPinTweet}
             onOpenChat={onOpenChat}
-            liveReactions={[]}
+            onLikeTweet={onLikeTweet}
+            liveReactions={liveReactions}
           />
         ))}
         {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}

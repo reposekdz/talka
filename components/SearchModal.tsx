@@ -14,11 +14,13 @@ interface SearchModalProps {
   onTranslateTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
+  onLikeTweet: (tweetId: string) => void;
+  liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onOpenChat }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -127,11 +129,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
                     onVote={() => {}}
                     onQuote={() => {}}
                     onEdit={() => {}}
-                    liveReactions={[]}
                     onGrok={onGrok}
                     onTranslateTweet={onTranslateTweet}
                     onPinTweet={onPinTweet}
                     onOpenChat={onOpenChat}
+                    onLikeTweet={onLikeTweet}
+                    liveReactions={liveReactions}
                     />;
                 } else {
                   return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={mockUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;

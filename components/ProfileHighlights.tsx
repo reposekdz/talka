@@ -6,7 +6,7 @@ import { PlusIcon } from './Icon';
 interface ProfileHighlightsProps {
   highlights: Highlight[];
   isOwnProfile: boolean;
-  onHighlightClick: (index: number) => void;
+  onHighlightClick: (highlight: Highlight) => void;
   onOpenCreateHighlight: () => void;
 }
 
@@ -30,7 +30,7 @@ const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwn
           <motion.div 
             key={highlight.id} 
             className="flex flex-col items-center flex-shrink-0 w-20 cursor-pointer"
-            onClick={() => onHighlightClick(index)}
+            onClick={() => onHighlightClick(highlight)}
             whileTap={{ scale: 0.95 }}
           >
             <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-light-border dark:ring-twitter-border ring-offset-2 ring-offset-light-bg dark:ring-offset-twitter-dark">

@@ -13,7 +13,6 @@ import ReelsPage from './pages/ReelsPage';
 import CreatorStudioPage from './pages/CreatorStudioPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpCenterPage from './pages/HelpCenterPage';
-import UserListPage from './pages/UserListPage';
 import ListsPage from './pages/ListsPage';
 import DisplayModal from './components/DisplayModal';
 import SearchModal from './components/SearchModal';
@@ -38,6 +37,9 @@ import MobileDrawer from './components/MobileDrawer';
 import MobileExploreDrawer from './components/MobileExploreDrawer';
 import CallView from './components/CallView';
 import CreateHighlightModal from './components/CreateHighlightModal';
+import HighlightViewerModal from './components/HighlightViewerModal';
+import UserListModal from './components/UserListModal';
+
 
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment } from './types';
 import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations as initialMockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights as initialMockHighlights, mockReels as initialMockReels } from './data/mockData';
@@ -65,7 +67,8 @@ const App: React.FC = () => {
     const [replyingToTweet, setReplyingToTweet] = useState<Tweet | null>(null);
     const [quotingTweet, setQuotingTweet] = useState<Tweet | null>(null);
     const [editingTweet, setEditingTweet] = useState<Tweet | null>(null);
-    const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[] | Highlight[], initialUserIndex: number, isHighlight?: boolean } | null>(null);
+    const [storyViewerState, setStoryViewerState] = useState<{ stories: UserStory[], initialUserIndex: number } | null>(null);
+    const [viewingHighlight, setViewingHighlight] = useState<Highlight | null>(null);
     const [isCreatorOpen, setIsCreatorOpen] = useState(false);
     const [creatorMode, setCreatorMode] = useState<'select' | 'story' | 'reel' | 'post' | undefined>(undefined);
     const [grokTweet, setGrokTweet] = useState<Tweet | null>(null);
@@ -88,8 +91,8 @@ const App: React.FC = () => {
     // Spaces state
     const [activeSpace, setActiveSpace] = useState<Space | null>(null);
     
-    // User list state
-    const [userList, setUserList] = useState<{user: User, type: 'followers' | 'following'} | null>(null);
+    // User list modal state
+    const [userListModal, setUserListModal] = useState<{user: User, initialTab: 'followers' | 'following'} | null>(null);
 
     // Mobile specific state
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -97,6 +100,10 @@ const App: React.FC = () => {
 
     // Toast state
     const [toast, setToast] = useState<{ message: string, id: number, duration?: number, actionText?: string, onAction?: () => void } | null>(null);
+
+    // Live Reactions
+    const [liveReactions, setLiveReactions] = useState<{ id: number; emoji: string; tweetId: string }[]>([]);
+
 
     const showToast = (message: string, duration: number = 3, actionText?: string, onAction?: () => void) => {
         setToast({ message, id: Date.now(), duration, actionText, onAction });
@@ -111,16 +118,7 @@ const App: React.FC = () => {
     
     useEffect(() => {
         document.documentElement.className = theme;
-        
-        // Mock incoming call for demonstration
-        const timer = setTimeout(() => {
-            if (!activeCall && !incomingCall) {
-                setIncomingCall({ user: otherUsers[2], type: 'video', status: 'incoming' });
-            }
-        }, 8000);
-        return () => clearTimeout(timer);
-
-    }, [theme, activeCall, incomingCall, otherUsers]);
+    }, [theme]);
     
     const handleLogin = () => setIsLoggedIn(true);
     const handleLogout = () => setIsLoggedIn(false);
@@ -244,6 +242,24 @@ const App: React.FC = () => {
         showToast("Profile details updated.");
     };
 
+    const handleLikeTweet = (tweetId: string) => {
+        const tweet = tweets.find(t => t.id === tweetId);
+        if (!tweet) return;
+
+        // Optimistically update UI
+        setTweets(prev => prev.map(t => t.id === tweetId ? { ...t, isLiked: !t.isLiked, likeCount: t.isLiked ? t.likeCount - 1 : t.likeCount + 1 } : t));
+
+        // Trigger live reaction only when liking, not unliking
+        if (!tweet.isLiked) {
+            const newReaction = { id: Date.now(), emoji: '❤️', tweetId };
+            setLiveReactions(prev => [...prev, newReaction]);
+            setTimeout(() => {
+                setLiveReactions(prev => prev.filter(r => r.id !== newReaction.id));
+            }, 1500); // Should match animation duration
+        }
+    };
+
+
     const handleTranslateTweet = async (tweetId: string) => {
         const tweetToTranslate = tweets.find(t => t.id === tweetId);
         if (!tweetToTranslate || tweetToTranslate.translation) return;
@@ -357,19 +373,6 @@ const App: React.FC = () => {
     };
     
     const mainContent = () => {
-        if (userList) {
-            return <UserListPage 
-                user={userList.user} 
-                listType={userList.type}
-                allUsers={allUsers}
-                currentUser={currentUser}
-                onBack={() => setUserList(null)}
-                onFollowToggle={handleFollowToggle}
-                onViewProfile={(user) => { setUserList(null); setCurrentPage(Page.Profile); }}
-                onRemoveFollower={handleRemoveFollower}
-            />
-        }
-
         switch (currentPage) {
             case Page.Home:
                 return <HomePage 
@@ -391,6 +394,8 @@ const App: React.FC = () => {
                     onGrok={setGrokTweet}
                     onTranslateTweet={handleTranslateTweet}
                     onOpenChat={handleOpenChat}
+                    onLikeTweet={handleLikeTweet}
+                    liveReactions={liveReactions}
                 />;
             case Page.Explore:
                 return <ExplorePage 
@@ -405,7 +410,7 @@ const App: React.FC = () => {
             case Page.Messages:
                 return <MessagesPage conversations={allKnownConversations} openChat={handleOpenChat} />;
             case Page.Bookmarks:
-                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} />;
+                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} liveReactions={liveReactions} />;
             case Page.Profile:
                 return <ProfilePage 
                     user={currentUser} 
@@ -413,14 +418,16 @@ const App: React.FC = () => {
                     highlights={highlights}
                     onImageClick={setLightboxImageUrl} 
                     onViewProfile={(user) => setCurrentPage(Page.Profile)} 
-                    onViewUserList={(user, type) => setUserList({user, type})}
+                    onViewUserList={(user, type) => setUserListModal({user, initialTab: type})}
                     onEditProfile={() => setIsEditProfileOpen(true)}
                     onOpenCreateHighlight={() => setIsCreateHighlightModalOpen(true)}
-                    onHighlightClick={(index) => setStoryViewerState({stories: highlights, initialUserIndex: index, isHighlight: true})}
+                    onHighlightClick={setViewingHighlight}
                     onTranslateTweet={handleTranslateTweet}
                     onGrok={setGrokTweet}
                     onPinTweet={handlePinTweet}
                     onOpenChat={handleOpenChat}
+                    onLikeTweet={handleLikeTweet}
+                    liveReactions={liveReactions}
                 />;
             case Page.Communities:
                 return <CommunitiesPage />;
@@ -460,6 +467,8 @@ const App: React.FC = () => {
                     onGrok={setGrokTweet}
                     onTranslateTweet={handleTranslateTweet}
                     onOpenChat={handleOpenChat}
+                    onLikeTweet={handleLikeTweet}
+                    liveReactions={liveReactions}
                 />;
         }
     }
@@ -473,7 +482,7 @@ const App: React.FC = () => {
             <div className="container mx-auto flex justify-center max-w-[1300px]">
                 <Sidebar 
                     currentPage={currentPage}
-                    setCurrentPage={(page) => { setUserList(null); setCurrentPage(page); }}
+                    setCurrentPage={(page) => { setUserListModal(null); setCurrentPage(page); }}
                     onLogout={handleLogout}
                     openDisplayModal={() => setIsDisplayModalOpen(true)}
                     activeChatCount={allKnownConversations.reduce((sum, chat) => sum + chat.unreadCount, 0)}
@@ -502,7 +511,7 @@ const App: React.FC = () => {
                         if (page === Page.Explore) {
                             setIsMobileExploreOpen(true);
                         } else {
-                            setUserList(null); 
+                            setUserListModal(null); 
                             setCurrentPage(page); 
                         }
                     }}
@@ -515,18 +524,20 @@ const App: React.FC = () => {
             
             <AnimatePresence>
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} liveReactions={liveReactions} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={(reply) => {handlePostTweet({ content: reply, isBookmarked: false }); setReplyingToTweet(null); }} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={(tweet) => {handlePostTweet(tweet); setQuotingTweet(null);}} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={(id, content) => {setTweets(prev => prev.map(t => t.id === id ? {...t, content, isEdited: true} : t)); setEditingTweet(null); showToast('Your Post has been updated.'); }} />}
                 {storyViewerState && <StoryViewer {...storyViewerState} onClose={() => setStoryViewerState(null)} showToast={showToast} />}
+                {viewingHighlight && <HighlightViewerModal highlight={viewingHighlight} onClose={() => setViewingHighlight(null)} />}
+                {userListModal && <UserListModal {...userListModal} allUsers={allUsers} currentUser={currentUser} onClose={() => setUserListModal(null)} onFollowToggle={handleFollowToggle} onViewProfile={(user) => {setUserListModal(null); setCurrentPage(Page.Profile)}} onRemoveFollower={handleRemoveFollower} />}
                 {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
-                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} />}
+                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} liveReactions={liveReactions} />}
                 {isCreateHighlightModalOpen && <CreateHighlightModal onClose={() => setIsCreateHighlightModalOpen(false)} onCreate={handleCreateHighlight} userStories={userStories.find(us => us.user.id === currentUser.id)?.stories || []} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isEditProfileOpen && <EditProfileModal user={currentUser} onClose={() => setIsEditProfileOpen(false)} onSave={(updatedUser) => { setCurrentUser(updatedUser); setIsEditProfileOpen(false); showToast('Profile updated!'); }} />}
-                {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserList(null);}} />}
+                {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserListModal(null);}} />}
                 {isMobileExploreOpen && <MobileExploreDrawer onClose={() => setIsMobileExploreOpen(false)} />}
                 {toast && <Toast key={toast.id} {...toast} onClose={() => setToast(null)} />}
                 {activeSpace && <SpacesPlayer space={activeSpace} onClose={() => setActiveSpace(null)} />}

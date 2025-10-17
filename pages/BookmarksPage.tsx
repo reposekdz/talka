@@ -13,11 +13,13 @@ interface BookmarksPageProps {
   onTranslateTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
+  onLikeTweet: (tweetId: string) => void;
+  liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
-const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat }) => {
+const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions }) => {
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -57,7 +59,8 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onVi
               onTranslateTweet={onTranslateTweet}
               onPinTweet={onPinTweet}
               onOpenChat={onOpenChat}
-              liveReactions={[]}
+              onLikeTweet={onLikeTweet}
+              liveReactions={liveReactions}
             />
           ))}
           {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}

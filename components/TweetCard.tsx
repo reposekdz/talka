@@ -71,18 +71,21 @@ interface TweetCardProps {
     onTranslateTweet: (tweetId: string) => void;
     onPinTweet: (tweetId: string) => void;
     onOpenChat: (user: User) => void;
+    onLikeTweet: (tweetId: string) => void;
     liveReactions: { id: number, emoji: string, tweetId: string }[];
 }
 
 const TRUNCATE_LENGTH = 250;
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onGrok, onTranslateTweet, onPinTweet, onOpenChat } = props;
+    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions } = props;
     const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     
+    const relevantReactions = liveReactions.filter(r => r.tweetId === tweet.id);
+
     const isLongContent = content.length > TRUNCATE_LENGTH;
     const displayedContent = isLongContent && !isExpanded ? `${content.substring(0, TRUNCATE_LENGTH)}...` : content;
 
@@ -212,10 +215,26 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             <div className="p-2 rounded-full group-hover:bg-green-500/10"><RetweetIcon /></div>
                             <span className="text-xs">{tweet.retweetCount > 0 ? tweet.retweetCount : ''}</span>
                         </button>
-                        <button onClick={(e) => handleActionClick(e, () => {})} className={`flex items-center gap-2 group ${isLiked ? 'text-red-500' : ''}`}>
-                            <div className="p-2 rounded-full group-hover:bg-red-500/10">{isLiked ? <HeartFillIcon/> : <LikeIcon />}</div>
-                            <span className="text-xs">{tweet.likeCount > 0 ? tweet.likeCount : ''}</span>
-                        </button>
+                        <div className="relative">
+                            <AnimatePresence>
+                                {relevantReactions.map(reaction => (
+                                    <motion.div
+                                        key={reaction.id}
+                                        initial={{ y: 0, opacity: 1, scale: 0.5 }}
+                                        animate={{ y: -50, opacity: 0, scale: 1.5 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                        className="absolute -top-4 left-1/2 -translate-x-1/2 text-red-500 text-2xl pointer-events-none"
+                                    >
+                                        {reaction.emoji}
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                            <button onClick={(e) => handleActionClick(e, () => onLikeTweet(tweet.id))} className={`flex items-center gap-2 group ${isLiked ? 'text-red-500' : ''}`}>
+                                <div className="p-2 rounded-full group-hover:bg-red-500/10">{isLiked ? <HeartFillIcon/> : <LikeIcon />}</div>
+                                <span className="text-xs">{tweet.likeCount > 0 ? tweet.likeCount : ''}</span>
+                            </button>
+                        </div>
                          <div className="flex items-center">
                             <button onClick={handleTranslate} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
                                 <TranslateIcon />

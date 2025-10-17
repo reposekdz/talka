@@ -14,17 +14,19 @@ interface ProfilePageProps {
   onViewUserList: (user: User, type: 'followers' | 'following') => void;
   onEditProfile: () => void;
   onOpenCreateHighlight: () => void;
-  onHighlightClick: (index: number) => void;
+  onHighlightClick: (highlight: Highlight) => void;
   onTranslateTweet: (tweetId: string) => void;
   onGrok: (tweet: Tweet) => void;
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
+  onLikeTweet: (tweetId: string) => void;
+  liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat } = props;
+  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, liveReactions } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -117,7 +119,8 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                    onTranslateTweet={onTranslateTweet}
                    onPinTweet={onPinTweet}
                    onOpenChat={onOpenChat}
-                   liveReactions={[]}
+                   onLikeTweet={onLikeTweet}
+                   liveReactions={liveReactions}
                />
            </div>
         )}
@@ -137,7 +140,8 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 onTranslateTweet={onTranslateTweet}
                 onPinTweet={onPinTweet}
                 onOpenChat={onOpenChat}
-                liveReactions={[]}
+                onLikeTweet={onLikeTweet}
+                liveReactions={liveReactions}
             />
         ))}
          {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
