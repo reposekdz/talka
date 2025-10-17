@@ -4,6 +4,7 @@ import { ReplyIcon, AddReactionIcon, ReadReceiptIcon, PinIcon, PlayIcon, MoreIco
 import AudioPlayer from './AudioPlayer';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactionPicker from './ReactionPicker';
+import LinkPreview from './LinkPreview';
 
 interface MessageBubbleProps {
   message: Message;
@@ -100,7 +101,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
             return <ReelShareContent reel={reel} text={text} />;
         case 'text':
         default:
-            return <p className="whitespace-pre-wrap break-words">{text}</p>;
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const urls = text?.match(urlRegex);
+            const firstUrl = urls?.[0];
+
+            return (
+                <div>
+                    <p className="whitespace-pre-wrap break-words">{text}</p>
+                    {firstUrl && <LinkPreview url={firstUrl} />}
+                </div>
+            )
     }
   }
   
@@ -113,7 +123,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props) => {
     ? themeClasses[chatTheme] || themeClasses['default-blue']
     : 'bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border';
 
-  const paddingClass = (type === 'wave' || type === 'reel-share') ? 'p-2' : 'p-3';
+  const paddingClass = (type === 'wave' || type === 'reel-share' || (type === 'text' && text?.match(/(https?:\/\/[^\s]+)/g))) ? 'p-2' : 'p-3';
 
   return (
     <motion.div

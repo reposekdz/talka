@@ -25,6 +25,7 @@ export const otherUsers: User[] = [
   { id: 'u6', username: 'natgeo', displayName: 'National Geographic', avatarUrl: 'https://picsum.photos/seed/u6/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Experience the world through the eyes of our photographers, explorers, and filmmakers.', followingIds: ['u1'], followerIds: ['u1'], isOnline: false },
   { id: 'u7', username: 'figma', displayName: 'Figma', avatarUrl: 'https://picsum.photos/seed/u7/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'The collaborative interface design tool.', followingIds: ['u1'], followerIds: [], isOnline: true },
   { id: 'u8', username: 'codepen', displayName: 'CodePen', avatarUrl: 'https://picsum.photos/seed/u8/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'The best place to build, test, and discover front-end code.', followingIds: [], followerIds: ['u1'], isOnline: true },
+  { id: 'ai-assistant', username: 'TalkaAI', displayName: 'Talka AI', avatarUrl: 'https://picsum.photos/seed/ai/200/200', followingCount: 0, followerCount: 0, verified: true, bio: 'Your helpful AI assistant.', followingIds: [], followerIds: [], isOnline: true },
 ];
 
 export const baseTweets: Tweet[] = [
@@ -277,6 +278,7 @@ export const mockMessages: Record<string, Message[]> = {
         { id: 'msg2', senderId: 'u1', type: 'text', text: 'Thanks! Appreciate it.', timestamp: '2024-07-22T11:01:00Z', isRead: true, replyTo: message1 },
         { id: 'msg3', senderId: 'u2', type: 'voice', audioUrl: '/mock-audio.mp3', duration: 15, timestamp: '2024-07-22T11:02:00Z', isRead: false },
         { id: 'msg4', senderId: 'u1', type: 'gif', gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3dmaXRsdm9rZ2Z2d2FqMHk0am54ZWNpOHdza211MmV4bDl2d213bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSIgIXuZv/giphy.gif', timestamp: '2024-07-22T11:03:00Z', isRead: true },
+        { id: 'msg-link', senderId: 'u2', type: 'text', text: 'Check out this article: https://react.dev/blog/2024/04/25/react-19', timestamp: '2024-07-22T11:05:00Z', isRead: false },
     ],
     'c2': [
         { id: 'msg5', senderId: 'u3', type: 'text', text: 'Quick question about the deployment.', timestamp: '2024-07-22T08:30:00Z', isRead: true },

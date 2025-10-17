@@ -1,9 +1,10 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
-import TweetCard from '../components/TweetCard';
-import WhoToFollow from '../components/WhoToFollow';
+import TweetCard from './TweetCard';
+import WhoToFollow from './WhoToFollow';
 import { Tweet, User } from '../types';
 import { SearchIcon } from '../components/Icon';
 
@@ -13,11 +14,12 @@ interface SearchModalProps {
   onViewProfile: (user: User) => void;
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
+  onOpenChat: (user: User) => void;
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onOpenChat }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -129,6 +131,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
                     liveReactions={[]}
                     onGrok={onGrok}
                     onTranslateTweet={onTranslateTweet}
+                    onOpenChat={onOpenChat}
                     />;
                 } else {
                   return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={mockUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;

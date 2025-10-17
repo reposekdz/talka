@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Conversation, Message, User, ChatTheme, Reel } from '../types';
@@ -33,6 +32,9 @@ interface FloatingChatWindowProps {
   onStartVideoCall: (user: User) => void;
   onStartAudioCall: (user: User) => void;
   onUpdateChatTheme: (conversationId: string, theme: ChatTheme) => void;
+  onAiAction: (action: 'suggest-reply' | 'summarize', context: Message[], conversationId: string) => void;
+  aiSuggestedReply: { convoId: string, text: string } | null;
+  onSuggestionUsed: () => void;
 }
 
 const themeOptions: { name: string, theme: ChatTheme, class: string }[] = [
@@ -72,7 +74,7 @@ const ChatOptionsMenu: React.FC<{onSelectTheme: (theme: ChatTheme) => void; onCl
 }
 
 const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
-  const { conversation, messages, reels, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme } = props;
+  const { conversation, messages, reels, onClose, onFocus, onMaximize, isFocused, positionRight, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onUpdateChatTheme, onAiAction, aiSuggestedReply, onSuggestionUsed } = props;
   const [isMinimized, setIsMinimized] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
@@ -185,7 +187,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
           <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full"><CloseIcon /></button>
         </div>
         {isOptionsOpen && <ChatOptionsMenu onClose={() => setIsOptionsOpen(false)} onSelectTheme={(theme) => onUpdateChatTheme(conversation.id, theme)} />}
-      </motion.header>
+      </header>
       
       <AnimatePresence>
         {isSearching && (
@@ -251,11 +253,16 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
       </div>
       
       <MessageInput 
+        conversationId={conversation.id}
+        messages={messages}
         onSendMessage={handleSendMessage}
         replyingTo={replyingTo}
         onCancelReply={() => setReplyingTo(null)}
         editingMessage={editingMessage}
         onCancelEdit={() => setEditingMessage(null)}
+        onAiAction={onAiAction}
+        aiSuggestedReply={aiSuggestedReply}
+        onSuggestionUsed={onSuggestionUsed}
       />
     </motion.div>
   );

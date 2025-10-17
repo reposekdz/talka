@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -78,6 +79,7 @@ const App: React.FC = () => {
     const [activeChats, setActiveChats] = useState<Conversation[]>(initialMockConversations);
     const [allMessages, setAllMessages] = useState<Record<string, Message[]>>(initialMockMessages);
     const [inAppNotification, setInAppNotification] = useState<{ conversation: Conversation; message: Message; } | null>(null);
+    const [aiSuggestedReply, setAiSuggestedReply] = useState<{ convoId: string, text: string } | null>(null);
     
     // Call state
     const [activeCall, setActiveCall] = useState<Call | null>(null);
@@ -215,6 +217,70 @@ const App: React.FC = () => {
     
     const allUsers = useMemo(() => [currentUser, ...otherUsers], [currentUser, otherUsers]);
     
+    const handleOpenChat = useCallback((user: User) => {
+        if (user.id === currentUser.id) return;
+        const existingChat = activeChats.find(c => c.participant.id === user.id);
+        if (existingChat) {
+            setActiveChats(prev => [...prev.filter(c => c.id !== existingChat.id), existingChat]);
+        } else {
+            const newChat: Conversation = {
+                id: `c-new-${user.id}`,
+                participant: user,
+                lastMessage: { id: 'm-placeholder', senderId: '', timestamp: new Date().toISOString(), isRead: true, type: 'text', text: 'Start a new conversation' },
+                unreadCount: 0,
+                chatTheme: 'default-blue',
+            };
+            setActiveChats(prev => [...prev, newChat]);
+            if (!allMessages[newChat.id]) {
+                setAllMessages(prev => ({ ...prev, [newChat.id]: [] }));
+            }
+        }
+    }, [activeChats, allMessages, currentUser.id]);
+
+    const handleAiChatAction = async (action: 'suggest-reply' | 'summarize', context: Message[], conversationId: string) => {
+        const aiUser = allUsers.find(u => u.id === 'ai-assistant');
+        if (!aiUser) return;
+
+        const conversationHistory = context
+            .filter(m => m.type === 'text' && m.text)
+            .map(m => `${m.senderId === currentUser.id ? 'Me' : 'Them'}: ${m.text}`)
+            .join('\n');
+        
+        let prompt = '';
+        if (action === 'suggest-reply') {
+            prompt = `Given the following conversation history, suggest a short, casual reply for "Me". Only provide the reply text, nothing else.\n\n---\n${conversationHistory}\n---`;
+        } else if (action === 'summarize') {
+            prompt = `Summarize the following conversation concisely.\n\n---\n${conversationHistory}\n---`;
+        }
+
+        if (!prompt) return;
+
+        showToast("Thinking...", 2);
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+            const resultText = response.text.trim();
+
+            if (action === 'suggest-reply') {
+                setAiSuggestedReply({ convoId: conversationId, text: resultText });
+            } else if (action === 'summarize') {
+                const aiMessage: Message = {
+                    id: `msg-ai-${Date.now()}`,
+                    senderId: 'ai-assistant',
+                    timestamp: new Date().toISOString(),
+                    isRead: true,
+                    type: 'text',
+                    text: `**Summary:**\n${resultText}`,
+                };
+                 setAllMessages(prev => ({...prev, [conversationId]: [...(prev[conversationId] || []), aiMessage]}));
+            }
+        } catch (error) {
+            console.error("AI Action failed:", error);
+            showToast("AI action failed.");
+        }
+    };
+    
     const mainContent = () => {
         if (userList) {
             return <UserListPage 
@@ -247,6 +313,7 @@ const App: React.FC = () => {
                     onJoinSpace={setActiveSpace}
                     onGrok={setGrokTweet}
                     onTranslateTweet={handleTranslateTweet}
+                    onOpenChat={handleOpenChat}
                 />;
             case Page.Explore:
                 return <ExplorePage 
@@ -259,23 +326,10 @@ const App: React.FC = () => {
             case Page.Notifications:
                 return <NotificationsPage />;
             case Page.Messages:
-                return <MessagesPage conversations={activeChats} openChat={(user) => {
-                    const existingChat = activeChats.find(c => c.participant.id === user.id);
-                    if (existingChat) {
-                        setActiveChats(prev => [...prev.filter(c => c.id !== existingChat.id), existingChat]);
-                    } else {
-                        const newChat: Conversation = {
-                            id: `c-new-${user.id}`,
-                            participant: user,
-                            lastMessage: { id: 'm-placeholder', senderId: '', timestamp: new Date().toISOString(), isRead: true, type: 'text', text: 'Start a new conversation' },
-                            unreadCount: 0,
-                            chatTheme: 'default-blue',
-                        };
-                        setActiveChats(prev => [...prev, newChat]);
-                    }
-                }} />;
+// FIX: Changed prop 'onOpenChat' to 'openChat' to match the expected prop in MessagesPage.
+                return <MessagesPage conversations={activeChats} openChat={handleOpenChat} />;
             case Page.Bookmarks:
-                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} />;
+                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />;
             case Page.Profile:
                 return <ProfilePage 
                     user={currentUser} 
@@ -288,6 +342,7 @@ const App: React.FC = () => {
                     onHighlightClick={(index) => setStoryViewerState({stories: highlights, initialUserIndex: index, isHighlight: true})}
                     onTranslateTweet={handleTranslateTweet}
                     onGrok={setGrokTweet}
+                    onOpenChat={handleOpenChat}
                 />;
             case Page.Communities:
                 return <CommunitiesPage />;
@@ -325,6 +380,7 @@ const App: React.FC = () => {
                     onJoinSpace={setActiveSpace}
                     onGrok={setGrokTweet}
                     onTranslateTweet={handleTranslateTweet}
+                    onOpenChat={handleOpenChat}
                 />;
         }
     }
@@ -380,14 +436,14 @@ const App: React.FC = () => {
             
             <AnimatePresence>
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={(reply) => {handlePostTweet({ content: reply, isBookmarked: false }); setReplyingToTweet(null); }} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={(tweet) => {handlePostTweet(tweet); setQuotingTweet(null);}} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={(id, content) => {setTweets(prev => prev.map(t => t.id === id ? {...t, content, isEdited: true} : t)); setEditingTweet(null); showToast('Your Post has been updated.'); }} />}
                 {storyViewerState && <StoryViewer {...storyViewerState} onClose={() => setStoryViewerState(null)} showToast={showToast} />}
                 {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
-                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} />}
+                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isEditProfileOpen && <EditProfileModal user={currentUser} onClose={() => setIsEditProfileOpen(false)} onSave={(updatedUser) => { setCurrentUser(updatedUser); setIsEditProfileOpen(false); showToast('Profile updated!'); }} />}
                 {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserList(null);}} />}
@@ -446,6 +502,9 @@ const App: React.FC = () => {
                     setActiveChats(prev => prev.map(c => c.id === convoId ? {...c, chatTheme: theme} : c));
                     showToast(`Theme changed!`);
                 }}
+                onAiAction={handleAiChatAction}
+                aiSuggestedReply={aiSuggestedReply}
+                onSuggestionUsed={() => setAiSuggestedReply(null)}
             />
         </div>
     );

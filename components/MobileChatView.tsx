@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Conversation, Message, User, ChatTheme, Reel } from '../types';
@@ -29,10 +28,13 @@ interface MobileChatViewProps {
   onStartVideoCall: (user: User) => void;
   onStartAudioCall: (user: User) => void;
   onUpdateChatTheme: (conversationId: string, theme: ChatTheme) => void;
+  onAiAction: (action: 'suggest-reply' | 'summarize', context: Message[], conversationId: string) => void;
+  aiSuggestedReply: { convoId: string, text: string } | null;
+  onSuggestionUsed: () => void;
 }
 
 const MobileChatView: React.FC<MobileChatViewProps> = (props) => {
-  const { conversation, messages, reels, onClose, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall } = props;
+  const { conversation, messages, reels, onClose, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, onAiAction, aiSuggestedReply, onSuggestionUsed } = props;
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [showWave, setShowWave] = useState(false);
@@ -147,11 +149,16 @@ const MobileChatView: React.FC<MobileChatViewProps> = (props) => {
       </div>
 
       <MessageInput 
+        conversationId={conversation.id}
+        messages={messages}
         onSendMessage={handleSendMessage}
         replyingTo={replyingTo}
         onCancelReply={() => setReplyingTo(null)}
         editingMessage={editingMessage}
         onCancelEdit={() => setEditingMessage(null)}
+        onAiAction={onAiAction}
+        aiSuggestedReply={aiSuggestedReply}
+        onSuggestionUsed={onSuggestionUsed}
       />
     </motion.div>
   );

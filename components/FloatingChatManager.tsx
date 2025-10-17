@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import FloatingChatWindow from './FloatingChatWindow';
@@ -22,6 +21,9 @@ interface FloatingChatManagerProps {
   onStartVideoCall: (user: User) => void;
   onStartAudioCall: (user: User) => void;
   handleUpdateChatTheme: (conversationId: string, theme: ChatTheme) => void;
+  onAiAction: (action: 'suggest-reply' | 'summarize', context: Message[], conversationId: string) => void;
+  aiSuggestedReply: { convoId: string, text: string } | null;
+  onSuggestionUsed: () => void;
 }
 
 const useIsMobile = () => {
@@ -37,7 +39,7 @@ const useIsMobile = () => {
 };
 
 const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
-  const { chats, allMessages, reels, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, handleUpdateChatTheme } = props;
+  const { chats, allMessages, reels, onCloseChat, onFocusChat, onNavigateToMessages, onSendMessage, onEditMessage, onDeleteMessage, onAddReaction, onPinMessage, onStartVideoCall, onStartAudioCall, handleUpdateChatTheme, onAiAction, aiSuggestedReply, onSuggestionUsed } = props;
   const isMobile = useIsMobile();
   const focusedIndex = chats.length - 1;
   const focusedChat = chats[focusedIndex];
@@ -60,6 +62,9 @@ const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
             onStartVideoCall={onStartVideoCall}
             onStartAudioCall={onStartAudioCall}
             onUpdateChatTheme={handleUpdateChatTheme}
+            onAiAction={onAiAction}
+            aiSuggestedReply={aiSuggestedReply}
+            onSuggestionUsed={onSuggestionUsed}
           />
         )}
       </AnimatePresence>
@@ -88,6 +93,9 @@ const FloatingChatManager: React.FC<FloatingChatManagerProps> = (props) => {
             onStartVideoCall={onStartVideoCall}
             onStartAudioCall={onStartAudioCall}
             onUpdateChatTheme={handleUpdateChatTheme}
+            onAiAction={onAiAction}
+            aiSuggestedReply={aiSuggestedReply}
+            onSuggestionUsed={onSuggestionUsed}
           />
         ))}
       </AnimatePresence>

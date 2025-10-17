@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Tweet, Highlight } from '../types';
-import { CalendarIcon, MoreIcon, PinIcon } from '../components/Icon';
+import { CalendarIcon, MoreIcon, PinIcon, MessagesIcon } from '../components/Icon';
 import TweetCard from '../components/TweetCard';
 import ProfileHighlights from '../components/ProfileHighlights';
 import TweetSkeleton from '../components/TweetSkeleton';
@@ -16,12 +16,13 @@ interface ProfilePageProps {
   onHighlightClick: (index: number) => void;
   onTranslateTweet: (tweetId: string) => void;
   onGrok: (tweet: Tweet) => void;
+  onOpenChat: (user: User) => void;
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onHighlightClick, onTranslateTweet, onGrok } = props;
+  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onHighlightClick, onTranslateTweet, onGrok, onOpenChat } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -51,11 +52,14 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 
       <div className="p-4 mt-16 flex justify-end items-center">
         <div className="flex items-center gap-2">
-            <button className="p-2 border border-light-border dark:border-twitter-border rounded-full"><MoreIcon /></button>
+            <button className="p-2 border border-light-border dark:border-twitter-border rounded-full hover:bg-light-hover dark:hover:bg-white/10"><MoreIcon /></button>
             {isOwnProfile ? (
                 <button onClick={onEditProfile} className="font-bold px-4 py-1.5 rounded-full border border-light-border dark:border-twitter-border hover:bg-light-hover dark:hover:bg-white/10">Edit profile</button>
             ) : (
-                <button className="bg-white text-black font-bold px-4 py-1.5 rounded-full hover:bg-opacity-90">Follow</button>
+                <>
+                    <button onClick={() => onOpenChat(user)} className="p-2 border border-light-border dark:border-twitter-border rounded-full hover:bg-light-hover dark:hover:bg-white/10"><MessagesIcon className="w-5 h-5" /></button>
+                    <button className="bg-white text-black font-bold px-4 py-1.5 rounded-full hover:bg-opacity-90">Follow</button>
+                </>
             )}
         </div>
       </div>
@@ -101,6 +105,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 onEdit={() => {}}
                 onGrok={onGrok}
                 onTranslateTweet={onTranslateTweet}
+                onOpenChat={onOpenChat}
                 liveReactions={[]}
             />
         ))}

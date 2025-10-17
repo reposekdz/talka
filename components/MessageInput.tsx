@@ -1,13 +1,10 @@
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../types';
-import { GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, ChevronLeftIcon, PaperclipIcon, CloseIcon, WaveIcon, CheckmarkCircleIcon } from './Icon';
+import { GifIcon, EmojiIcon, MicrophoneIcon, SendIcon, TrashIcon, ChevronLeftIcon, PaperclipIcon, CloseIcon, WaveIcon, CheckmarkCircleIcon, SparklesIcon, ReplyIcon } from './Icon';
 import EmojiPicker from './EmojiPicker';
 import GifPickerModal from './GifPickerModal';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// FIX: Added optional text property to image message content type.
 type MessageContent = 
     | { type: 'text'; text: string }
     | { type: 'voice'; audioUrl: string; duration: number }
@@ -15,16 +12,50 @@ type MessageContent =
     | { type: 'wave' }
     | { type: 'image'; imageUrl: string; text?: string };
 
-
 interface MessageInputProps {
   onSendMessage: (content: MessageContent, replyTo?: Message) => void;
   replyingTo: Message | null;
   onCancelReply: () => void;
   editingMessage: Message | null;
   onCancelEdit: () => void;
+  conversationId: string;
+  messages: Message[];
+  onAiAction: (action: 'suggest-reply' | 'summarize', context: Message[], conversationId: string) => void;
+  aiSuggestedReply: { convoId: string, text: string } | null;
+  onSuggestionUsed: () => void;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, onCancelReply, editingMessage, onCancelEdit }) => {
+const AiMenu: React.FC<{onAction: (action: 'suggest-reply' | 'summarize') => void, onClose: () => void}> = ({ onAction, onClose }) => {
+    const menuRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [onClose]);
+
+    return (
+        <motion.div
+            ref={menuRef}
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="absolute bottom-full mb-2 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg border border-light-border dark:border-twitter-border z-20 text-sm w-48"
+        >
+            <button onClick={() => onAction('suggest-reply')} className="w-full text-left flex items-center gap-2 p-3 hover:bg-light-hover dark:hover:bg-white/10">
+                <ReplyIcon/> Suggest reply
+            </button>
+            <button onClick={() => onAction('summarize')} className="w-full text-left flex items-center gap-2 p-3 hover:bg-light-hover dark:hover:bg-white/10">
+                <SparklesIcon/> Summarize chat
+            </button>
+        </motion.div>
+    );
+};
+
+
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, onCancelReply, editingMessage, onCancelEdit, conversationId, messages, onAiAction, aiSuggestedReply, onSuggestionUsed }) => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -33,6 +64,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
 
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isGifModalOpen, setIsGifModalOpen] = useState(false);
+  const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingIntervalRef = useRef<number | null>(null);
@@ -40,8 +72,6 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
 
-
-  // Refs to hold the latest values to avoid stale closures in event handlers
   const slidePositionRef = useRef(0);
   const recordingTimeRef = useRef(0);
   
@@ -178,6 +208,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const handleAiActionSelect = (action: 'suggest-reply' | 'summarize') => {
+      onAiAction(action, messages, conversationId);
+      setIsAiMenuOpen(false);
+  }
+
   const cancelThreshold = -80;
   const isCancelZone = slidePosition < cancelThreshold;
   const showAttachmentIcons = !inputText && !imagePreview;
@@ -186,6 +221,27 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
     <div className="p-2 border-t border-light-border dark:border-twitter-border dim:border-dim-border relative">
       <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
       <AnimatePresence>
+        {aiSuggestedReply && aiSuggestedReply.convoId === conversationId && (
+            <motion.div
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="bg-light-hover dark:bg-white/5 dim:bg-dim-hover p-2 rounded-lg mx-2 mb-2 flex justify-between items-center text-sm"
+            >
+                <div className="flex items-center gap-2">
+                    <SparklesIcon className="w-4 h-4 text-twitter-blue" />
+                    <p className="italic text-light-secondary-text dark:text-twitter-gray">{aiSuggestedReply.text}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => { setInputText(aiSuggestedReply.text); onSuggestionUsed(); }} 
+                        className="font-semibold text-twitter-blue px-2 py-1 rounded-md hover:bg-twitter-blue/10"
+                    >Use</button>
+                    <button onClick={onSuggestionUsed} className="font-bold p-1">&times;</button>
+                </div>
+            </motion.div>
+        )}
         {(replyingTo || editingMessage) && (
             <motion.div
                 layout
@@ -252,6 +308,10 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
                         </div>
                     )}
                     <div className="flex items-center gap-2 bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border rounded-full px-2 sm:px-4 py-1 transition-all duration-200">
+                      <div className="relative">
+                          <button onClick={() => setIsAiMenuOpen(prev => !prev)} className="p-2 text-twitter-blue hover:bg-twitter-blue/10 rounded-full"><SparklesIcon /></button>
+                          {isAiMenuOpen && <AiMenu onClose={() => setIsAiMenuOpen(false)} onAction={handleAiActionSelect} />}
+                      </div>
                       <AnimatePresence>
                         {showAttachmentIcons && (
                             <motion.div 
@@ -265,7 +325,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, 
                                   <button onClick={() => fileInputRef.current?.click()} className="p-2 hover:bg-twitter-blue/10 rounded-full"><PaperclipIcon /></button>
                                   <button onClick={() => setIsGifModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><GifIcon /></button>
                                   <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><EmojiIcon /></button>
-                                  <button onClick={() => onSendMessage({type: 'wave'})} className="p-2 hover:bg-twitter-blue/10 rounded-full"><WaveIcon/></button>
+                                  <button onClick={() => onSendMessage({type: 'wave'}, replyingTo || undefined)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><WaveIcon/></button>
                               </div>
                             </motion.div>
                         )}

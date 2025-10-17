@@ -1,7 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tweet } from '../types';
+import { Tweet, User } from '../types';
 import { CloseIcon, SparklesIcon } from './Icon';
 import TweetCard from './TweetCard';
 import { mockUser } from '../data/mockData';
@@ -12,9 +13,10 @@ interface GrokAnalysisModalProps {
   tweet: Tweet;
   onClose: () => void;
   onTranslateTweet: (tweetId: string) => void;
+  onOpenChat: (user: User) => void;
 }
 
-const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet }) => {
+const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onOpenChat }) => {
     const [analysis, setAnalysis] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, o
                 if (!process.env.API_KEY) {
                     throw new Error("API_KEY environment variable not set.");
                 }
-                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
                 
                 const prompt = `Provide a brief, insightful analysis of this social media post. Explain the context, potential impact, and key takeaways. Be concise and use markdown for formatting.\n\nPost by @${tweet.user.username}:\n"${tweet.content}"`;
 
@@ -72,7 +74,7 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, o
                     <div className="w-10"></div>
                 </header>
                 <div className="flex-1 overflow-y-auto">
-                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} liveReactions={[]} onTranslateTweet={onTranslateTweet} />
+                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} liveReactions={[]} onTranslateTweet={onTranslateTweet} onOpenChat={onOpenChat} />
                     <div className="p-4">
                         {isLoading && <p>Analyzing...</p>}
                         {error && <p className="text-red-500">{error}</p>}
