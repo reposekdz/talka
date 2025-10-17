@@ -4,7 +4,6 @@ import { Tweet, User, UserStory, Space } from '../types';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
 import StoryReel from '../components/StoryReel';
-import LiveCard from '../components/LiveCard';
 import SpacesCard from '../components/SpacesCard';
 import TweetSkeleton from '../components/TweetSkeleton';
 
@@ -86,7 +85,6 @@ const HomePage: React.FC<HomePageProps> = (props) => {
 
       <StoryReel userStories={userStories} currentUser={currentUser} onStoryClick={onStoryClick} onOpenCreator={onOpenCreator} />
       
-      <LiveCard />
       <SpacesCard onJoinSpace={onJoinSpace} />
 
       <div>

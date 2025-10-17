@@ -253,6 +253,47 @@ const App: React.FC = () => {
         showToast(`Reel shared to ${conversationIds.length} chat(s).`);
     };
 
+    const handleLikeReel = (reelId: string) => {
+        setReels(prev => prev.map(r => {
+            if (r.id === reelId) {
+                const isLiked = !r.isLiked;
+                const isDisliked = isLiked ? false : r.isDisliked; // Can't like and dislike at same time
+                return {
+                    ...r,
+                    isLiked,
+                    isDisliked,
+                    likeCount: isLiked ? r.likeCount + 1 : r.likeCount - 1,
+                    dislikeCount: (r.isDisliked && isLiked) ? r.dislikeCount -1 : r.dislikeCount,
+                }
+            }
+            return r;
+        }))
+    };
+
+    const handleDislikeReel = (reelId: string) => {
+        setReels(prev => prev.map(r => {
+            if (r.id === reelId) {
+                const isDisliked = !r.isDisliked;
+                const isLiked = isDisliked ? false : r.isLiked;
+                return {
+                    ...r,
+                    isDisliked,
+                    isLiked,
+                    dislikeCount: isDisliked ? r.dislikeCount + 1 : r.dislikeCount - 1,
+                    likeCount: (r.isLiked && isDisliked) ? r.likeCount - 1 : r.likeCount,
+                }
+            }
+            return r;
+        }))
+    };
+
+    const handleToggleReelBookmark = (reelId: string) => {
+        const reel = reels.find(r => r.id === reelId);
+        if (!reel) return;
+        setReels(prev => prev.map(r => r.id === reelId ? { ...r, isBookmarked: !r.isBookmarked } : r));
+        showToast(reel.isBookmarked ? 'Reel removed from Bookmarks' : 'Reel added to your Bookmarks');
+    };
+
     const handleCreateHighlight = ({ title, stories }: { title: string, stories: Story[] }) => {
         const newHighlight: Highlight = {
             id: `h-new-${Date.now()}`,
@@ -528,7 +569,7 @@ const App: React.FC = () => {
             case Page.Messages:
                 return <MessagesPage conversations={allKnownConversations} openChat={handleOpenChat} />;
             case Page.Bookmarks:
-                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} {...commonTweetCardProps} />;
+                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} reels={reels.filter(r => r.isBookmarked)} {...commonTweetCardProps} />;
             case Page.Profile:
                 return <ProfilePage 
                     user={currentUser} 
@@ -548,7 +589,10 @@ const App: React.FC = () => {
                     onPostComment={handlePostReelComment}
                     onLikeComment={handleLikeReelComment}
                     onShareReel={handleShareReel}
-                    conversations={activeChats}
+                    conversations={allKnownConversations}
+                    onLikeReel={handleLikeReel}
+                    onDislikeReel={handleDislikeReel}
+                    onToggleBookmark={handleToggleReelBookmark}
                 />;
             case Page.CreatorStudio:
                 return <CreatorStudioPage />;

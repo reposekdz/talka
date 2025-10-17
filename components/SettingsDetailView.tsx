@@ -141,6 +141,16 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
                             onChange={(value) => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, photoTagging: value as any})}
                          />
                     </SettingsSection>
+                    <SettingsSection title="Direct Messages">
+                         <SettingsOptionGroup 
+                            options={[
+                              { value: 'everyone', label: 'Allow requests from everyone' },
+                              { value: 'following', label: 'Only allow requests from people you follow' },
+                            ]}
+                            selected={settings.privacyAndSafety.dmRequests}
+                            onChange={(value) => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, dmRequests: value as any})}
+                         />
+                    </SettingsSection>
                  </div>
             );
         case "Notifications":

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Tweet, User } from '../types';
+import { Tweet, User, Reel } from '../types';
 import TweetCard from '../components/TweetCard';
-import { BookmarkIcon } from '../components/Icon';
+import { BookmarkIcon, ReelsIcon } from '../components/Icon';
 import TweetSkeleton from '../components/TweetSkeleton';
 
 interface BookmarksPageProps {
   tweets: Tweet[];
+  reels: Reel[];
   currentUser: User;
   onViewProfile: (user: User) => void;
   onImageClick: (urls: string[], index: number) => void;
@@ -26,9 +27,10 @@ interface BookmarksPageProps {
 const TWEETS_PER_PAGE = 10;
 
 const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
-  const { tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions } = props;
+  const { tweets, reels, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions } = props;
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [activeTab, setActiveTab] = useState('Posts');
 
   const visibleTweets = tweets.slice(0, visibleCount);
   const hasMore = visibleCount < tweets.length;
@@ -48,50 +50,85 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
         <p className="text-sm text-light-secondary-text dark:text-twitter-gray">@{currentUser.username}</p>
       </div>
 
-      {tweets.length > 0 ? (
+      <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border">
+        {['Posts', 'Reels'].map(tab => (
+          <div key={tab} onClick={() => setActiveTab(tab)} className="flex-1 text-center font-bold p-4 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover cursor-pointer relative">
+            <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>
+              {tab}
+            </span>
+            {activeTab === tab && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-twitter-blue rounded-full"></div>}
+          </div>
+        ))}
+      </div>
+
+      {activeTab === 'Posts' ? (
         <>
-          {visibleTweets.map(tweet => (
-            <TweetCard
-              key={tweet.id}
-              tweet={tweet}
-              currentUser={currentUser}
-              onImageClick={onImageClick}
-              onViewProfile={onViewProfile}
-              onReply={() => {}}
-              onToggleBookmark={onToggleBookmark}
-              onVote={onVote}
-              onQuote={onQuote}
-              onEdit={onEdit}
-              onDeleteTweet={onDeleteTweet}
-              onGrok={onGrok}
-              onTranslateTweet={onTranslateTweet}
-              onPinTweet={onPinTweet}
-              onOpenChat={onOpenChat}
-              onLikeTweet={onLikeTweet}
-              onRetweet={onRetweet}
-              liveReactions={liveReactions}
-            />
-          ))}
-          {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
-          {hasMore && !isLoadingMore && (
-              <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border text-center">
-                  <button
-                      onClick={loadMore}
-                      className="text-twitter-blue hover:underline font-semibold"
-                  >
-                      Show more
-                  </button>
-              </div>
+          {tweets.length > 0 ? (
+            <>
+              {visibleTweets.map(tweet => (
+                <TweetCard
+                  key={tweet.id}
+                  tweet={tweet}
+                  currentUser={currentUser}
+                  onImageClick={onImageClick}
+                  onViewProfile={onViewProfile}
+                  onReply={() => {}}
+                  onToggleBookmark={onToggleBookmark}
+                  onVote={onVote}
+                  onQuote={onQuote}
+                  onEdit={onEdit}
+                  onDeleteTweet={onDeleteTweet}
+                  onGrok={onGrok}
+                  onTranslateTweet={onTranslateTweet}
+                  onPinTweet={onPinTweet}
+                  onOpenChat={onOpenChat}
+                  onLikeTweet={onLikeTweet}
+                  onRetweet={onRetweet}
+                  liveReactions={liveReactions}
+                />
+              ))}
+              {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
+              {hasMore && !isLoadingMore && (
+                  <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border text-center">
+                      <button
+                          onClick={loadMore}
+                          className="text-twitter-blue hover:underline font-semibold"
+                      >
+                          Show more
+                      </button>
+                  </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center p-8 text-light-secondary-text dark:text-twitter-gray">
+              <BookmarkIcon />
+              <h2 className="text-2xl font-bold mt-4">Save posts for later</h2>
+              <p className="max-w-sm mx-auto mt-2">
+                Bookmark posts to easily find them again in the future.
+              </p>
+            </div>
           )}
         </>
       ) : (
-        <div className="text-center p-8 text-light-secondary-text dark:text-twitter-gray">
-          <BookmarkIcon />
-          <h2 className="text-2xl font-bold mt-4">Save posts for later</h2>
-          <p className="max-w-sm mx-auto mt-2">
-            Bookmark posts to easily find them again in the future.
-          </p>
-        </div>
+        <>
+            {reels.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-0.5">
+                {reels.map(reel => (
+                    <div key={reel.id} className="relative aspect-[9/16] bg-black">
+                    <video src={reel.videoUrl} loop muted playsInline className="w-full h-full object-cover"/>
+                    </div>
+                ))}
+                </div>
+            ) : (
+                <div className="text-center p-8 text-light-secondary-text dark:text-twitter-gray">
+                    <ReelsIcon />
+                    <h2 className="text-2xl font-bold mt-4">Save Reels for later</h2>
+                    <p className="max-w-sm mx-auto mt-2">
+                        Bookmark Reels to easily find them again in the future.
+                    </p>
+                </div>
+            )}
+        </>
       )}
     </div>
   );

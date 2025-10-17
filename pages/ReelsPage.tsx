@@ -10,9 +10,12 @@ interface ReelsPageProps {
   onLikeComment: (reelId: string, commentId: string) => void;
   onShareReel: (reelId: string, conversationIds: string[], message?: string) => void;
   conversations: Conversation[];
+  onLikeReel: (reelId: string) => void;
+  onDislikeReel: (reelId: string) => void;
+  onToggleBookmark: (reelId: string) => void;
 }
 
-const ReelsPage: React.FC<ReelsPageProps> = ({ reels, onPostComment, onLikeComment, onShareReel, conversations }) => {
+const ReelsPage: React.FC<ReelsPageProps> = ({ reels, onPostComment, onLikeComment, onShareReel, conversations, onLikeReel, onDislikeReel, onToggleBookmark }) => {
     const [currentReelIndex, setCurrentReelIndex] = useState(0);
 
     const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
@@ -37,6 +40,9 @@ const ReelsPage: React.FC<ReelsPageProps> = ({ reels, onPostComment, onLikeComme
                         onLikeComment={onLikeComment}
                         onShareReel={onShareReel}
                         conversations={conversations}
+                        onLikeReel={onLikeReel}
+                        onDislikeReel={onDislikeReel}
+                        onToggleBookmark={onToggleBookmark}
                     />
                 </div>
             ))}

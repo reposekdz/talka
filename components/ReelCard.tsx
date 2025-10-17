@@ -15,9 +15,12 @@ interface ReelCardProps {
   onLikeComment: (reelId: string, commentId: string) => void;
   onShareReel: (reelId: string, conversationIds: string[], message?: string) => void;
   conversations: Conversation[];
+  onLikeReel: (reelId: string) => void;
+  onDislikeReel: (reelId: string) => void;
+  onToggleBookmark: (reelId: string) => void;
 }
 
-const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onLikeComment, onShareReel, conversations }) => {
+const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onLikeComment, onShareReel, conversations, onLikeReel, onDislikeReel, onToggleBookmark }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
@@ -72,11 +75,11 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onL
             </div>
             
             <div className="absolute right-2 bottom-4 flex flex-col items-center gap-4 text-white">
-                 <button className="flex flex-col items-center gap-1">
+                 <button onClick={() => onLikeReel(reel.id)} className="flex flex-col items-center gap-1">
                     {reel.isLiked ? <HeartFillIcon className="w-7 h-7 text-red-500" /> : <LikeIcon className="w-7 h-7" />}
                     <span className="text-xs font-semibold">{reel.likeCount.toLocaleString()}</span>
                 </button>
-                 <button className="flex flex-col items-center gap-1">
+                 <button onClick={() => onDislikeReel(reel.id)} className="flex flex-col items-center gap-1">
                     {reel.isDisliked ? <DislikeFillIcon className="w-7 h-7" /> : <DislikeIcon className="w-7 h-7" />}
                  </button>
                  <button onClick={() => setIsCommentsOpen(true)} className="flex flex-col items-center gap-1">
@@ -87,7 +90,7 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onL
                     <ShareIcon className="w-7 h-7" />
                     <span className="text-xs font-semibold">{reel.shareCount.toLocaleString()}</span>
                 </button>
-                <button className="flex flex-col items-center gap-1">
+                <button onClick={() => onToggleBookmark(reel.id)} className="flex flex-col items-center gap-1">
                      {reel.isBookmarked ? <BookmarkFillIcon className="w-7 h-7 text-twitter-blue" /> : <BookmarkIcon className="w-7 h-7" />}
                 </button>
                 <button onClick={() => setIsOptionsOpen(true)} className="p-2"><MoreIcon className="w-7 h-7" /></button>
@@ -106,7 +109,7 @@ const ReelCard: React.FC<ReelCardProps> = ({ reel, isCurrent, onPostComment, onL
                     </div>
                 )}
                 {isShareOpen && <ShareReelModal reel={reel} conversations={conversations} onClose={() => setIsShareOpen(false)} onShare={onShareReel} />}
-                {isOptionsOpen && <ReelOptionsModal isBookmarked={reel.isBookmarked} onClose={() => setIsOptionsOpen(false)} />}
+                {isOptionsOpen && <ReelOptionsModal isBookmarked={reel.isBookmarked} onToggleBookmark={() => onToggleBookmark(reel.id)} onClose={() => setIsOptionsOpen(false)} />}
             </AnimatePresence>
         </div>
     );

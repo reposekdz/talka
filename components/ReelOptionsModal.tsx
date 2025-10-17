@@ -6,14 +6,15 @@ import { BookmarkIcon, BookmarkFillIcon, DislikeIcon, ShareIcon } from './Icon';
 interface ReelOptionsModalProps {
     onClose: () => void;
     isBookmarked: boolean;
+    onToggleBookmark: () => void;
 }
 
-const ReelOptionsModal: React.FC<ReelOptionsModalProps> = ({ onClose, isBookmarked }) => {
+const ReelOptionsModal: React.FC<ReelOptionsModalProps> = ({ onClose, isBookmarked, onToggleBookmark }) => {
 
     const options = [
-        { icon: isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />, text: isBookmarked ? 'Saved' : 'Save' },
-        { icon: <DislikeIcon />, text: 'Not interested' },
-        { icon: <ShareIcon />, text: 'Copy link' },
+        { icon: isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />, text: isBookmarked ? 'Saved' : 'Save', action: onToggleBookmark },
+        { icon: <DislikeIcon />, text: 'Not interested', action: () => {} },
+        { icon: <ShareIcon />, text: 'Copy link', action: () => {} },
     ];
     return (
         <div
@@ -30,7 +31,7 @@ const ReelOptionsModal: React.FC<ReelOptionsModalProps> = ({ onClose, isBookmark
             >
                 <ul>
                     {options.map(opt => (
-                        <li key={opt.text} className="flex items-center gap-4 p-4 text-lg font-semibold hover:bg-light-hover dark:hover:bg-white/10 rounded-lg cursor-pointer">
+                        <li key={opt.text} onClick={opt.action} className="flex items-center gap-4 p-4 text-lg font-semibold hover:bg-light-hover dark:hover:bg-white/10 rounded-lg cursor-pointer">
                             {opt.icon}
                             <span>{opt.text}</span>
                         </li>
