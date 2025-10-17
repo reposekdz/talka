@@ -8,18 +8,25 @@ interface BookmarksPageProps {
   tweets: Tweet[];
   currentUser: User;
   onViewProfile: (user: User) => void;
-  onImageClick: (url: string) => void;
+  onImageClick: (urls: string[], index: number) => void;
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
+  onRetweet: (tweetId: string) => void;
+  onDeleteTweet: (tweetId: string) => void;
+  onVote: (tweetId: string, optionId: string) => void;
+  onQuote: (tweet: Tweet) => void;
+  onEdit: (tweet: Tweet) => void;
+  onToggleBookmark: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
-const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions }) => {
+const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
+  const { tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions } = props;
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -51,15 +58,17 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onVi
               onImageClick={onImageClick}
               onViewProfile={onViewProfile}
               onReply={() => {}}
-              onToggleBookmark={() => {}}
-              onVote={() => {}}
-              onQuote={() => {}}
-              onEdit={() => {}}
+              onToggleBookmark={onToggleBookmark}
+              onVote={onVote}
+              onQuote={onQuote}
+              onEdit={onEdit}
+              onDeleteTweet={onDeleteTweet}
               onGrok={onGrok}
               onTranslateTweet={onTranslateTweet}
               onPinTweet={onPinTweet}
               onOpenChat={onOpenChat}
               onLikeTweet={onLikeTweet}
+              onRetweet={onRetweet}
               liveReactions={liveReactions}
             />
           ))}

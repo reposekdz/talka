@@ -9,7 +9,7 @@ interface ProfilePageProps {
   user: User;
   tweets: Tweet[];
   highlights: Highlight[];
-  onImageClick: (url: string) => void;
+  onImageClick: (urls: string[], index: number) => void;
   onViewProfile: (user: User) => void;
   onViewUserList: (user: User, type: 'followers' | 'following') => void;
   onEditProfile: () => void;
@@ -20,13 +20,19 @@ interface ProfilePageProps {
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
+  onRetweet: (tweetId: string) => void;
+  onDeleteTweet: (tweetId: string) => void;
+  onVote: (tweetId: string, optionId: string) => void;
+  onQuote: (tweet: Tweet) => void;
+  onEdit: (tweet: Tweet) => void;
+  onToggleBookmark: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, liveReactions } = props;
+  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -47,6 +53,23 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
   };
 
   const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
+  
+  const commonTweetCardProps = {
+    onImageClick,
+    onViewProfile,
+    onTranslateTweet,
+    onGrok,
+    onPinTweet,
+    onOpenChat,
+    onLikeTweet,
+    liveReactions,
+    onRetweet,
+    onDeleteTweet,
+    onVote,
+    onQuote,
+    onEdit,
+    onToggleBookmark,
+  };
 
   return (
     <div className="pb-16 sm:pb-0">
@@ -108,19 +131,8 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                    key={pinnedTweet.id}
                    tweet={pinnedTweet}
                    currentUser={user}
-                   onImageClick={onImageClick}
-                   onViewProfile={onViewProfile}
                    onReply={() => {}}
-                   onToggleBookmark={() => {}}
-                   onVote={() => {}}
-                   onQuote={() => {}}
-                   onEdit={() => {}}
-                   onGrok={onGrok}
-                   onTranslateTweet={onTranslateTweet}
-                   onPinTweet={onPinTweet}
-                   onOpenChat={onOpenChat}
-                   onLikeTweet={onLikeTweet}
-                   liveReactions={liveReactions}
+                   {...commonTweetCardProps}
                />
            </div>
         )}
@@ -129,19 +141,8 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 key={tweet.id}
                 tweet={tweet}
                 currentUser={user}
-                onImageClick={onImageClick}
-                onViewProfile={onViewProfile}
                 onReply={() => {}}
-                onToggleBookmark={() => {}}
-                onVote={() => {}}
-                onQuote={() => {}}
-                onEdit={() => {}}
-                onGrok={onGrok}
-                onTranslateTweet={onTranslateTweet}
-                onPinTweet={onPinTweet}
-                onOpenChat={onOpenChat}
-                onLikeTweet={onLikeTweet}
-                liveReactions={liveReactions}
+                {...commonTweetCardProps}
             />
         ))}
          {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}

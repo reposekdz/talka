@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import WhoToFollow from './WhoToFollow';
 import TrendingTopic from './TrendingTopic';
@@ -7,7 +6,6 @@ import { User } from '../types';
 import { RefreshIcon, SearchIcon, SparklesIcon, VerifiedIcon } from './Icon';
 
 interface RightSidebarProps {
-  openSearchModal: () => void;
   onViewProfile: (user: User) => void;
   onFollowToggle: (userId: string) => void;
   currentUser: User;
@@ -44,7 +42,7 @@ const AiAssistantCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 );
 
 
-const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProfile, onFollowToggle, currentUser, otherUsers, openAiAssistant }) => {
+const RightSidebar: React.FC<RightSidebarProps> = ({ onViewProfile, onFollowToggle, currentUser, otherUsers, openAiAssistant }) => {
   const [whoToFollowUsers, setWhoToFollowUsers] = useState(() => 
     [...otherUsers].sort(() => 0.5 - Math.random()).slice(0, 3)
   );
@@ -55,15 +53,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ openSearchModal, onViewProf
   };
 
   return (
-    <aside className="w-[250px] lg:w-[290px] xl:w-[350px] h-screen sticky top-0 px-6 py-2 flex-col gap-4 hidden md:flex overflow-y-auto no-scrollbar">
-      <div
-        onClick={openSearchModal}
-        className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-light-secondary-text dark:text-twitter-gray rounded-full px-4 py-2 cursor-pointer flex items-center gap-3 hover:bg-light-hover/80 dark:hover:bg-white/5 dim:hover:bg-dim-hover/80 transition-colors sticky top-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg z-10 -mt-2 pt-4 pb-2"
-      >
-        <SearchIcon />
-        <span>Search</span>
-      </div>
-
+    <aside className="w-[250px] lg:w-[290px] xl:w-[350px] h-screen sticky top-14 px-6 py-4 flex-col gap-4 hidden lg:flex overflow-y-auto no-scrollbar">
       <PremiumCard />
 
       <AiAssistantCard onClick={openAiAssistant} />

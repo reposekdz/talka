@@ -8,19 +8,22 @@ import { SearchIcon } from '../components/Icon';
 
 interface SearchModalProps {
   onClose: () => void;
-  onImageClick: (url: string) => void;
+  onImageClick: (urls: string[], index: number) => void;
   onViewProfile: (user: User) => void;
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
+  onRetweet: (tweetId: string) => void;
+  onDeleteTweet: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions }) => {
+const SearchModal: React.FC<SearchModalProps> = (props) => {
+  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -62,6 +65,25 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
         return [...userResults, ...tweetResults];
     }
   }, [searchTerm, activeTab]);
+  
+  const commonTweetCardProps = {
+    currentUser: mockUser,
+    onImageClick,
+    onViewProfile: handleProfileClick,
+    onReply: () => {},
+    onToggleBookmark: () => {},
+    onVote: () => {},
+    onQuote: () => {},
+    onEdit: () => {},
+    onGrok,
+    onTranslateTweet,
+    onPinTweet,
+    onOpenChat,
+    onLikeTweet,
+    onRetweet,
+    onDeleteTweet,
+    liveReactions,
+  };
 
   return (
     <div
@@ -118,24 +140,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
             ) : results.length > 0 ? (
               results.map(item => {
                 if ('content' in item) { 
-                  return <TweetCard 
-                    key={`tweet-${item.id}`} 
-                    tweet={item} 
-                    currentUser={mockUser}
-                    onImageClick={onImageClick} 
-                    onViewProfile={handleProfileClick} 
-                    onReply={() => {}}
-                    onToggleBookmark={() => {}}
-                    onVote={() => {}}
-                    onQuote={() => {}}
-                    onEdit={() => {}}
-                    onGrok={onGrok}
-                    onTranslateTweet={onTranslateTweet}
-                    onPinTweet={onPinTweet}
-                    onOpenChat={onOpenChat}
-                    onLikeTweet={onLikeTweet}
-                    liveReactions={liveReactions}
-                    />;
+                  return <TweetCard key={`tweet-${item.id}`} tweet={item} {...commonTweetCardProps} />;
                 } else {
                   return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={mockUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;
                 }

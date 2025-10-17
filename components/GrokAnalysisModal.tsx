@@ -14,10 +14,12 @@ interface GrokAnalysisModalProps {
   onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
+  onRetweet: (tweetId: string) => void;
+  onDeleteTweet: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
-const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions }) => {
+const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions }) => {
     const [analysis, setAnalysis] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,25 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, o
                     <div className="w-10"></div>
                 </header>
                 <div className="flex-1 overflow-y-auto">
-                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} onTranslateTweet={onTranslateTweet} onPinTweet={onPinTweet} onOpenChat={onOpenChat} onLikeTweet={onLikeTweet} liveReactions={liveReactions} />
+                    <TweetCard 
+                        tweet={tweet} 
+                        currentUser={mockUser} 
+                        onImageClick={() => {}} 
+                        onViewProfile={() => {}} 
+                        onReply={() => {}} 
+                        onToggleBookmark={() => {}} 
+                        onVote={() => {}} 
+                        onQuote={() => {}} 
+                        onEdit={() => {}} 
+                        onGrok={() => {}} 
+                        onTranslateTweet={onTranslateTweet} 
+                        onPinTweet={onPinTweet} 
+                        onOpenChat={onOpenChat} 
+                        onLikeTweet={onLikeTweet} 
+                        onRetweet={onRetweet}
+                        onDeleteTweet={onDeleteTweet}
+                        liveReactions={liveReactions} 
+                    />
                     <div className="p-4">
                         {isLoading && <p>Analyzing...</p>}
                         {error && <p className="text-red-500">{error}</p>}

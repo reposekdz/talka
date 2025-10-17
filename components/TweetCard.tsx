@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tweet, User } from '../types';
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon, MessagesIcon } from './Icon';
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon, MessagesIcon, RetweetFillIcon } from './Icon';
 import Avatar from './Avatar';
 import PollDisplay from './PollDisplay';
 import VideoPlayer from './VideoPlayer';
@@ -60,26 +60,28 @@ const TweetMenu: React.FC<TweetMenuProps> = ({ tweet, isOwnTweet, onClose, onEdi
 interface TweetCardProps {
     tweet: Tweet;
     currentUser: User;
-    onImageClick: (url: string) => void;
+    onImageClick: (urls: string[], index: number) => void;
     onViewProfile: (user: User) => void;
     onReply: (tweet: Tweet) => void;
     onToggleBookmark: (tweetId: string) => void;
     onVote: (tweetId: string, optionId: string) => void;
     onQuote: (tweet: Tweet) => void;
     onEdit: (tweet: Tweet) => void;
+    onDeleteTweet: (tweetId: string) => void;
     onGrok: (tweet: Tweet) => void;
     onTranslateTweet: (tweetId: string) => void;
     onPinTweet: (tweetId: string) => void;
     onOpenChat: (user: User) => void;
     onLikeTweet: (tweetId: string) => void;
+    onRetweet: (tweetId: string) => void;
     liveReactions: { id: number, emoji: string, tweetId: string }[];
 }
 
 const TRUNCATE_LENGTH = 250;
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, liveReactions } = props;
-    const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
+    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions } = props;
+    const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isRetweeted, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -135,19 +137,26 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
             3: 'grid-cols-2 aspect-video', // Will handle with custom spans
             4: 'grid-cols-2 aspect-square',
         };
+        
+        const mediaToDisplay = mediaUrls.length > 4 ? mediaUrls.slice(0, 4) : mediaUrls;
 
         return (
-            <div className={`mt-2 grid gap-0.5 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border ${gridClasses[mediaUrls.length] || 'grid-cols-2'}`}>
-                {mediaUrls.slice(0, 4).map((url, index) => (
+            <div className={`mt-2 grid gap-0.5 rounded-2xl overflow-hidden border border-light-border dark:border-twitter-border dim:border-dim-border ${gridClasses[mediaToDisplay.length] || 'grid-cols-2'}`}>
+                {mediaToDisplay.map((url, index) => (
                     <div
                         key={index}
                         className={`relative cursor-pointer bg-black
-                            ${mediaUrls.length === 3 && index === 0 ? 'row-span-2' : ''}
-                            ${mediaUrls.length === 3 && index === 1 ? 'col-start-2' : ''}
+                            ${mediaToDisplay.length === 3 && index === 0 ? 'row-span-2' : ''}
+                            ${mediaToDisplay.length === 3 && index > 0 ? 'col-start-2' : ''}
                         `}
-                        onClick={(e) => handleActionClick(e, () => onImageClick(url))}
+                        onClick={(e) => handleActionClick(e, () => onImageClick(mediaUrls, index))}
                     >
                         <img src={url} alt={`media content ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" />
+                        {mediaUrls.length > 4 && index === 3 && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-2xl font-bold">
+                                +{mediaUrls.length - 4}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -173,7 +182,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                                 <MoreIcon />
                             </button>
                              <AnimatePresence>
-                                {isMenuOpen && <TweetMenu tweet={tweet} isOwnTweet={user.id === currentUser.id} onClose={() => setIsMenuOpen(false)} onEdit={() => onEdit(tweet)} onDelete={() => {}} onGrok={() => onGrok(tweet)} onOpenChat={() => onOpenChat(user)} onPinTweet={() => onPinTweet(tweet.id)} />}
+                                {isMenuOpen && <TweetMenu tweet={tweet} isOwnTweet={user.id === currentUser.id} onClose={() => setIsMenuOpen(false)} onEdit={() => onEdit(tweet)} onDelete={() => onDeleteTweet(tweet.id)} onGrok={() => onGrok(tweet)} onOpenChat={() => onOpenChat(user)} onPinTweet={() => onPinTweet(tweet.id)} />}
                             </AnimatePresence>
                         </div>
                     </div>
@@ -211,8 +220,8 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             <div className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ReplyIcon /></div>
                             <span className="text-xs">{tweet.replyCount > 0 ? tweet.replyCount : ''}</span>
                         </button>
-                        <button onClick={(e) => handleActionClick(e, () => {})} className="flex items-center gap-2 group">
-                            <div className="p-2 rounded-full group-hover:bg-green-500/10"><RetweetIcon /></div>
+                        <button onClick={(e) => handleActionClick(e, () => onRetweet(tweet.id))} className={`flex items-center gap-2 group ${isRetweeted ? 'text-green-500' : ''}`}>
+                            <div className="p-2 rounded-full group-hover:bg-green-500/10">{isRetweeted ? <RetweetFillIcon/> : <RetweetIcon />}</div>
                             <span className="text-xs">{tweet.retweetCount > 0 ? tweet.retweetCount : ''}</span>
                         </button>
                         <div className="relative">
@@ -242,7 +251,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             <button onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
                                 {isBookmarked ? <BookmarkFillIcon className="text-twitter-blue"/> : <BookmarkIcon />}
                             </button>
-                            <button onClick={(e) => handleActionClick(e, () => {})} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></button>
+                            <button onClick={(e) => handleActionClick(e, () => onQuote(tweet))} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></button>
                          </div>
                     </div>
                 </div>

@@ -9,19 +9,17 @@ interface StoryReelProps {
   onOpenCreator: () => void;
 }
 
-const CreateStoryCard: React.FC<{ user: User, onOpenCreator: () => void }> = ({ user, onOpenCreator }) => (
-    <div className="flex-shrink-0 w-28 h-48 flex flex-col items-center justify-center">
-        <div className="relative w-24 h-24 cursor-pointer group" onClick={onOpenCreator}>
-            <img 
-                src={user.avatarUrl} 
-                alt="Your Story"
-                className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:brightness-90"
-            />
-            <div className="absolute bottom-0 right-0 w-8 h-8 bg-twitter-blue rounded-full flex items-center justify-center text-white border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90">
+const CreateStoryCard: React.FC<{ onOpenCreator: () => void }> = ({ onOpenCreator }) => (
+    <div className="flex-shrink-0">
+        <div 
+            onClick={onOpenCreator}
+            className="w-28 h-48 rounded-xl bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover flex flex-col items-center justify-end p-2 text-center cursor-pointer group transition-all duration-300 hover:brightness-110"
+        >
+            <div className="w-12 h-12 bg-twitter-blue rounded-full flex items-center justify-center text-white border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg mb-2 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90">
                 <PlusIcon />
             </div>
+            <p className="text-sm font-bold">Add to Story</p>
         </div>
-        <p className="mt-2 text-sm font-semibold">Your Story</p>
     </div>
 );
 
@@ -66,18 +64,18 @@ const StoryReel: React.FC<StoryReelProps> = ({ userStories, currentUser, onStory
   return (
     <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
       <div className="flex space-x-3 overflow-x-auto pb-2 -mb-2 no-scrollbar">
-        {currentUserStory ? (
+        <CreateStoryCard onOpenCreator={onOpenCreator} />
+        {currentUserStory && (
             <UserStoryItem 
                 userStory={currentUserStory}
                 onClick={() => onStoryClick(userStories.findIndex(us => us.user.id === currentUser.id))}
                 isCurrentUser={true}
             />
-        ) : (
-            <CreateStoryCard user={currentUser} onOpenCreator={onOpenCreator} />
         )}
-
+        
         {userStories
             .filter(us => us.user.id !== currentUser.id)
+            .sort((a, b) => (a.hasUnseen === b.hasUnseen) ? 0 : a.hasUnseen ? -1 : 1)
             .map((userStory) => (
               <UserStoryItem
                 key={userStory.user.id}

@@ -319,10 +319,11 @@ export const mockCommunities: Community[] = [
 
 export const initialUserStories: UserStory[] = [
     {
-        user: mockUser, hasUnseen: false, stories: [
+        user: mockUser, hasUnseen: true, stories: [
             { id: 's-u1-1', mediaUrl: `https://picsum.photos/seed/s-u1-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z', likeCount: 150, isLiked: false, comments: [] },
             { id: 's-u1-2', mediaUrl: `http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4`, type: 'video', duration: 15, timestamp: '2024-07-24T13:00:00Z', likeCount: 300, isLiked: true, comments: [] },
-            { id: 's-u1-3', mediaUrl: `https://picsum.photos/seed/s-u1-3/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T14:00:00Z', likeCount: 200, isLiked: false, comments: [] }
+            { id: 's-u1-3', mediaUrl: `https://picsum.photos/seed/s-u1-3/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T14:00:00Z', likeCount: 200, isLiked: false, comments: [] },
+            { id: 's-u1-4', mediaUrl: `https://picsum.photos/seed/s-u1-4/400/700`, type: 'image', duration: 6, timestamp: '2024-07-24T15:00:00Z', likeCount: 250, isLiked: false, comments: [] },
         ]
     },
     {
@@ -332,13 +333,14 @@ export const initialUserStories: UserStory[] = [
         ]
     },
      {
-        user: otherUsers[1], hasUnseen: false, stories: [ // Seen story
+        user: otherUsers[1], hasUnseen: false, stories: [ 
             { id: 's-u3-1', mediaUrl: `https://picsum.photos/seed/s-u3-1/400/700`, type: 'image', duration: 6, timestamp: '2024-07-23T09:00:00Z', likeCount: 10, isLiked: false, comments: [] }
         ]
     },
     {
         user: otherUsers[2], hasUnseen: true, stories: [
-            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T15:00:00Z', likeCount: 150, isLiked: false, comments: [] }
+            { id: 's-u4-1', mediaUrl: `https://picsum.photos/seed/s-u4-1/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T15:00:00Z', likeCount: 150, isLiked: false, comments: [] },
+            { id: 's-u4-2', mediaUrl: `https://picsum.photos/seed/s-u4-2/400/700`, type: 'image', duration: 8, timestamp: '2024-07-24T15:05:00Z', likeCount: 180, isLiked: false, comments: [] },
         ]
     },
     {
@@ -348,11 +350,29 @@ export const initialUserStories: UserStory[] = [
             { id: 's-u5-3', mediaUrl: `https://picsum.photos/seed/s-u5-3/400/700`, type: 'image', duration: 6, timestamp: '2024-07-24T12:30:00Z', likeCount: 950, isLiked: false, comments: [] }
         ]
     },
-    ...otherUsers.slice(4).map((user, i): UserStory => ({ // Remaining users
-        user, hasUnseen: true, stories: [
-            { id: `s${i+6}`, mediaUrl: `https://picsum.photos/seed/s${i+6}/400/700`, type: 'image', duration: 5, timestamp: '2024-07-22T12:00:00Z', likeCount: 50 + i, isLiked: false, comments: [] }
+    {
+        user: otherUsers[4], hasUnseen: true, stories: [
+             { id: `s-u6-1`, mediaUrl: `https://picsum.photos/seed/s-u6-1/400/700`, type: 'image', duration: 5, timestamp: '2024-07-25T12:00:00Z', likeCount: 50, isLiked: false, comments: [] },
+             { id: `s-u6-2`, mediaUrl: `https://picsum.photos/seed/s-u6-2/400/700`, type: 'image', duration: 7, timestamp: '2024-07-25T12:10:00Z', likeCount: 65, isLiked: false, comments: [] },
         ]
-    }))
+    },
+    {
+        user: otherUsers[5], hasUnseen: true, stories: [
+             { id: `s-u7-1`, mediaUrl: `https://picsum.photos/seed/s-u7-1/400/700`, type: 'image', duration: 8, timestamp: '2024-07-25T13:00:00Z', likeCount: 120, isLiked: false, comments: [] },
+        ]
+    },
+    {
+        user: otherUsers[6], hasUnseen: true, stories: [
+             { id: `s-u8-1`, mediaUrl: `https://picsum.photos/seed/s-u8-1/400/700`, type: 'image', duration: 4, timestamp: '2024-07-25T14:00:00Z', likeCount: 90, isLiked: false, comments: [] },
+             { id: `s-u8-2`, mediaUrl: `https://picsum.photos/seed/s-u8-2/400/700`, type: 'image', duration: 6, timestamp: '2024-07-25T14:05:00Z', likeCount: 110, isLiked: false, comments: [] },
+             { id: `s-u8-3`, mediaUrl: `https://picsum.photos/seed/s-u8-3/400/700`, type: 'image', duration: 5, timestamp: '2024-07-25T14:10:00Z', likeCount: 100, isLiked: false, comments: [] },
+        ]
+    },
+    {
+        user: otherUsers[7], hasUnseen: true, stories: [
+             { id: `s-u9-1`, mediaUrl: `https://picsum.photos/seed/s-u9-1/400/700`, type: 'image', duration: 9, timestamp: '2024-07-25T15:00:00Z', likeCount: 200, isLiked: false, comments: [] },
+        ]
+    }
 ];
 
 export const mockHighlights: Highlight[] = [
@@ -383,14 +403,14 @@ export const mockReels: Reel[] = [
         caption: 'Having fun with CSS animations! #css #webdev', 
         likeCount: 1200, 
         dislikeCount: 15,
-        commentCount: 45, 
+        commentCount: 2, 
         shareCount: 120, 
         isLiked: false,
         isDisliked: false,
         isBookmarked: false,
         comments: [
-            { id: 'rc1-1', user: otherUsers[1], text: "So cool!", timestamp: "2h", likeCount: 15, isLiked: false },
-            { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h", likeCount: 8, isLiked: true },
+            { id: 'rc1-1', user: otherUsers[1], text: "So cool!", timestamp: "2h ago", likeCount: 15, isLiked: false },
+            { id: 'rc1-2', user: mockUser, text: "Love the colors!", timestamp: "1h ago", likeCount: 8, isLiked: true },
         ]
     },
     { 
@@ -400,13 +420,13 @@ export const mockReels: Reel[] = [
         caption: 'Building cool stuff with React! #frontend #development',
         likeCount: 2500,
         dislikeCount: 20,
-        commentCount: 88,
+        commentCount: 1,
         shareCount: 150,
         isLiked: true,
         isDisliked: false,
         isBookmarked: true,
         comments: [
-            { id: 'rc2-1', user: otherUsers[1], text: "This is awesome!", timestamp: "3h", likeCount: 22, isLiked: false },
+            { id: 'rc2-1', user: otherUsers[1], text: "This is awesome!", timestamp: "3h ago", likeCount: 22, isLiked: false },
         ]
     },
     { 
@@ -416,7 +436,7 @@ export const mockReels: Reel[] = [
         caption: 'A glimpse of the cosmos. #space #nasa',
         likeCount: 15000,
         dislikeCount: 100,
-        commentCount: 800,
+        commentCount: 0,
         shareCount: 2000,
         isLiked: false,
         isDisliked: false,

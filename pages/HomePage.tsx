@@ -12,13 +12,14 @@ interface HomePageProps {
   tweets: Tweet[];
   currentUser: User;
   onPostTweet: (tweet: Partial<Tweet>) => void;
-  onImageClick: (url: string) => void;
+  onImageClick: (urls: string[], index: number) => void;
   onViewProfile: (user: User) => void;
   onReply: (tweet: Tweet) => void;
   onToggleBookmark: (tweetId: string) => void;
   onVote: (tweetId: string, optionId: string) => void;
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
+  onDeleteTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
   userStories: UserStory[];
   onStoryClick: (userIndex: number) => void;
@@ -28,13 +29,14 @@ interface HomePageProps {
   onTranslateTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
+  onRetweet: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onPinTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, liveReactions } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -100,11 +102,13 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             onVote={onVote}
             onQuote={onQuote}
             onEdit={onEdit}
+            onDeleteTweet={onDeleteTweet}
             onGrok={onGrok}
             onTranslateTweet={onTranslateTweet}
             onPinTweet={onPinTweet}
             onOpenChat={onOpenChat}
             onLikeTweet={onLikeTweet}
+            onRetweet={onRetweet}
             liveReactions={liveReactions}
           />
         ))}

@@ -85,6 +85,7 @@ export interface Tweet {
   viewCount: number;
   isBookmarked?: boolean;
   isLiked?: boolean;
+  isRetweeted?: boolean;
   pinned?: boolean;
   mediaUrls?: string[];
   quotedTweet?: Tweet;
