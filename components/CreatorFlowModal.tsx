@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CloseIcon, ComposeIcon, StoryIcon, ReelsIcon, ChevronLeftIcon } from './Icon';
-import { Tweet, Story, Reel } from '../types';
+import { Tweet, Story, Reel, User } from '../types';
 import Composer from './Composer';
 import StoryCreator from './StoryCreator';
 import ReelCreator from './ReelCreator';
 
 interface CreatorFlowModalProps {
   initialMode?: 'select' | 'story' | 'reel' | 'post';
+  allUsers: User[];
   onClose: () => void;
   onPostTweet: (tweet: Partial<Tweet>) => void;
   onPostStory: (newStory: Omit<Story, 'id' | 'timestamp'>) => void;
@@ -36,7 +37,7 @@ const CreatorOptionButton: React.FC<{icon: React.ReactNode, title: string, descr
 );
 
 
-const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'select', onClose, onPostTweet, onPostStory, onPostReel }) => {
+const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'select', allUsers, onClose, onPostTweet, onPostStory, onPostReel }) => {
     const [mode, setMode] = useState<CreatorMode>(initialMode);
 
     const renderContent = () => {
@@ -44,7 +45,7 @@ const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'sele
             case 'post':
                 return <Composer onPostTweet={onPostTweet} />;
             case 'story':
-                return <StoryCreator onPostStory={onPostStory} />;
+                return <StoryCreator allUsers={allUsers} onPostStory={onPostStory} />;
             case 'reel':
                 return <ReelCreator onPostReel={onPostReel} />;
             case 'select':

@@ -2,10 +2,11 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, PanInfo } from 'framer-motion';
-import { Story, TextOverlay } from '../types';
+import { Story, TextOverlay, User } from '../types';
 import { PencilIcon, PhotoIcon } from './Icon';
 
 interface StoryCreatorProps {
+    allUsers: User[];
     onPostStory: (newStory: Omit<Story, 'id' | 'timestamp'>) => void;
 }
 

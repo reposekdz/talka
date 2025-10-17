@@ -13,6 +13,7 @@ interface SearchModalProps {
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
+  onFeatureTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
   onRetweet: (tweetId: string) => void;
@@ -23,7 +24,7 @@ interface SearchModalProps {
 type SearchResult = Tweet | User;
 
 const SearchModal: React.FC<SearchModalProps> = (props) => {
-  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions } = props;
+  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -78,6 +79,7 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
     onGrok,
     onTranslateTweet,
     onPinTweet,
+    onFeatureTweet,
     onOpenChat,
     onLikeTweet,
     onRetweet,

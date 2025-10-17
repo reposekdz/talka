@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserStory, Highlight, Story } from '../types';
+import { UserStory, Highlight, Story, User } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CloseIcon, PaperPlaneIcon, ShareIcon, MusicNoteIcon } from './Icon';
 import FloatingEmojis from './FloatingEmojis';
@@ -10,6 +10,7 @@ interface StoryViewerProps {
   onClose: () => void;
   showToast: (message: string) => void;
   isHighlight?: boolean;
+  allUsers: User[];
 }
 
 const MusicSticker: React.FC<{ music: { artist: string; title: string; } }> = ({ music }) => (

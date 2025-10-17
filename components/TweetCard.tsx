@@ -16,12 +16,14 @@ interface TweetMenuProps {
   onGrok: () => void;
   onOpenChat: () => void;
   onPinTweet: () => void;
+  onFeatureTweet: () => void;
 }
 
-const TweetMenu: React.FC<TweetMenuProps> = ({ tweet, isOwnTweet, onClose, onEdit, onDelete, onGrok, onOpenChat, onPinTweet }) => {
+const TweetMenu: React.FC<TweetMenuProps> = ({ tweet, isOwnTweet, onClose, onEdit, onDelete, onGrok, onOpenChat, onPinTweet, onFeatureTweet }) => {
   const menuItems = [
     ...(isOwnTweet ? [
       { text: tweet.pinned ? 'Unpin from profile' : 'Pin to your profile', icon: <PinIcon />, action: onPinTweet },
+      { text: tweet.isFeatured ? 'Un-feature from profile' : 'Feature on profile', icon: <SparklesIcon />, action: onFeatureTweet },
       { text: 'Edit Post', icon: <EditIcon />, action: onEdit },
       { text: 'Delete Post', icon: <TrashIcon />, action: onDelete, className: 'text-red-500' }
     ] : []),
@@ -38,7 +40,7 @@ const TweetMenu: React.FC<TweetMenuProps> = ({ tweet, isOwnTweet, onClose, onEdi
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="absolute top-8 right-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg w-48 border border-light-border dark:border-twitter-border z-50 origin-top-right"
+        className="absolute top-8 right-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg w-56 border border-light-border dark:border-twitter-border z-50 origin-top-right"
         onClick={(e) => e.stopPropagation()}
       >
         <ul>
@@ -71,6 +73,7 @@ interface TweetCardProps {
     onGrok: (tweet: Tweet) => void;
     onTranslateTweet: (tweetId: string) => void;
     onPinTweet: (tweetId: string) => void;
+    onFeatureTweet: (tweetId: string) => void;
     onOpenChat: (user: User) => void;
     onLikeTweet: (tweetId: string) => void;
     onRetweet: (tweetId: string) => void;
@@ -80,7 +83,7 @@ interface TweetCardProps {
 const TRUNCATE_LENGTH = 250;
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onGrok, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions } = props;
+    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions } = props;
     const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isRetweeted, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
@@ -182,7 +185,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                                 <MoreIcon />
                             </button>
                              <AnimatePresence>
-                                {isMenuOpen && <TweetMenu tweet={tweet} isOwnTweet={user.id === currentUser.id} onClose={() => setIsMenuOpen(false)} onEdit={() => onEdit(tweet)} onDelete={() => onDeleteTweet(tweet.id)} onGrok={() => onGrok(tweet)} onOpenChat={() => onOpenChat(user)} onPinTweet={() => onPinTweet(tweet.id)} />}
+                                {isMenuOpen && <TweetMenu tweet={tweet} isOwnTweet={user.id === currentUser.id} onClose={() => setIsMenuOpen(false)} onEdit={() => onEdit(tweet)} onDelete={() => onDeleteTweet(tweet.id)} onGrok={() => onGrok(tweet)} onOpenChat={() => onOpenChat(user)} onPinTweet={() => onPinTweet(tweet.id)} onFeatureTweet={() => onFeatureTweet(tweet.id)} />}
                             </AnimatePresence>
                         </div>
                     </div>
@@ -249,7 +252,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                                 <TranslateIcon />
                             </motion.button>
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
-                                {isBookmarked ? <BookmarkFillIcon className="text-twitter-blue"/> : <BookmarkIcon />}
+                                {isBookmarked ? <BookmarkFillIcon /> : <BookmarkIcon />}
                             </motion.button>
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => onQuote(tweet))} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></motion.button>
                          </div>

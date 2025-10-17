@@ -1,5 +1,4 @@
 
-
 export enum Page {
     Home = 'Home',
     Explore = 'Explore',
@@ -87,6 +86,7 @@ export interface Tweet {
   isLiked?: boolean;
   isRetweeted?: boolean;
   pinned?: boolean;
+  isFeatured?: boolean;
   mediaUrls?: string[];
   quotedTweet?: Tweet;
   poll?: Poll;
@@ -119,6 +119,29 @@ export interface TextOverlay {
     position: { x: number; y: number };
 }
 
+export interface StoryPoll {
+    question: string;
+    options: [{ text: string; votes: number }, { text: string; votes: number }];
+    position: { x: number; y: number };
+    scale: number;
+    rotation: number;
+}
+
+export interface StoryMention {
+    user: User;
+    position: { x: number; y: number };
+    scale: number;
+    rotation: number;
+}
+
+export interface StoryLocation {
+    name: string;
+    position: { x: number; y: number };
+    scale: number;
+    rotation: number;
+}
+
+
 export interface Story {
     id: string;
     mediaUrl: string;
@@ -132,6 +155,9 @@ export interface Story {
     music?: { artist: string; title: string; };
     stickers?: { url: string; x: number; y: number; scale: number; rotation: number; }[];
     drawingOverlayUrl?: string;
+    poll?: StoryPoll;
+    mentions?: StoryMention[];
+    location?: StoryLocation;
 }
 
 export interface Notification {

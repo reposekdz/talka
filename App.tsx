@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -44,6 +45,7 @@ import UserListModal from './components/UserListModal';
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment } from './types';
 import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations as initialMockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights as initialMockHighlights, mockReels as initialMockReels } from './data/mockData';
 import { AnimatePresence } from 'framer-motion';
+// FIX: The `GoogleGenerativeAI` class is deprecated. It has been replaced with `GoogleGenAI`.
 import { GoogleGenAI } from '@google/genai';
 
 type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string };
@@ -139,6 +141,7 @@ const App: React.FC = () => {
         setTweets(prev => [newTweet, ...prev]);
         showToast("Your Post was sent.");
         setIsCreatorOpen(false);
+        setCurrentPage(Page.Home);
     };
 
      const handlePostStory = (newStoryData: Omit<Story, 'id' | 'timestamp'>) => {
@@ -162,6 +165,7 @@ const App: React.FC = () => {
 
         showToast("Your story was posted.");
         setIsCreatorOpen(false);
+        setCurrentPage(Page.Home);
     };
 
     const handlePostReel = (videoUrl: string, caption: string) => {
@@ -182,6 +186,7 @@ const App: React.FC = () => {
         setReels(prev => [newReel, ...prev]);
         showToast("Your reel was shared.");
         setIsCreatorOpen(false);
+        setCurrentPage(Page.Reels);
     };
     
     const handlePostReelComment = (reelId: string, text: string, replyTo?: ReelComment) => {
@@ -321,6 +326,24 @@ const App: React.FC = () => {
             })
         );
         showToast(isCurrentlyPinned ? 'Unpinned from profile' : 'Pinned to your profile');
+    };
+    
+    const handleFeatureTweet = (tweetIdToFeature: string) => {
+        const isCurrentlyFeatured = tweets.find(t => t.id === tweetIdToFeature)?.isFeatured;
+
+        setTweets(prevTweets => 
+            prevTweets.map(tweet => {
+                if (tweet.id === tweetIdToFeature) {
+                    return { ...tweet, isFeatured: !isCurrentlyFeatured };
+                }
+                // Ensure only one tweet is featured at a time
+                if (tweet.isFeatured && !isCurrentlyFeatured) {
+                    return { ...tweet, isFeatured: false };
+                }
+                return tweet;
+            })
+        );
+        showToast(isCurrentlyFeatured ? 'Un-featured from profile' : 'Featured on your profile');
     };
 
     const handleRemoveFollower = (followerIdToRemove: string) => {
@@ -529,6 +552,7 @@ const App: React.FC = () => {
             onEdit: setEditingTweet,
             onDeleteTweet: handleDeleteTweet,
             onPinTweet: handlePinTweet,
+            onFeatureTweet: handleFeatureTweet,
             onGrok: setGrokTweet,
             onTranslateTweet: handleTranslateTweet,
             onOpenChat: handleOpenChat,
@@ -541,16 +565,17 @@ const App: React.FC = () => {
             case Page.Home:
                 return <HomePage 
                     tweets={tweets}
+                    otherUsers={otherUsers}
                     userStories={userStories}
                     onStoryClick={(index) => setStoryViewerState({ stories: userStories, initialUserIndex: index })}
                     onOpenCreator={() => {setIsCreatorOpen(true); setCreatorMode('story')}}
                     onJoinSpace={setActiveSpace}
                     onPostTweet={handlePostTweet}
+                    onFollowToggle={handleFollowToggle}
                     {...commonTweetCardProps}
                 />;
             case Page.Explore:
                 return <ExplorePage 
-                    // FIX: Updated the 'onImageClick' prop for ExplorePage to correctly handle a single URL. The new handler finds the tweet associated with the URL and opens the lightbox with all images from that tweet, resolving the type mismatch error.
                     onImageClick={(url) => {
                         const tweet = tweets.find(t => t.mediaUrls?.includes(url));
                         if (tweet?.mediaUrls) {
@@ -605,11 +630,13 @@ const App: React.FC = () => {
             default:
                 return <HomePage 
                     tweets={tweets}
+                    otherUsers={otherUsers}
                     userStories={userStories}
                     onStoryClick={(index) => setStoryViewerState({ stories: userStories, initialUserIndex: index })}
                     onOpenCreator={() => {setIsCreatorOpen(true); setCreatorMode('story')}}
                     onJoinSpace={setActiveSpace}
                     onPostTweet={handlePostTweet}
+                    onFollowToggle={handleFollowToggle}
                     {...commonTweetCardProps}
                 />;
         }
@@ -639,7 +666,7 @@ const App: React.FC = () => {
                     activeChatCount={allKnownConversations.reduce((sum, chat) => sum + chat.unreadCount, 0)}
                     onOpenCreator={(mode) => { setIsCreatorOpen(true); setCreatorMode(mode); }}
                 />
-                <main className="flex-1 min-w-0 w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border">
+                <main className="flex-1 min-w-0 w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border pb-16 sm:pb-0">
                     {mainContent()}
                 </main>
                 <RightSidebar 
@@ -669,16 +696,16 @@ const App: React.FC = () => {
             
             <AnimatePresence>
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={(images, startIndex) => {setIsSearchModalOpen(false); setLightboxState({images, startIndex})}} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} onRetweet={handleRetweet} onDeleteTweet={handleDeleteTweet} liveReactions={liveReactions} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={(images, startIndex) => {setIsSearchModalOpen(false); setLightboxState({images, startIndex})}} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onFeatureTweet={handleFeatureTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} onRetweet={handleRetweet} onDeleteTweet={handleDeleteTweet} liveReactions={liveReactions} />}
                 {lightboxState && <Lightbox images={lightboxState.images} startIndex={lightboxState.startIndex} onClose={() => setLightboxState(null)} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={(reply) => {handlePostTweet({ content: reply, isBookmarked: false }); setReplyingToTweet(null); }} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={(tweet) => {handlePostTweet(tweet); setQuotingTweet(null);}} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={(id, content) => {setTweets(prev => prev.map(t => t.id === id ? {...t, content, isEdited: true} : t)); setEditingTweet(null); showToast('Your Post has been updated.'); }} />}
-                {storyViewerState && <StoryViewer {...storyViewerState} onClose={() => setStoryViewerState(null)} showToast={showToast} />}
+                {storyViewerState && <StoryViewer {...storyViewerState} allUsers={allUsers} onClose={() => setStoryViewerState(null)} showToast={showToast} />}
                 {viewingHighlight && <HighlightViewerModal highlight={viewingHighlight} onClose={() => setViewingHighlight(null)} />}
                 {userListModal && <UserListModal {...userListModal} allUsers={allUsers} currentUser={currentUser} onClose={() => setUserListModal(null)} onFollowToggle={handleFollowToggle} onViewProfile={(user) => {setUserListModal(null); setCurrentPage(Page.Profile)}} onRemoveFollower={handleRemoveFollower} />}
-                {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
-                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} onRetweet={handleRetweet} onDeleteTweet={handleDeleteTweet} liveReactions={liveReactions} />}
+                {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} allUsers={allUsers} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
+                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} onRetweet={handleRetweet} onDeleteTweet={handleDeleteTweet} liveReactions={liveReactions} onFeatureTweet={handleFeatureTweet} />}
                 {isCreateHighlightModalOpen && <CreateHighlightModal onClose={() => setIsCreateHighlightModalOpen(false)} onCreate={handleCreateHighlight} userStories={userStories.find(us => us.user.id === currentUser.id)?.stories || []} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isEditProfileOpen && <EditProfileModal user={currentUser} onClose={() => setIsEditProfileOpen(false)} onSave={(updatedUser) => { setCurrentUser(updatedUser); setIsEditProfileOpen(false); showToast('Profile updated!'); }} />}

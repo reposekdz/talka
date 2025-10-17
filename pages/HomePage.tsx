@@ -7,10 +7,12 @@ import StoryReel from '../components/StoryReel';
 import SpacesCard from '../components/SpacesCard';
 import TweetSkeleton from '../components/TweetSkeleton';
 import { motion } from 'framer-motion';
+import FollowingFeed from '../components/FollowingFeed';
 
 interface HomePageProps {
   tweets: Tweet[];
   currentUser: User;
+  otherUsers: User[];
   onPostTweet: (tweet: Partial<Tweet>) => void;
   onImageClick: (urls: string[], index: number) => void;
   onViewProfile: (user: User) => void;
@@ -21,6 +23,7 @@ interface HomePageProps {
   onEdit: (tweet: Tweet) => void;
   onDeleteTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
+  onFeatureTweet: (tweetId: string) => void;
   userStories: UserStory[];
   onStoryClick: (userIndex: number) => void;
   onOpenCreator: () => void;
@@ -30,23 +33,22 @@ interface HomePageProps {
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
   onRetweet: (tweetId: string) => void;
+  onFollowToggle: (userId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, onFeatureTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, otherUsers, onFollowToggle } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const displayedTweets = useMemo(() => {
-    if (activeTab === 'Following') {
-      return tweets.filter(tweet => currentUser.followingIds.includes(tweet.user.id) || tweet.user.id === currentUser.id);
-    }
-    return tweets; // "For you" tab
-  }, [activeTab, tweets, currentUser]);
+    // This is now only for the "For you" tab
+    return tweets;
+  }, [tweets]);
 
   const visibleTweets = displayedTweets.slice(0, visibleCount);
   const hasMore = visibleCount < displayedTweets.length;
@@ -80,20 +82,60 @@ const HomePage: React.FC<HomePageProps> = (props) => {
           ))}
         </div>
       </div>
-      <div className="hidden sm:block">
-        <Composer onPostTweet={onPostTweet} />
-      </div>
 
-      <StoryReel userStories={userStories} currentUser={currentUser} onStoryClick={onStoryClick} onOpenCreator={onOpenCreator} />
-      
-      <SpacesCard onJoinSpace={onJoinSpace} />
+      {activeTab === 'For you' ? (
+          <>
+            <div className="hidden sm:block">
+              <Composer onPostTweet={onPostTweet} />
+            </div>
 
-      <div>
-        {visibleTweets.map(tweet => (
-          <TweetCard
-            key={tweet.id}
-            tweet={tweet}
+            <StoryReel userStories={userStories} currentUser={currentUser} onStoryClick={onStoryClick} onOpenCreator={onOpenCreator} />
+            
+            <SpacesCard onJoinSpace={onJoinSpace} />
+
+            <div>
+              {visibleTweets.map(tweet => (
+                <TweetCard
+                  key={tweet.id}
+                  tweet={tweet}
+                  currentUser={currentUser}
+                  onImageClick={onImageClick}
+                  onViewProfile={onViewProfile}
+                  onReply={onReply}
+                  onToggleBookmark={onToggleBookmark}
+                  onVote={onVote}
+                  onQuote={onQuote}
+                  onEdit={onEdit}
+                  onDeleteTweet={onDeleteTweet}
+                  onGrok={onGrok}
+                  onTranslateTweet={onTranslateTweet}
+                  onPinTweet={onPinTweet}
+                  onFeatureTweet={onFeatureTweet}
+                  onOpenChat={onOpenChat}
+                  onLikeTweet={onLikeTweet}
+                  onRetweet={onRetweet}
+                  liveReactions={liveReactions}
+                />
+              ))}
+              {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
+              {hasMore && !isLoadingMore && (
+                  <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border text-center">
+                      <button
+                          onClick={loadMore}
+                          className="text-twitter-blue hover:underline font-semibold"
+                      >
+                          Show more
+                      </button>
+                  </div>
+              )}
+            </div>
+          </>
+      ) : (
+          <FollowingFeed 
+            tweets={tweets}
             currentUser={currentUser}
+            otherUsers={otherUsers}
+            onFollowToggle={onFollowToggle}
             onImageClick={onImageClick}
             onViewProfile={onViewProfile}
             onReply={onReply}
@@ -105,24 +147,13 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             onGrok={onGrok}
             onTranslateTweet={onTranslateTweet}
             onPinTweet={onPinTweet}
+            onFeatureTweet={onFeatureTweet}
             onOpenChat={onOpenChat}
             onLikeTweet={onLikeTweet}
             onRetweet={onRetweet}
             liveReactions={liveReactions}
           />
-        ))}
-        {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}
-        {hasMore && !isLoadingMore && (
-            <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border text-center">
-                <button
-                    onClick={loadMore}
-                    className="text-twitter-blue hover:underline font-semibold"
-                >
-                    Show more
-                </button>
-            </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

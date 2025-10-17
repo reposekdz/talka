@@ -19,6 +19,7 @@ interface ProfilePageProps {
   onTranslateTweet: (tweetId: string) => void;
   onGrok: (tweet: Tweet) => void;
   onPinTweet: (tweetId: string) => void;
+  onFeatureTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
   onRetweet: (tweetId: string) => void;
@@ -33,7 +34,7 @@ interface ProfilePageProps {
 const TWEETS_PER_PAGE = 10;
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions } = props;
+  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions, onFeatureTweet } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -61,6 +62,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
     onTranslateTweet,
     onGrok,
     onPinTweet,
+    onFeatureTweet,
     onOpenChat,
     onLikeTweet,
     liveReactions,

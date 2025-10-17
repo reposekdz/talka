@@ -12,6 +12,7 @@ interface GrokAnalysisModalProps {
   onClose: () => void;
   onTranslateTweet: (tweetId: string) => void;
   onPinTweet: (tweetId: string) => void;
+  onFeatureTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
   onLikeTweet: (tweetId: string) => void;
   onRetweet: (tweetId: string) => void;
@@ -19,7 +20,7 @@ interface GrokAnalysisModalProps {
   liveReactions: { id: number; emoji: string; tweetId: string }[];
 }
 
-const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions }) => {
+const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions }) => {
     const [analysis, setAnalysis] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -90,6 +91,7 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, o
                         onGrok={() => {}} 
                         onTranslateTweet={onTranslateTweet} 
                         onPinTweet={onPinTweet} 
+                        onFeatureTweet={onFeatureTweet}
                         onOpenChat={onOpenChat} 
                         onLikeTweet={onLikeTweet} 
                         onRetweet={onRetweet}
