@@ -2,22 +2,25 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CloseIcon, ComposeIcon, StoryIcon, ReelsIcon, ChevronLeftIcon } from './Icon';
-import { Tweet, Story, Reel, User } from '../types';
+// FIX: Rename ComposeIcon to CreateIcon to match updated export.
+import { CloseIcon, CreateIcon, StoryIcon, ReelsIcon, ChevronLeftIcon, MomentIcon } from './Icon';
+import { Tweet, Story, Reel, User, Moment } from '../types';
 import Composer from './Composer';
 import StoryCreator from './StoryCreator';
 import ReelCreator from './ReelCreator';
+import MomentCreator from './MomentCreator';
 
 interface CreatorFlowModalProps {
-  initialMode?: 'select' | 'story' | 'reel' | 'post';
+  initialMode?: 'select' | 'story' | 'reel' | 'post' | 'moment';
   allUsers: User[];
   onClose: () => void;
   onPostTweet: (tweet: Partial<Tweet>) => void;
   onPostStory: (newStory: Omit<Story, 'id' | 'timestamp'>) => void;
   onPostReel: (videoUrl: string, caption: string) => void;
+  onPostMoment: (content: Moment['content']) => void;
 }
 
-type CreatorMode = 'select' | 'post' | 'story' | 'reel';
+type CreatorMode = 'select' | 'post' | 'story' | 'reel' | 'moment';
 
 const CreatorOptionButton: React.FC<{icon: React.ReactNode, title: string, description: string, onClick: () => void, gradient: string}> = ({ icon, title, description, onClick, gradient }) => (
     <motion.button
@@ -37,7 +40,7 @@ const CreatorOptionButton: React.FC<{icon: React.ReactNode, title: string, descr
 );
 
 
-const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'select', allUsers, onClose, onPostTweet, onPostStory, onPostReel }) => {
+const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'select', allUsers, onClose, onPostTweet, onPostStory, onPostReel, onPostMoment }) => {
     const [mode, setMode] = useState<CreatorMode>(initialMode);
 
     const renderContent = () => {
@@ -48,15 +51,18 @@ const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'sele
                 return <StoryCreator allUsers={allUsers} onPostStory={onPostStory} />;
             case 'reel':
                 return <ReelCreator onPostReel={onPostReel} />;
+            case 'moment':
+                return <MomentCreator onPostMoment={onPostMoment} />;
             case 'select':
             default:
                 return (
                     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                         <h2 className="text-3xl font-extrabold mb-8 text-light-text dark:text-dim-text">What would you like to create?</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-3xl">
-                             <CreatorOptionButton icon={<ComposeIcon className="w-8 h-8"/>} title="Post" description="Share a quick thought, photo, or voice note." onClick={() => setMode('post')} gradient="from-blue-400 to-blue-600" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+                             <CreatorOptionButton icon={<CreateIcon className="w-8 h-8"/>} title="Post" description="Share a quick thought, photo, or voice note." onClick={() => setMode('post')} gradient="from-blue-400 to-blue-600" />
                              <CreatorOptionButton icon={<StoryIcon className="w-8 h-8"/>} title="Story" description="Share a photo or video that disappears in 24 hours." onClick={() => setMode('story')} gradient="from-purple-400 to-pink-500" />
                              <CreatorOptionButton icon={<ReelsIcon className="w-8 h-8"/>} title="Reel" description="Create and share short, entertaining videos." onClick={() => setMode('reel')} gradient="from-rose-400 to-orange-500" />
+                             <CreatorOptionButton icon={<MomentIcon className="w-8 h-8"/>} title="Moment" description="A lightweight, expiring text or image post." onClick={() => setMode('moment')} gradient="from-amber-400 to-yellow-600" />
                         </div>
                     </div>
                 );

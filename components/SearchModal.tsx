@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
 import TweetCard from './TweetCard';
 import WhoToFollow from './WhoToFollow';
-import { Tweet, User } from '../types';
+import { Tweet, User, AppSettings } from '../types';
 import { SearchIcon } from '../components/Icon';
 
 interface SearchModalProps {
@@ -19,12 +19,13 @@ interface SearchModalProps {
   onRetweet: (tweetId: string) => void;
   onDeleteTweet: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
+  appSettings: AppSettings;
 }
 
 type SearchResult = Tweet | User;
 
 const SearchModal: React.FC<SearchModalProps> = (props) => {
-  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions } = props;
+  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions, appSettings } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -85,6 +86,7 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
     onRetweet,
     onDeleteTweet,
     liveReactions,
+    appSettings,
   };
 
   return (

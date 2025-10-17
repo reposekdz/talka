@@ -1,6 +1,6 @@
-// FIX: Import useEffect from react.
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { Tweet, User, UserStory, Space } from '../types';
+import { Tweet, User, UserStory, Space, Moment } from '../types';
 import Composer from '../components/Composer';
 import TweetCard from '../components/TweetCard';
 import StoryReel from '../components/StoryReel';
@@ -8,9 +8,11 @@ import SpacesCard from '../components/SpacesCard';
 import TweetSkeleton from '../components/TweetSkeleton';
 import { motion } from 'framer-motion';
 import FollowingFeed from '../components/FollowingFeed';
+import MomentsReel from '../components/MomentsReel';
 
 interface HomePageProps {
   tweets: Tweet[];
+  moments: Moment[];
   currentUser: User;
   otherUsers: User[];
   onPostTweet: (tweet: Partial<Tweet>) => void;
@@ -26,7 +28,7 @@ interface HomePageProps {
   onFeatureTweet: (tweetId: string) => void;
   userStories: UserStory[];
   onStoryClick: (userIndex: number) => void;
-  onOpenCreator: () => void;
+  onOpenCreator: (mode: 'select' | 'story' | 'reel' | 'post' | 'moment') => void;
   onJoinSpace: (space: Space) => void;
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
@@ -40,13 +42,12 @@ interface HomePageProps {
 const TWEETS_PER_PAGE = 10;
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, onFeatureTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, otherUsers, onFollowToggle } = props;
+  const { tweets, moments, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onPinTweet, onFeatureTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, otherUsers, onFollowToggle } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const displayedTweets = useMemo(() => {
-    // This is now only for the "For you" tab
     return tweets;
   }, [tweets]);
 
@@ -61,7 +62,6 @@ const HomePage: React.FC<HomePageProps> = (props) => {
     }, 1000); // Simulate network delay
   };
 
-  // Reset visible count when tab changes
   useEffect(() => {
     setVisibleCount(TWEETS_PER_PAGE);
   }, [activeTab]);
@@ -89,7 +89,8 @@ const HomePage: React.FC<HomePageProps> = (props) => {
               <Composer onPostTweet={onPostTweet} />
             </div>
 
-            <StoryReel userStories={userStories} currentUser={currentUser} onStoryClick={onStoryClick} onOpenCreator={onOpenCreator} />
+            <MomentsReel moments={moments} currentUser={currentUser} onOpenCreator={() => onOpenCreator('moment')} />
+            <StoryReel userStories={userStories} currentUser={currentUser} onStoryClick={onStoryClick} onOpenCreator={() => onOpenCreator('story')} />
             
             <SpacesCard onJoinSpace={onJoinSpace} />
 

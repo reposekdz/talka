@@ -1,4 +1,4 @@
-import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight } from '../types';
+import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight, Moment } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
@@ -14,18 +14,19 @@ export const mockUser: User = {
   verified: true,
   followingIds: ['u2', 'u4', 'u5', 'u6', 'u7'],
   followerIds: ['u2', 'u3', 'u5', 'u8', 'u6'],
+  likedTweetIds: ['t2', 't-nasa-1'],
   isOnline: true,
 };
 
 export const otherUsers: User[] = [
-  { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'A utility-first CSS framework for rapid UI development.', followingIds: ['u1'], followerIds: ['u1'], isOnline: true },
-  { id: 'u3', username: 'vercel', displayName: 'Vercel', avatarUrl: 'https://picsum.photos/seed/u3/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Develop. Preview. Ship.', followingIds: ['u1'], followerIds: [], isOnline: false },
-  { id: 'u4', username: 'elonmusk', displayName: 'Elon Musk', avatarUrl: 'https://picsum.photos/seed/u4/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'Mars & Cars', followingIds: [], followerIds: ['u1'], isOnline: true },
-  { id: 'u5', username: 'nasa', displayName: 'NASA', avatarUrl: 'https://picsum.photos/seed/u5/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Exploring the universe and our home planet.', followingIds: ['u1'], followerIds: ['u1'], isOnline: true },
-  { id: 'u6', username: 'natgeo', displayName: 'National Geographic', avatarUrl: 'https://picsum.photos/seed/u6/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Experience the world through the eyes of our photographers, explorers, and filmmakers.', followingIds: ['u1'], followerIds: ['u1'], isOnline: false },
-  { id: 'u7', username: 'figma', displayName: 'Figma', avatarUrl: 'https://picsum.photos/seed/u7/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'The collaborative interface design tool.', followingIds: ['u1'], followerIds: [], isOnline: true },
-  { id: 'u8', username: 'codepen', displayName: 'CodePen', avatarUrl: 'https://picsum.photos/seed/u8/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'The best place to build, test, and discover front-end code.', followingIds: [], followerIds: ['u1'], isOnline: true },
-  { id: 'ai-assistant', username: 'TalkaAI', displayName: 'Talka AI', avatarUrl: 'https://picsum.photos/seed/ai/200/200', followingCount: 0, followerCount: 0, verified: true, bio: 'Your helpful AI assistant.', followingIds: [], followerIds: [], isOnline: true },
+  { id: 'u2', username: 'tailwindcss', displayName: 'Tailwind CSS', avatarUrl: 'https://picsum.photos/seed/u2/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'A utility-first CSS framework for rapid UI development.', followingIds: ['u1'], followerIds: ['u1'], likedTweetIds: ['t1'], isOnline: true },
+  { id: 'u3', username: 'vercel', displayName: 'Vercel', avatarUrl: 'https://picsum.photos/seed/u3/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'Develop. Preview. Ship.', followingIds: ['u1'], followerIds: [], likedTweetIds: [], isOnline: false },
+  { id: 'u4', username: 'elonmusk', displayName: 'Elon Musk', avatarUrl: 'https://picsum.photos/seed/u4/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'Mars & Cars', followingIds: [], followerIds: ['u1'], likedTweetIds: ['t-nasa-1'], isOnline: true },
+  { id: 'u5', username: 'nasa', displayName: 'NASA', avatarUrl: 'https://picsum.photos/seed/u5/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Exploring the universe and our home planet.', followingIds: ['u1'], followerIds: ['u1'], likedTweetIds: [], isOnline: true },
+  { id: 'u6', username: 'natgeo', displayName: 'National Geographic', avatarUrl: 'https://picsum.photos/seed/u6/200/200', followingCount: 1, followerCount: 1, verified: true, bio: 'Experience the world through the eyes of our photographers, explorers, and filmmakers.', followingIds: ['u1'], followerIds: ['u1'], likedTweetIds: [], isOnline: false },
+  { id: 'u7', username: 'figma', displayName: 'Figma', avatarUrl: 'https://picsum.photos/seed/u7/200/200', followingCount: 1, followerCount: 0, verified: true, bio: 'The collaborative interface design tool.', followingIds: ['u1'], followerIds: [], likedTweetIds: [], isOnline: true },
+  { id: 'u8', username: 'codepen', displayName: 'CodePen', avatarUrl: 'https://picsum.photos/seed/u8/200/200', followingCount: 0, followerCount: 1, verified: true, bio: 'The best place to build, test, and discover front-end code.', followingIds: [], followerIds: ['u1'], likedTweetIds: [], isOnline: true },
+  { id: 'ai-assistant', username: 'TalkaAI', displayName: 'Talka AI', avatarUrl: 'https://picsum.photos/seed/ai/200/200', followingCount: 0, followerCount: 0, verified: true, bio: 'Your helpful AI assistant.', followingIds: [], followerIds: [], likedTweetIds: [], isOnline: true },
 ];
 
 export const baseTweets: Tweet[] = [
@@ -470,4 +471,34 @@ export const mockStickers = [
     'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWVmY2Zud3hpNXBwZG10eWVscjB0anVqM3Y0ZHR2dGcwYmV2b3d1eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/J2bA_2t2l3mYvYmKik/giphy.gif',
     'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3R6ZHNkNWdoZ3J6NWI0eDg5dGRpYmJheTZsd3N1aDQ2MnJpYmcxMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/LpDmM2A032A0EEbhd7/giphy.gif',
     'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzh0NWd4d3JocjFycGU1bGt0cjVrd2Y5OTY4aW04ajI1Zm16d2RkbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/5GoVLqeAOo6PK/giphy.gif'
+];
+
+export const mockMoments: Moment[] = [
+    {
+        id: 'm1',
+        user: otherUsers[0],
+        content: {
+            text: 'Just shipped a new feature! 🚀',
+            background: 'linear-gradient(to top right, #3b82f6, #6366f1)',
+        },
+        timestamp: '2024-07-25T10:00:00Z',
+    },
+    {
+        id: 'm2',
+        user: otherUsers[4],
+        content: {
+            text: 'Golden hour at the cape.',
+            imageUrl: 'https://picsum.photos/seed/moment2/400/600',
+        },
+        timestamp: '2024-07-25T09:30:00Z',
+    },
+    {
+        id: 'm3',
+        user: otherUsers[6],
+        content: {
+            text: 'Design system meeting was a success!',
+            background: 'linear-gradient(to top right, #a855f7, #ec4899)',
+        },
+        timestamp: '2024-07-25T08:00:00Z',
+    },
 ];

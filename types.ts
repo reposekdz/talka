@@ -56,6 +56,7 @@ export interface User {
   verified?: boolean;
   followingIds: string[];
   followerIds: string[];
+  likedTweetIds: string[];
   isOnline: boolean;
 }
 
@@ -159,6 +160,18 @@ export interface Story {
     mentions?: StoryMention[];
     location?: StoryLocation;
 }
+
+export interface Moment {
+    id: string;
+    user: User;
+    content: {
+        text: string;
+        background?: string; // For text-only moments with gradient
+        imageUrl?: string; // For image-based moments
+    };
+    timestamp: string;
+}
+
 
 export interface Notification {
   id: string;

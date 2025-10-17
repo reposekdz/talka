@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tweet, User } from '../types';
+import { Tweet, User, AppSettings } from '../types';
 import { CloseIcon, SparklesIcon } from './Icon';
 import TweetCard from './TweetCard';
 import { mockUser } from '../data/mockData';
@@ -18,9 +18,10 @@ interface GrokAnalysisModalProps {
   onRetweet: (tweetId: string) => void;
   onDeleteTweet: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
+  appSettings: AppSettings;
 }
 
-const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions }) => {
+const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions, appSettings }) => {
     const [analysis, setAnalysis] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -96,7 +97,8 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, o
                         onLikeTweet={onLikeTweet} 
                         onRetweet={onRetweet}
                         onDeleteTweet={onDeleteTweet}
-                        liveReactions={liveReactions} 
+                        liveReactions={liveReactions}
+                        appSettings={appSettings}
                     />
                     <div className="p-4">
                         {isLoading && <p>Analyzing...</p>}
