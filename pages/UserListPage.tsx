@@ -12,9 +12,10 @@ interface UserListPageProps {
     onBack: () => void;
     onFollowToggle: (userId: string) => void;
     onViewProfile: (user: User) => void;
+    onRemoveFollower: (userId: string) => void;
 }
 
-const UserListPage: React.FC<UserListPageProps> = ({ user, listType, allUsers, currentUser, onBack, onFollowToggle, onViewProfile }) => {
+const UserListPage: React.FC<UserListPageProps> = ({ user, listType, allUsers, currentUser, onBack, onFollowToggle, onViewProfile, onRemoveFollower }) => {
     const [activeTab, setActiveTab] = useState<'followers' | 'following'>(listType);
 
     const userList = useMemo(() => {
@@ -55,6 +56,8 @@ const UserListPage: React.FC<UserListPageProps> = ({ user, listType, allUsers, c
                             currentUser={currentUser}
                             onFollowToggle={onFollowToggle}
                             onViewProfile={onViewProfile}
+                            isFollowerOfCurrentUser={activeTab === 'followers' && user.id === currentUser.id}
+                            onRemoveFollower={onRemoveFollower}
                         />
                     ))
                 ) : (

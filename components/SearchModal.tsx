@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers, mockUser } from '../data/mockData';
@@ -14,12 +12,13 @@ interface SearchModalProps {
   onViewProfile: (user: User) => void;
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
+  onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
 }
 
 type SearchResult = Tweet | User;
 
-const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onOpenChat }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onOpenChat }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -131,6 +130,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, onImageClick, onView
                     liveReactions={[]}
                     onGrok={onGrok}
                     onTranslateTweet={onTranslateTweet}
+                    onPinTweet={onPinTweet}
                     onOpenChat={onOpenChat}
                     />;
                 } else {

@@ -18,6 +18,7 @@ interface HomePageProps {
   onVote: (tweetId: string, optionId: string) => void;
   onQuote: (tweet: Tweet) => void;
   onEdit: (tweet: Tweet) => void;
+  onPinTweet: (tweetId: string) => void;
   userStories: UserStory[];
   onStoryClick: (userIndex: number) => void;
   onOpenCreator: () => void;
@@ -30,7 +31,7 @@ interface HomePageProps {
 const TWEETS_PER_PAGE = 10;
 
 const HomePage: React.FC<HomePageProps> = (props) => {
-  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat } = props;
+  const { tweets, currentUser, onPostTweet, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onPinTweet, userStories, onStoryClick, onOpenCreator, onJoinSpace, onGrok, onTranslateTweet, onOpenChat } = props;
   const [activeTab, setActiveTab] = useState('For you');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -86,6 +87,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             onEdit={onEdit}
             onGrok={onGrok}
             onTranslateTweet={onTranslateTweet}
+            onPinTweet={onPinTweet}
             onOpenChat={onOpenChat}
             liveReactions={[]}
           />

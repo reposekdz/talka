@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tweet, User } from '../types';
@@ -13,10 +11,11 @@ interface GrokAnalysisModalProps {
   tweet: Tweet;
   onClose: () => void;
   onTranslateTweet: (tweetId: string) => void;
+  onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
 }
 
-const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onOpenChat }) => {
+const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, onTranslateTweet, onPinTweet, onOpenChat }) => {
     const [analysis, setAnalysis] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -74,7 +73,7 @@ const GrokAnalysisModal: React.FC<GrokAnalysisModalProps> = ({ tweet, onClose, o
                     <div className="w-10"></div>
                 </header>
                 <div className="flex-1 overflow-y-auto">
-                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} liveReactions={[]} onTranslateTweet={onTranslateTweet} onOpenChat={onOpenChat} />
+                    <TweetCard tweet={tweet} currentUser={mockUser} onImageClick={() => {}} onViewProfile={() => {}} onReply={() => {}} onToggleBookmark={() => {}} onVote={() => {}} onQuote={() => {}} onEdit={() => {}} onGrok={() => {}} liveReactions={[]} onTranslateTweet={onTranslateTweet} onPinTweet={onPinTweet} onOpenChat={onOpenChat} />
                     <div className="p-4">
                         {isLoading && <p>Analyzing...</p>}
                         {error && <p className="text-red-500">{error}</p>}

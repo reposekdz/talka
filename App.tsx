@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -26,7 +24,6 @@ import EditTweetModal from './components/EditTweetModal';
 import StoryViewer from './components/StoryViewer';
 import FloatingChatManager from './components/FloatingChatManager';
 import InAppNotification from './components/InAppNotification';
-// FIX: Removed unused VideoCallView and AudioCallView imports. CallView will handle dispatching.
 import IncomingCallModal from './components/IncomingCallModal';
 import ActiveCallBubble from './components/ActiveCallBubble';
 import SpacesPlayer from './components/SpacesPlayer';
@@ -39,11 +36,11 @@ import MobileHeader from './components/MobileHeader';
 import BottomNav from './components/BottomNav';
 import MobileDrawer from './components/MobileDrawer';
 import MobileExploreDrawer from './components/MobileExploreDrawer';
-// FIX: Import CallView to resolve 'Cannot find name' error.
 import CallView from './components/CallView';
+import CreateHighlightModal from './components/CreateHighlightModal';
 
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment } from './types';
-import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations as initialMockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights, mockReels as initialMockReels } from './data/mockData';
+import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations as initialMockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights as initialMockHighlights, mockReels as initialMockReels } from './data/mockData';
 import { AnimatePresence } from 'framer-motion';
 import { GoogleGenAI } from '@google/genai';
 
@@ -58,7 +55,7 @@ const App: React.FC = () => {
     const [otherUsers, setOtherUsers] = useState<User[]>(initialOtherUsers);
     const [tweets, setTweets] = useState<Tweet[]>(initialMockTweets);
     const [userStories, setUserStories] = useState<UserStory[]>(initialUserStories);
-    const [highlights] = useState<Highlight[]>(mockHighlights);
+    const [highlights, setHighlights] = useState<Highlight[]>(initialMockHighlights);
     const [reels, setReels] = useState<Reel[]>(initialMockReels);
     
     // Modals and overlays state
@@ -74,6 +71,7 @@ const App: React.FC = () => {
     const [grokTweet, setGrokTweet] = useState<Tweet | null>(null);
     const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+    const [isCreateHighlightModalOpen, setIsCreateHighlightModalOpen] = useState(false);
 
     // Chat state
     const [allKnownConversations, setAllKnownConversations] = useState<Conversation[]>(initialMockConversations);
@@ -113,7 +111,16 @@ const App: React.FC = () => {
     
     useEffect(() => {
         document.documentElement.className = theme;
-    }, [theme]);
+        
+        // Mock incoming call for demonstration
+        const timer = setTimeout(() => {
+            if (!activeCall && !incomingCall) {
+                setIncomingCall({ user: otherUsers[2], type: 'video', status: 'incoming' });
+            }
+        }, 8000);
+        return () => clearTimeout(timer);
+
+    }, [theme, activeCall, incomingCall, otherUsers]);
     
     const handleLogin = () => setIsLoggedIn(true);
     const handleLogout = () => setIsLoggedIn(false);
@@ -178,6 +185,59 @@ const App: React.FC = () => {
         showToast("Your reel was shared.");
         setIsCreatorOpen(false);
     };
+
+    const handleCreateHighlight = ({ title, stories }: { title: string, stories: Story[] }) => {
+        const newHighlight: Highlight = {
+            id: `h-new-${Date.now()}`,
+            title,
+            stories,
+            coverUrl: stories[0].mediaUrl, // Use the first story as cover
+        };
+        setHighlights(prev => [newHighlight, ...prev]);
+        showToast("New Highlight created!");
+        setIsCreateHighlightModalOpen(false);
+    };
+
+    const handlePinTweet = (tweetIdToPin: string) => {
+        const isCurrentlyPinned = tweets.find(t => t.id === tweetIdToPin)?.pinned;
+
+        setTweets(prevTweets => 
+            prevTweets.map(tweet => {
+                // If this is the tweet to pin/unpin
+                if (tweet.id === tweetIdToPin) {
+                    return { ...tweet, pinned: !isCurrentlyPinned }; // Toggle pin status
+                }
+                // If we are pinning a new tweet (not unpinning), unpin any other tweet
+                if (tweet.pinned && !isCurrentlyPinned) {
+                    return { ...tweet, pinned: false };
+                }
+                return tweet;
+            })
+        );
+        showToast(isCurrentlyPinned ? 'Unpinned from profile' : 'Pinned to your profile');
+    };
+
+    const handleRemoveFollower = (followerIdToRemove: string) => {
+        // Current user loses a follower
+        setCurrentUser(prev => ({
+            ...prev,
+            followerIds: prev.followerIds.filter(id => id !== followerIdToRemove),
+            followerCount: prev.followerCount - 1,
+        }));
+        // The other user stops following the current user
+        setOtherUsers(prev => prev.map(user => {
+            if (user.id === followerIdToRemove) {
+                return {
+                    ...user,
+                    followingIds: user.followingIds.filter(id => id !== currentUser.id),
+                    followingCount: user.followingCount - 1,
+                }
+            }
+            return user;
+        }));
+        showToast("Follower removed.");
+    };
+
 
     const handleUpdateProfileDetails = (updatedUser: Partial<User>) => {
         setCurrentUser(prev => ({ ...prev, ...updatedUser }));
@@ -306,6 +366,7 @@ const App: React.FC = () => {
                 onBack={() => setUserList(null)}
                 onFollowToggle={handleFollowToggle}
                 onViewProfile={(user) => { setUserList(null); setCurrentPage(Page.Profile); }}
+                onRemoveFollower={handleRemoveFollower}
             />
         }
 
@@ -322,6 +383,7 @@ const App: React.FC = () => {
                     onVote={() => showToast('Voted!')}
                     onQuote={setQuotingTweet}
                     onEdit={setEditingTweet}
+                    onPinTweet={handlePinTweet}
                     userStories={userStories}
                     onStoryClick={(index) => setStoryViewerState({ stories: userStories, initialUserIndex: index })}
                     onOpenCreator={() => {setIsCreatorOpen(true); setCreatorMode('story')}}
@@ -341,10 +403,9 @@ const App: React.FC = () => {
             case Page.Notifications:
                 return <NotificationsPage />;
             case Page.Messages:
-// FIX: Changed prop 'onOpenChat' to 'openChat' to match the expected prop in MessagesPage.
                 return <MessagesPage conversations={allKnownConversations} openChat={handleOpenChat} />;
             case Page.Bookmarks:
-                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />;
+                return <BookmarksPage tweets={tweets.filter(t => t.isBookmarked)} currentUser={currentUser} onViewProfile={(user) => setCurrentPage(Page.Profile)} onImageClick={setLightboxImageUrl} onGrok={setGrokTweet} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} />;
             case Page.Profile:
                 return <ProfilePage 
                     user={currentUser} 
@@ -354,9 +415,11 @@ const App: React.FC = () => {
                     onViewProfile={(user) => setCurrentPage(Page.Profile)} 
                     onViewUserList={(user, type) => setUserList({user, type})}
                     onEditProfile={() => setIsEditProfileOpen(true)}
+                    onOpenCreateHighlight={() => setIsCreateHighlightModalOpen(true)}
                     onHighlightClick={(index) => setStoryViewerState({stories: highlights, initialUserIndex: index, isHighlight: true})}
                     onTranslateTweet={handleTranslateTweet}
                     onGrok={setGrokTweet}
+                    onPinTweet={handlePinTweet}
                     onOpenChat={handleOpenChat}
                 />;
             case Page.Communities:
@@ -389,6 +452,7 @@ const App: React.FC = () => {
                     onVote={() => showToast('Voted!')}
                     onQuote={setQuotingTweet}
                     onEdit={setEditingTweet}
+                    onPinTweet={handlePinTweet}
                     userStories={userStories}
                     onStoryClick={(index) => setStoryViewerState({ stories: userStories, initialUserIndex: index })}
                     onOpenCreator={() => {setIsCreatorOpen(true); setCreatorMode('story')}}
@@ -451,14 +515,15 @@ const App: React.FC = () => {
             
             <AnimatePresence>
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={setLightboxImageUrl} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} />}
                 {lightboxImageUrl && <Lightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={(reply) => {handlePostTweet({ content: reply, isBookmarked: false }); setReplyingToTweet(null); }} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={(tweet) => {handlePostTweet(tweet); setQuotingTweet(null);}} />}
                 {editingTweet && <EditTweetModal tweet={editingTweet} onClose={() => setEditingTweet(null)} onSave={(id, content) => {setTweets(prev => prev.map(t => t.id === id ? {...t, content, isEdited: true} : t)); setEditingTweet(null); showToast('Your Post has been updated.'); }} />}
                 {storyViewerState && <StoryViewer {...storyViewerState} onClose={() => setStoryViewerState(null)} showToast={showToast} />}
                 {isCreatorOpen && <CreatorFlowModal initialMode={creatorMode} onClose={() => setIsCreatorOpen(false)} onPostTweet={handlePostTweet} onPostStory={handlePostStory} onPostReel={handlePostReel} />}
-                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onOpenChat={handleOpenChat} />}
+                {grokTweet && <GrokAnalysisModal tweet={grokTweet} onClose={() => setGrokTweet(null)} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onOpenChat={handleOpenChat} />}
+                {isCreateHighlightModalOpen && <CreateHighlightModal onClose={() => setIsCreateHighlightModalOpen(false)} onCreate={handleCreateHighlight} userStories={userStories.find(us => us.user.id === currentUser.id)?.stories || []} />}
                 {isAiAssistantOpen && <AiAssistantModal onClose={() => setIsAiAssistantOpen(false)} />}
                 {isEditProfileOpen && <EditProfileModal user={currentUser} onClose={() => setIsEditProfileOpen(false)} onSave={(updatedUser) => { setCurrentUser(updatedUser); setIsEditProfileOpen(false); showToast('Profile updated!'); }} />}
                 {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserList(null);}} />}
@@ -518,7 +583,9 @@ const App: React.FC = () => {
                 onStartVideoCall={(user) => setActiveCall({ user, type: 'video', status: 'outgoing' })}
                 onStartAudioCall={(user) => setActiveCall({ user, type: 'audio', status: 'outgoing' })}
                 handleUpdateChatTheme={(convoId, theme) => {
-                    setActiveChats(prev => prev.map(c => c.id === convoId ? {...c, chatTheme: theme} : c));
+                    const updateTheme = (c: Conversation) => c.id === convoId ? {...c, chatTheme: theme} : c;
+                    setActiveChats(prev => prev.map(updateTheme));
+                    setAllKnownConversations(prev => prev.map(updateTheme));
                     showToast(`Theme changed!`);
                 }}
                 onAiAction={handleAiChatAction}

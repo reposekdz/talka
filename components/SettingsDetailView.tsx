@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon } from './Icon';
@@ -13,23 +12,40 @@ interface SettingsDetailViewProps {
   onUpdateProfileDetails: (updatedUser: Partial<User>) => void;
 }
 
-const SettingsSection: React.FC<{title: string; description: string; children: React.ReactNode}> = ({ title, description, children }) => (
-    <div className="border-b border-light-border dark:border-twitter-border dim:border-dim-border p-4">
+const SettingsSection: React.FC<{title: string; description?: string; children: React.ReactNode}> = ({ title, description, children }) => (
+    <div className="p-4">
         <h3 className="text-xl font-bold">{title}</h3>
-        <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mt-1 mb-4">{description}</p>
-        <div className="space-y-4">{children}</div>
+        {description && <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mt-1 mb-4">{description}</p>}
+        <div className="mt-4 bg-light-hover/50 dark:bg-white/5 rounded-2xl overflow-hidden divide-y divide-light-border dark:divide-twitter-border dim:divide-dim-border">
+          {children}
+        </div>
     </div>
 );
 
 const SettingsRow: React.FC<{title: string; description: string; control: React.ReactNode}> = ({ title, description, control }) => (
-    <div className="flex justify-between items-center">
-        <div>
+    <div className="flex justify-between items-center p-4">
+        <div className="max-w-[70%]">
             <h4 id={title.replace(/\s+/g, '-')} className="font-semibold">{title}</h4>
             <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">{description}</p>
         </div>
-        {control}
+        <div className="flex-shrink-0">
+          {control}
+        </div>
     </div>
-)
+);
+
+const SettingsOptionGroup: React.FC<{ options: {value: string, label: string}[], selected: string, onChange: (value: string) => void }> = ({ options, selected, onChange }) => (
+  <div className="flex flex-col gap-2 p-4">
+    {options.map(opt => (
+      <button key={opt.value} onClick={() => onChange(opt.value)} className="flex justify-between items-center w-full text-left p-3 rounded-lg hover:bg-light-border dark:hover:bg-white/10">
+        <span>{opt.label}</span>
+        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected === opt.value ? 'border-twitter-blue' : 'border-gray-500'}`}>
+          {selected === opt.value && <div className="w-2.5 h-2.5 bg-twitter-blue rounded-full"></div>}
+        </div>
+      </button>
+    ))}
+  </div>
+);
 
 
 const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, settings, onUpdateSettings, onUpdateProfileDetails }) => {
@@ -67,21 +83,24 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
             return (
                  <div>
                     <SettingsSection title="Account Information" description="Update your public profile information.">
-                        <div className="space-y-4">
-                            <input type="text" placeholder="Display Name" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full bg-light-border dark:bg-twitter-light-dark rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue" />
-                            <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-light-border dark:bg-twitter-light-dark rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue" />
+                        <div className="space-y-4 p-4">
+                            <input type="text" placeholder="Display Name" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full bg-light-border dark:bg-twitter-light-dark rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-twitter-blue" />
+                            <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-light-border dark:bg-twitter-light-dark rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-twitter-blue" />
                             <button onClick={() => onUpdateProfileDetails({ displayName, username })} className="w-full bg-twitter-blue text-white font-bold py-2 rounded-full">Save Changes</button>
                         </div>
                     </SettingsSection>
-                    <SettingsSection title="Deactivate your account" description="This is a temporary deactivation. Your profile, Posts, and other data will be hidden until you reactivate by logging back in.">
-                        <button className="text-red-500 font-bold">Deactivate (Prototype)</button>
+                    <SettingsSection title="Deactivate your account">
+                        <div className="p-4">
+                           <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-4">This is a temporary deactivation. Your profile, Posts, and other data will be hidden until you reactivate by logging back in.</p>
+                           <button className="text-red-500 font-bold hover:underline">Deactivate (Prototype)</button>
+                        </div>
                     </SettingsSection>
                  </div>
             );
         case "Security and account access":
             return (
                 <div>
-                    <SettingsSection title="Security" description="Manage your account's security.">
+                    <SettingsSection title="Security">
                          <SettingsRow
                             title="Two-factor authentication"
                             description="Help protect your account from unauthorized access."
@@ -92,15 +111,15 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
                             />}
                         />
                     </SettingsSection>
-                    <SettingsSection title="Connected apps" description="These apps are connected to your account.">
-                        <p className="text-sm text-light-secondary-text dark:text-twitter-gray">No apps connected. (This is a prototype feature).</p>
+                    <SettingsSection title="Connected apps">
+                        <p className="p-4 text-sm text-light-secondary-text dark:text-twitter-gray">No apps connected. (This is a prototype feature).</p>
                     </SettingsSection>
                 </div>
             );
         case "Privacy and safety":
             return (
                  <div>
-                    <SettingsSection title="Audience and tagging" description="Manage what information you allow other people on Talka to see.">
+                    <SettingsSection title="Audience and tagging">
                         <SettingsRow
                             title="Protect your Posts"
                             description="When selected, your Posts and other account information are only visible to people who follow you."
@@ -110,64 +129,48 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
                                 handleToggle={() => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, protectPosts: !settings.privacyAndSafety.protectPosts})}
                             />}
                         />
-                         <SettingsRow
-                            title="Photo tagging"
-                            description="Choose whether people can tag you in photos."
-                            control={
-                                <select 
-                                    value={settings.privacyAndSafety.photoTagging}
-                                    onChange={(e) => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, photoTagging: e.target.value as any})}
-                                    className="bg-transparent border border-light-border dark:border-twitter-border rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-                                >
-                                    <option value="everyone">Anyone can tag you</option>
-                                    <option value="following">Only people you follow</option>
-                                    <option value="off">Off</option>
-                                </select>
-                            }
-                        />
                     </SettingsSection>
-                    <SettingsSection title="Direct Messages" description="Control who can message you directly.">
-                        <SettingsRow
-                            title="Allow message requests from"
-                            description="Let people who you don’t follow send you message requests and add you to group conversations."
-                            control={<select 
-                                    value={settings.privacyAndSafety.dmRequests}
-                                    onChange={(e) => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, dmRequests: e.target.value as any})}
-                                    className="bg-transparent border border-light-border dark:border-twitter-border rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-                                >
-                                    <option value="everyone">Everyone</option>
-                                    <option value="following">People you follow</option>
-                                </select>}
-                        />
+                    <SettingsSection title="Photo tagging">
+                         <SettingsOptionGroup 
+                            options={[
+                              { value: 'everyone', label: 'Anyone can tag you' },
+                              { value: 'following', label: 'Only people you follow' },
+                              { value: 'off', label: 'Off' }
+                            ]}
+                            selected={settings.privacyAndSafety.photoTagging}
+                            onChange={(value) => handleUpdate('privacyAndSafety', {...settings.privacyAndSafety, photoTagging: value as any})}
+                         />
                     </SettingsSection>
                  </div>
             );
         case "Notifications":
              return (
                  <div>
-                     <SettingsSection title="Preferences" description="Select your preferences for push notifications.">
+                     <SettingsSection title="Preferences">
                         <SettingsRow title="Likes" description="Receive notifications when someone likes your post." control={<ToggleSwitch labelId="likes-toggle" isOn={settings.notifications.likes} handleToggle={() => handleUpdate('notifications', {...settings.notifications, likes: !settings.notifications.likes})} />} />
                         <SettingsRow title="Retweets" description="Receive notifications when someone retweets your post." control={<ToggleSwitch labelId="retweets-toggle" isOn={settings.notifications.retweets} handleToggle={() => handleUpdate('notifications', {...settings.notifications, retweets: !settings.notifications.retweets})} />} />
                         <SettingsRow title="Direct Messages" description="Receive notifications for new direct messages." control={<ToggleSwitch labelId="dms-toggle" isOn={settings.notifications.dms} handleToggle={() => handleUpdate('notifications', {...settings.notifications, dms: !settings.notifications.dms})} />} />
                      </SettingsSection>
-                    <SettingsSection title="Muted words" description="Mute words, phrases, usernames, emojis, or hashtags from your Home timeline.">
-                        <div className="flex gap-2">
-                             <input
-                                type="text"
-                                placeholder="Add muted word..."
-                                value={mutedWordInput}
-                                onChange={e => setMutedWordInput(e.target.value)}
-                                className="w-full bg-light-border dark:bg-twitter-light-dark rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-                            />
-                            <button onClick={addMutedWord} className="bg-twitter-blue text-white font-bold px-4 rounded-full hover:bg-opacity-90 disabled:opacity-50" disabled={!mutedWordInput}>Add</button>
-                        </div>
-                        <div className="mt-4 space-y-2">
-                            {settings.notifications.mutedWords.map(word => (
-                                <div key={word} className="flex justify-between items-center bg-light-hover dark:bg-white/5 p-2 rounded-lg">
-                                    <span>{word}</span>
-                                    <button onClick={() => removeMutedWord(word)} className="font-bold text-xl hover:text-red-500">&times;</button>
-                                </div>
-                            ))}
+                    <SettingsSection title="Muted words">
+                        <div className="p-4">
+                          <div className="flex gap-2">
+                               <input
+                                  type="text"
+                                  placeholder="Add muted word..."
+                                  value={mutedWordInput}
+                                  onChange={e => setMutedWordInput(e.target.value)}
+                                  className="w-full bg-light-border dark:bg-twitter-light-dark rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
+                              />
+                              <button onClick={addMutedWord} className="bg-twitter-blue text-white font-bold px-4 rounded-full hover:bg-opacity-90 disabled:opacity-50" disabled={!mutedWordInput}>Add</button>
+                          </div>
+                          <div className="mt-4 space-y-2">
+                              {settings.notifications.mutedWords.map(word => (
+                                  <div key={word} className="flex justify-between items-center bg-light-hover dark:bg-white/5 p-2 rounded-lg">
+                                      <span>{word}</span>
+                                      <button onClick={() => removeMutedWord(word)} className="font-bold text-xl hover:text-red-500">&times;</button>
+                                  </div>
+                              ))}
+                          </div>
                         </div>
                     </SettingsSection>
                  </div>
@@ -175,42 +178,18 @@ const SettingsDetailView: React.FC<SettingsDetailViewProps> = ({ title, onBack, 
          case "Accessibility, display, and languages":
             return (
                  <div>
-                     <SettingsSection title="Display" description="Manage your display and language settings.">
-                        <SettingsRow
-                            title="Language"
-                            description="Select your preferred language for headlines, buttons, and other text."
-                            control={
-                                <select
-                                    value={settings.accessibilityDisplayAndLanguages.language}
-                                    onChange={(e) => handleUpdate('accessibilityDisplayAndLanguages', {...settings.accessibilityDisplayAndLanguages, language: e.target.value as any})}
-                                    className="bg-transparent border border-light-border dark:border-twitter-border rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-                                >
-                                    <option value="English">English</option>
-                                    <option value="Spanish">Español</option>
-                                    <option value="Japanese">日本語</option>
-                                    <option value="French">Français</option>
-                                </select>
-                            }
-                        />
+                    <SettingsSection title="Video autoplay">
+                      <SettingsOptionGroup 
+                          options={[
+                            { value: 'on-cellular-wifi', label: 'On cellular or Wi-Fi' },
+                            { value: 'on-wifi-only', label: 'On Wi-Fi only' },
+                            { value: 'never', label: 'Never' }
+                          ]}
+                          selected={settings.accessibilityDisplayAndLanguages.videoAutoplay}
+                          onChange={(value) => handleUpdate('accessibilityDisplayAndLanguages', {...settings.accessibilityDisplayAndLanguages, videoAutoplay: value as any})}
+                       />
                     </SettingsSection>
-                    <SettingsSection title="Data usage" description="Control how Talka uses your mobile data.">
-                        <SettingsRow
-                            title="Video autoplay"
-                            description="Select whether videos should autoplay."
-                            control={
-                                <select
-                                    value={settings.accessibilityDisplayAndLanguages.videoAutoplay}
-                                    onChange={(e) => handleUpdate('accessibilityDisplayAndLanguages', {...settings.accessibilityDisplayAndLanguages, videoAutoplay: e.target.value as any})}
-                                    className="bg-transparent border border-light-border dark:border-twitter-border rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
-                                >
-                                    <option value="on-cellular-wifi">On cellular or Wi-Fi</option>
-                                    <option value="on-wifi-only">On Wi-Fi only</option>
-                                    <option value="never">Never</option>
-                                </select>
-                            }
-                        />
-                    </SettingsSection>
-                     <SettingsSection title="Accessibility" description="Manage settings for users with disabilities.">
+                     <SettingsSection title="Accessibility">
                         <SettingsRow
                             title="Reduce motion"
                             description="Limits the amount of in-app animations, including live-like counts."

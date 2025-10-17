@@ -11,12 +11,13 @@ interface BookmarksPageProps {
   onImageClick: (url: string) => void;
   onGrok: (tweet: Tweet) => void;
   onTranslateTweet: (tweetId: string) => void;
+  onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
 }
 
 const TWEETS_PER_PAGE = 10;
 
-const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onOpenChat }) => {
+const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onOpenChat }) => {
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -54,6 +55,7 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ tweets, currentUser, onVi
               onEdit={() => {}}
               onGrok={onGrok}
               onTranslateTweet={onTranslateTweet}
+              onPinTweet={onPinTweet}
               onOpenChat={onOpenChat}
               liveReactions={[]}
             />

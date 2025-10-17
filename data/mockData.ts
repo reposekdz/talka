@@ -319,6 +319,13 @@ export const mockCommunities: Community[] = [
 
 export const initialUserStories: UserStory[] = [
     {
+        user: mockUser, hasUnseen: false, stories: [
+            { id: 's-u1-1', mediaUrl: `https://picsum.photos/seed/s-u1-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z', likeCount: 150, isLiked: false, comments: [] },
+            { id: 's-u1-2', mediaUrl: `http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4`, type: 'video', duration: 15, timestamp: '2024-07-24T13:00:00Z', likeCount: 300, isLiked: true, comments: [] },
+            { id: 's-u1-3', mediaUrl: `https://picsum.photos/seed/s-u1-3/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T14:00:00Z', likeCount: 200, isLiked: false, comments: [] }
+        ]
+    },
+    {
         user: otherUsers[0], hasUnseen: true, stories: [
             { id: 's-u2-1', mediaUrl: `https://picsum.photos/seed/s-u2-1/400/700`, type: 'image', duration: 7, timestamp: '2024-07-24T12:00:00Z', likeCount: 25, isLiked: false, comments: [] },
             { id: 's-u2-2', mediaUrl: `https://picsum.photos/seed/s-u2-2/400/700`, type: 'image', duration: 5, timestamp: '2024-07-24T13:00:00Z', likeCount: 30, isLiked: false, comments: [] }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AccountIcon, SecurityIcon, PrivacyIcon, NotificationsIcon, ChevronRightIcon, DisplayIcon } from '../components/Icon';
 import SettingsDetailView from '../components/SettingsDetailView';
@@ -20,12 +19,11 @@ interface SettingsItemProps {
 }
 
 const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, subtitle, onClick }) => (
-  <div onClick={onClick} className="flex items-center justify-between p-4 cursor-pointer hover:bg-light-hover dark:hover:bg-white/5 dim:hover:bg-dim-hover/50 transition-colors duration-200">
+  <div onClick={onClick} className="flex items-center justify-between p-4 cursor-pointer hover:bg-light-hover/50 dark:hover:bg-white/5 transition-colors duration-200">
     <div className="flex items-center gap-4">
       <div className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">{icon}</div>
       <div>
-        <h3 className="font-bold">{title}</h3>
-        <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">{subtitle}</p>
+        <h3 className="font-bold text-lg">{title}</h3>
       </div>
     </div>
     <div className="text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
@@ -86,13 +84,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings,
                 <input
                     type="text"
                     placeholder="Search settings"
-                    className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-current placeholder-light-secondary-text dark:placeholder-twitter-gray dim:placeholder-dim-secondary-text rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
+                    className="w-full bg-light-border dark:bg-twitter-light-dark dim:bg-dim-border text-current placeholder-light-secondary-text dark:placeholder-twitter-gray dim:placeholder-dim-secondary-text rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-twitter-blue"
                 />
             </div>
-            <div className="flex-1 overflow-y-auto">
-                {settingsSections.map(item => (
-                <SettingsItem key={item.title} icon={item.icon} title={item.title} subtitle={item.subtitle} onClick={item.action} />
+            <div className="flex-1 overflow-y-auto px-4 space-y-4">
+              <div className="bg-light-hover/50 dark:bg-white/5 rounded-2xl overflow-hidden">
+                {settingsSections.map((item, index) => (
+                  <div key={item.title} className={index !== 0 ? "border-t border-light-border dark:border-twitter-border dim:border-dim-border" : ""}>
+                    <SettingsItem icon={item.icon} title={item.title} subtitle={item.subtitle} onClick={item.action} />
+                  </div>
                 ))}
+              </div>
             </div>
         </div>
         <AnimatePresence>

@@ -13,33 +13,38 @@ interface ProfilePageProps {
   onViewProfile: (user: User) => void;
   onViewUserList: (user: User, type: 'followers' | 'following') => void;
   onEditProfile: () => void;
+  onOpenCreateHighlight: () => void;
   onHighlightClick: (index: number) => void;
   onTranslateTweet: (tweetId: string) => void;
   onGrok: (tweet: Tweet) => void;
+  onPinTweet: (tweetId: string) => void;
   onOpenChat: (user: User) => void;
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
-  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onHighlightClick, onTranslateTweet, onGrok, onOpenChat } = props;
+  const { user, tweets, highlights, onImageClick, onViewProfile, onViewUserList, onEditProfile, onOpenCreateHighlight, onHighlightClick, onTranslateTweet, onGrok, onPinTweet, onOpenChat } = props;
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  const isOwnProfile = user.id === 'u1'; // Mock check
+  const pinnedTweet = tweets.find(t => t.pinned);
+  const feedTweets = tweets.filter(t => !t.pinned);
 
-  const visibleTweets = tweets.slice(0, visibleCount);
-  const hasMore = visibleCount < tweets.length;
+  const visibleTweets = feedTweets.slice(0, visibleCount);
+  const hasMore = visibleCount < feedTweets.length;
 
   const loadMore = () => {
       setIsLoadingMore(true);
       setTimeout(() => {
-          setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, tweets.length));
+          setVisibleCount(prev => Math.min(prev + TWEETS_PER_PAGE, feedTweets.length));
           setIsLoadingMore(false);
       }, 1000);
   };
 
   const tabs = ['Posts', 'Replies', 'Highlights', 'Media', 'Likes'];
-  const isOwnProfile = user.id === 'u1'; // Mock check
 
   return (
     <div className="pb-16 sm:pb-0">
@@ -77,7 +82,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
         </div>
       </div>
       
-      <ProfileHighlights highlights={highlights} isOwnProfile={isOwnProfile} onHighlightClick={onHighlightClick} />
+      <ProfileHighlights highlights={highlights} isOwnProfile={isOwnProfile} onHighlightClick={onHighlightClick} onOpenCreateHighlight={onOpenCreateHighlight} />
 
       <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border mt-4">
           {tabs.map(tab => (
@@ -91,6 +96,31 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
       </div>
       
       <div>
+        {pinnedTweet && (
+           <div className="border-b border-light-border dark:border-twitter-border dim:border-dim-border">
+               <div className="text-xs text-light-secondary-text dark:text-twitter-gray flex items-center gap-2 px-4 pt-2">
+                   <PinIcon />
+                   <span>Pinned Post</span>
+               </div>
+               <TweetCard
+                   key={pinnedTweet.id}
+                   tweet={pinnedTweet}
+                   currentUser={user}
+                   onImageClick={onImageClick}
+                   onViewProfile={onViewProfile}
+                   onReply={() => {}}
+                   onToggleBookmark={() => {}}
+                   onVote={() => {}}
+                   onQuote={() => {}}
+                   onEdit={() => {}}
+                   onGrok={onGrok}
+                   onTranslateTweet={onTranslateTweet}
+                   onPinTweet={onPinTweet}
+                   onOpenChat={onOpenChat}
+                   liveReactions={[]}
+               />
+           </div>
+        )}
         {visibleTweets.map(tweet => (
             <TweetCard
                 key={tweet.id}
@@ -105,6 +135,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 onEdit={() => {}}
                 onGrok={onGrok}
                 onTranslateTweet={onTranslateTweet}
+                onPinTweet={onPinTweet}
                 onOpenChat={onOpenChat}
                 liveReactions={[]}
             />

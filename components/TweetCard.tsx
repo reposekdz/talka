@@ -5,6 +5,57 @@ import Avatar from './Avatar';
 import PollDisplay from './PollDisplay';
 import VideoPlayer from './VideoPlayer';
 import { motion, AnimatePresence } from 'framer-motion';
+import AudioPlayer from './AudioPlayer';
+
+interface TweetMenuProps {
+  tweet: Tweet;
+  isOwnTweet: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onGrok: () => void;
+  onOpenChat: () => void;
+  onPinTweet: () => void;
+}
+
+const TweetMenu: React.FC<TweetMenuProps> = ({ tweet, isOwnTweet, onClose, onEdit, onDelete, onGrok, onOpenChat, onPinTweet }) => {
+  const menuItems = [
+    ...(isOwnTweet ? [
+      { text: tweet.pinned ? 'Unpin from profile' : 'Pin to your profile', icon: <PinIcon />, action: onPinTweet },
+      { text: 'Edit Post', icon: <EditIcon />, action: onEdit },
+      { text: 'Delete Post', icon: <TrashIcon />, action: onDelete, className: 'text-red-500' }
+    ] : []),
+    { text: 'Analyze with AI', icon: <SparklesIcon />, action: onGrok },
+    { text: 'Message user', icon: <MessagesIcon />, action: onOpenChat },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 bg-transparent z-40"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="absolute top-8 right-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg w-48 border border-light-border dark:border-twitter-border z-50 origin-top-right"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ul>
+          {menuItems.map(item => (
+            <li key={item.text}>
+              <button onClick={() => { item.action(); onClose(); }} className={`w-full flex items-center gap-3 p-3 text-sm hover:bg-light-hover dark:hover:bg-white/10 ${item.className || ''}`}>
+                {item.icon}
+                <span>{item.text}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </div>
+  );
+};
+
 
 interface TweetCardProps {
     tweet: Tweet;
@@ -18,6 +69,7 @@ interface TweetCardProps {
     onEdit: (tweet: Tweet) => void;
     onGrok: (tweet: Tweet) => void;
     onTranslateTweet: (tweetId: string) => void;
+    onPinTweet: (tweetId: string) => void;
     onOpenChat: (user: User) => void;
     liveReactions: { id: number, emoji: string, tweetId: string }[];
 }
@@ -25,10 +77,9 @@ interface TweetCardProps {
 const TRUNCATE_LENGTH = 250;
 
 const TweetCard: React.FC<TweetCardProps> = (props) => {
-    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onGrok, onTranslateTweet, onOpenChat } = props;
-    const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isBookmarked, pinned, translation } = tweet;
+    const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onGrok, onTranslateTweet, onPinTweet, onOpenChat } = props;
+    const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isTranslating, setIsTranslating] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     
@@ -52,6 +103,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
     const handleActionClick = (e: React.MouseEvent, action?: () => void) => {
         e.stopPropagation();
         action?.();
+    };
+    
+    const handleTranslate = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (translation) {
+            setShowTranslation(!showTranslation);
+        } else {
+            onTranslateTweet(tweet.id);
+        }
     };
 
     const renderMedia = () => {
@@ -109,13 +169,24 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             <button onClick={(e) => handleActionClick(e, () => setIsMenuOpen(!isMenuOpen))} className="p-1 rounded-full hover:bg-twitter-blue/10 text-light-secondary-text dark:text-twitter-gray">
                                 <MoreIcon />
                             </button>
+                             <AnimatePresence>
+                                {isMenuOpen && <TweetMenu tweet={tweet} isOwnTweet={user.id === currentUser.id} onClose={() => setIsMenuOpen(false)} onEdit={() => onEdit(tweet)} onDelete={() => {}} onGrok={() => onGrok(tweet)} onOpenChat={() => onOpenChat(user)} onPinTweet={() => onPinTweet(tweet.id)} />}
+                            </AnimatePresence>
                         </div>
                     </div>
-                    <div>
-                        <p className="whitespace-pre-wrap">{displayedContent}</p>
-                        {isLongContent && !isExpanded && <button onClick={(e) => handleActionClick(e, () => setIsExpanded(true))} className="text-twitter-blue">Show more</button>}
-                        {translation && <div className="mt-2 text-sm text-light-secondary-text dark:text-twitter-gray italic">Translated from {translation.sourceLang}: {translation.text}</div>}
-                    </div>
+                    
+                    {isVoiceTweet && audioUrl ? (
+                         <div className="mt-2 p-3 rounded-2xl border border-light-border dark:border-twitter-border flex items-center gap-3">
+                            <Avatar src={user.avatarUrl} alt={user.displayName} size="small" />
+                            <AudioPlayer src={audioUrl} duration={0} isOwnMessage={false} isTweetPlayer={true} />
+                         </div>
+                    ) : (
+                        <div>
+                            <p className="whitespace-pre-wrap">{displayedContent}</p>
+                            {isLongContent && !isExpanded && <button onClick={(e) => handleActionClick(e, () => setIsExpanded(true))} className="text-twitter-blue">Show more</button>}
+                            {translation && <div className="mt-2 text-sm text-light-secondary-text dark:text-twitter-gray italic">Translated from {translation.sourceLang}: {translation.text}</div>}
+                        </div>
+                    )}
 
                     {renderMedia()}
                     
@@ -145,10 +216,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             <div className="p-2 rounded-full group-hover:bg-red-500/10">{isLiked ? <HeartFillIcon/> : <LikeIcon />}</div>
                             <span className="text-xs">{tweet.likeCount > 0 ? tweet.likeCount : ''}</span>
                         </button>
-                        <button onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
-                            {isBookmarked ? <BookmarkFillIcon className="text-twitter-blue"/> : <BookmarkIcon />}
-                        </button>
-                        <button onClick={(e) => handleActionClick(e, () => {})} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></button>
+                         <div className="flex items-center">
+                            <button onClick={handleTranslate} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
+                                <TranslateIcon />
+                            </button>
+                            <button onClick={(e) => handleActionClick(e, () => onToggleBookmark(tweet.id))} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
+                                {isBookmarked ? <BookmarkFillIcon className="text-twitter-blue"/> : <BookmarkIcon />}
+                            </button>
+                            <button onClick={(e) => handleActionClick(e, () => {})} className="p-2 rounded-full group-hover:bg-twitter-blue/10"><ShareIcon /></button>
+                         </div>
                     </div>
                 </div>
             </div>

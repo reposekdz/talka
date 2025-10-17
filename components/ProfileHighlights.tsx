@@ -7,9 +7,10 @@ interface ProfileHighlightsProps {
   highlights: Highlight[];
   isOwnProfile: boolean;
   onHighlightClick: (index: number) => void;
+  onOpenCreateHighlight: () => void;
 }
 
-const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwnProfile, onHighlightClick }) => {
+const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwnProfile, onHighlightClick, onOpenCreateHighlight }) => {
   return (
     <div className="p-4">
         <h2 className="text-xl font-bold mb-2">Highlights</h2>
@@ -19,7 +20,7 @@ const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwn
       <div className="flex gap-4 overflow-x-auto no-scrollbar">
         {isOwnProfile && (
             <div className="flex flex-col items-center flex-shrink-0 w-20">
-                <button className="w-16 h-16 rounded-full border-2 border-dashed border-light-secondary-text dark:border-twitter-gray flex items-center justify-center text-light-secondary-text dark:text-twitter-gray hover:bg-light-hover dark:hover:bg-white/10 transition-colors">
+                <button onClick={onOpenCreateHighlight} className="w-16 h-16 rounded-full border-2 border-dashed border-light-secondary-text dark:border-twitter-gray flex items-center justify-center text-light-secondary-text dark:text-twitter-gray hover:bg-light-hover dark:hover:bg-white/10 transition-colors">
                     <PlusIcon />
                 </button>
                 <p className="text-sm mt-2">New</p>
