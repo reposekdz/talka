@@ -457,3 +457,17 @@ export const mockSpaces: Space[] = [
 ];
 
 export const mockLiveParticipants = otherUsers.slice(0, 5);
+
+export const mockMusic = [
+    { id: 'm1', artist: 'NEFFEX', title: 'Destiny', duration: '2:45', coverUrl: 'https://picsum.photos/seed/m1/100/100' },
+    { id: 'm2', artist: 'Arc North', title: 'Nostalgia', duration: '3:20', coverUrl: 'https://picsum.photos/seed/m2/100/100' },
+    { id: 'm3', artist: 'Future', title: 'Life Is Good', duration: '3:57', coverUrl: 'https://picsum.photos/seed/m3/100/100' },
+    { id: 'm4', artist: 'The Weeknd', title: 'Blinding Lights', duration: '3:20', coverUrl: 'https://picsum.photos/seed/m4/100/100' },
+];
+
+export const mockStickers = [
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDZod2Q1Mmp3dWs2a2Nuc21jZzN0Mms0MGl0dGN2bXRuc245eWZlaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/MDrmy2FpZtYFylL1wY/giphy.gif',
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWVmY2Zud3hpNXBwZG10eWVscjB0anVqM3Y0ZHR2dGcwYmV2b3d1eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/J2bA_2t2l3mYvYmKik/giphy.gif',
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3R6ZHNkNWdoZ3J6NWI0eDg5dGRpYmJheTZsd3N1aDQ2MnJpYmcxMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/LpDmM2A032A0EEbhd7/giphy.gif',
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzh0NWd4d3JocjFycGU1bGt0cjVrd2Y5OTY4aW04ajI1Zm16d2RkbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/5GoVLqeAOo6PK/giphy.gif'
+];

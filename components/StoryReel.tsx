@@ -1,6 +1,7 @@
 import React from 'react';
 import { UserStory, User } from '../types';
 import { PlusIcon } from './Icon';
+import { motion } from 'framer-motion';
 
 interface StoryReelProps {
   userStories: UserStory[];
@@ -9,17 +10,26 @@ interface StoryReelProps {
   onOpenCreator: () => void;
 }
 
-const CreateStoryCard: React.FC<{ onOpenCreator: () => void }> = ({ onOpenCreator }) => (
+const CreateStoryCard: React.FC<{ onOpenCreator: () => void; currentUser: User; }> = ({ onOpenCreator, currentUser }) => (
     <div className="flex-shrink-0">
-        <div 
+        <motion.div 
             onClick={onOpenCreator}
-            className="w-28 h-48 rounded-xl bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover flex flex-col items-center justify-end p-2 text-center cursor-pointer group transition-all duration-300 hover:brightness-110"
+            className="relative w-28 h-48 rounded-xl bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover flex flex-col items-center justify-end p-2 text-center cursor-pointer group overflow-hidden"
+            whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
         >
-            <div className="w-12 h-12 bg-twitter-blue rounded-full flex items-center justify-center text-white border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg mb-2 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90">
-                <PlusIcon />
+            <img src={currentUser.avatarUrl} alt="Your avatar" className="absolute inset-0 w-full h-full object-cover opacity-40 blur-sm group-hover:blur-none group-hover:opacity-60 transition-all duration-300"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            <div className="relative z-10 flex flex-col items-center">
+                <motion.div 
+                    className="w-12 h-12 bg-create-gradient rounded-full flex items-center justify-center text-white border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg mb-2 shadow-lg"
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                    <PlusIcon />
+                </motion.div>
+                <p className="text-sm font-bold text-white">Create Story</p>
             </div>
-            <p className="text-sm font-bold">Add to Story</p>
-        </div>
+        </motion.div>
     </div>
 );
 
@@ -64,7 +74,7 @@ const StoryReel: React.FC<StoryReelProps> = ({ userStories, currentUser, onStory
   return (
     <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
       <div className="flex space-x-3 overflow-x-auto pb-2 -mb-2 no-scrollbar">
-        <CreateStoryCard onOpenCreator={onOpenCreator} />
+        <CreateStoryCard onOpenCreator={onOpenCreator} currentUser={currentUser} />
         {currentUserStory && (
             <UserStoryItem 
                 userStory={currentUserStory}

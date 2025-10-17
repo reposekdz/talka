@@ -129,6 +129,9 @@ export interface Story {
     isLiked: boolean;
     comments: ReelComment[];
     textOverlays?: TextOverlay[];
+    music?: { artist: string; title: string; };
+    stickers?: { url: string; x: number; y: number; scale: number; rotation: number; }[];
+    drawingOverlayUrl?: string;
 }
 
 export interface Notification {

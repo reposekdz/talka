@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserStory, Highlight } from '../types';
+import { UserStory, Highlight, Story } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CloseIcon, PaperPlaneIcon, ShareIcon } from './Icon';
+import { CloseIcon, PaperPlaneIcon, ShareIcon, MusicNoteIcon } from './Icon';
 import FloatingEmojis from './FloatingEmojis';
 
 interface StoryViewerProps {
@@ -12,49 +12,49 @@ interface StoryViewerProps {
   isHighlight?: boolean;
 }
 
+const MusicSticker: React.FC<{ music: { artist: string; title: string; } }> = ({ music }) => (
+    <motion.div
+        drag
+        dragMomentum={false}
+        className="absolute top-1/2 left-1/2 cursor-grab active:cursor-grabbing bg-black/60 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2 text-white text-sm"
+        style={{ x: '-50%', y: '-50%' }}
+    >
+        <MusicNoteIcon className="w-5 h-5" />
+        <div>
+            <p className="font-bold leading-tight">{music.title}</p>
+            <p className="text-xs opacity-80 leading-tight">{music.artist}</p>
+        </div>
+    </motion.div>
+);
+
 const StoryCard: React.FC<{
     storyData: UserStory | Highlight;
+    story: Story;
     isActive: boolean;
     onNextUser: () => void;
     onReply: (text: string) => void;
     onReact: (emoji: string) => void;
     showToast: (message: string) => void;
     isHighlight?: boolean;
-}> = ({ storyData, isActive, onNextUser, onReply, onReact, showToast, isHighlight }) => {
-    const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+}> = ({ storyData, story, isActive, onNextUser, onReply, onReact, showToast, isHighlight }) => {
     const [isPaused, setIsPaused] = useState(false);
     const [replyText, setReplyText] = useState('');
-    const timerRef = useRef<number | null>(null);
     
-    const { stories } = storyData;
     const user = 'user' in storyData ? storyData.user : null;
     const title = 'title' in storyData ? storyData.title : null;
 
-    const currentStory = stories[currentStoryIndex];
     const quickReplies = ['😂', '😍', '🔥', '👏'];
 
-    const goToNextStory = () => {
-        if (currentStoryIndex < stories.length - 1) {
-            setCurrentStoryIndex(prev => prev + 1);
-        } else {
-            onNextUser();
-        }
-    };
-    
     useEffect(() => {
-        setCurrentStoryIndex(0);
-    }, [storyData]);
-
-    useEffect(() => {
-        if (isPaused || !isActive || !currentStory) {
-            if (timerRef.current) clearTimeout(timerRef.current);
-        } else {
-            timerRef.current = window.setTimeout(goToNextStory, currentStory.duration * 1000);
-        }
+        let timer: number;
+        if (isPaused || !isActive || !story) return;
+        
+        timer = window.setTimeout(onNextUser, story.duration * 1000);
+        
         return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
+            clearTimeout(timer);
         };
-    }, [currentStoryIndex, isPaused, isActive, storyData]);
+    }, [story, isPaused, isActive, onNextUser]);
 
     const handleReply = () => {
         if (replyText.trim()) {
@@ -63,7 +63,7 @@ const StoryCard: React.FC<{
         }
     }
 
-    if (!currentStory) return null;
+    if (!story) return null;
 
     return (
         <div 
@@ -73,24 +73,24 @@ const StoryCard: React.FC<{
             onTouchStart={() => setIsPaused(true)}
             onTouchEnd={() => setIsPaused(false)}
         >
-            <img src={currentStory.mediaUrl} className="w-full h-full object-cover" />
+            <img src={story.mediaUrl} className="w-full h-full object-cover" />
             
+            {story.drawingOverlayUrl && <img src={story.drawingOverlayUrl} className="absolute inset-0 w-full h-full object-cover pointer-events-none" />}
+            
+            {story.music && <MusicSticker music={story.music} />}
+
+            {story.stickers?.map((sticker, index) => (
+                 <motion.img 
+                    key={index}
+                    src={sticker.url}
+                    drag
+                    dragMomentum={false}
+                    className="absolute w-24 h-24 cursor-grab active:cursor-grabbing"
+                    style={{ x: sticker.x, y: sticker.y, scale: sticker.scale, rotate: sticker.rotation }}
+                />
+            ))}
+
             <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent">
-                <div className="flex gap-1">
-                    {stories.map((story, index) => (
-                        <div key={story.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-                            {index < currentStoryIndex && <div className="h-full bg-white"></div>}
-                            {index === currentStoryIndex && isActive && (
-                                <motion.div
-                                    className="h-full bg-white"
-                                    initial={{ width: '0%' }}
-                                    animate={isPaused ? { width: '0%' } : { width: '100%' }}
-                                    transition={{ duration: isPaused ? 0 : currentStory.duration, ease: 'linear' }}
-                                />
-                            )}
-                        </div>
-                    ))}
-                </div>
                 <div className="flex items-center gap-3 mt-3">
                     {user && <img src={user.avatarUrl} alt={user.displayName} className="w-10 h-10 rounded-full" />}
                     <span className="text-white font-bold">{user ? user.displayName : title}</span>
@@ -125,23 +125,35 @@ const StoryCard: React.FC<{
     );
 }
 
-const StoryViewer: React.FC<StoryViewerProps> = ({ stories, initialUserIndex, onClose, showToast, isHighlight }) => {
+const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initialUserIndex, onClose, showToast, isHighlight }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState(initialUserIndex);
+  const [currentStoryIndices, setCurrentStoryIndices] = useState<Record<number, number>>({});
   const [emojis, setEmojis] = useState<{ id: number; emoji: string }[]>([]);
 
-  const paginate = (newIndex: number) => {
-    if (newIndex >= 0 && newIndex < stories.length) {
+  const currentGroup = storyGroups[currentUserIndex];
+  const currentStoryIndex = currentStoryIndices[currentUserIndex] || 0;
+  const currentStory = currentGroup.stories[currentStoryIndex];
+
+  const paginateUser = (newDirection: number) => {
+    const newIndex = currentUserIndex + newDirection;
+    if (newIndex >= 0 && newIndex < storyGroups.length) {
       setCurrentUserIndex(newIndex);
-    } else if (newIndex >= stories.length) {
+    } else if (newIndex >= storyGroups.length) {
         onClose();
     }
   };
+  
+  const paginateStory = () => {
+      if (currentStoryIndex < currentGroup.stories.length - 1) {
+          setCurrentStoryIndices(prev => ({ ...prev, [currentUserIndex]: (prev[currentUserIndex] || 0) + 1 }));
+      } else {
+          paginateUser(1);
+      }
+  }
 
   const handleReply = (text: string) => showToast('Your reply was sent!');
   const handleReact = (emoji: string) => setEmojis(prev => [...prev, { id: Date.now(), emoji }]);
   const onEmojiComplete = (id: number) => setEmojis(prev => prev.filter(e => e.id !== id));
-
-  const getStoryData = (index: number) => stories[index];
 
   return (
     <motion.div
@@ -156,43 +168,47 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories, initialUserIndex, on
         <CloseIcon/>
       </button>
 
+      {/* Progress Bars */}
+       <div className="absolute top-4 left-4 right-4 z-20 flex gap-1">
+            {currentGroup.stories.map((story, index) => (
+                <div key={story.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                    {index < currentStoryIndex && <div className="h-full bg-white"></div>}
+                    {index === currentStoryIndex && (
+                        <motion.div
+                            className="h-full bg-white"
+                            initial={{ width: '0%' }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: story.duration, ease: 'linear' }}
+                        />
+                    )}
+                </div>
+            ))}
+        </div>
+
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1/4 z-30" onClick={(e) => { e.stopPropagation(); paginateUser(-1);}}></div>
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 h-1/2 w-1/4 z-30" onClick={(e) => { e.stopPropagation(); paginateUser(1);}}></div>
+
       <div className="w-full h-full flex items-center justify-center perspective-[1000px]">
         <AnimatePresence initial={false}>
-          {[-2, -1, 0, 1, 2].map(offset => {
-            const index = currentUserIndex + offset;
-            if (index < 0 || index >= stories.length) return null;
-            
-            const storyData = getStoryData(index);
-            if (!storyData) return null;
-
-            return (
-              <motion.div
-                key={index}
+            <motion.div
+                key={currentUserIndex}
                 className="absolute w-[320px] h-[90vh] max-h-[640px]"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{
-                  x: `${offset * 40}%`,
-                  scale: offset === 0 ? 1 : 0.8,
-                  opacity: offset === 0 ? 1 : 0.4,
-                  zIndex: stories.length - Math.abs(offset),
-                  rotateY: offset * -25,
-                  filter: offset === 0 ? 'blur(0px)' : 'blur(4px)',
-                }}
-                transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-                onClick={(e) => { e.stopPropagation(); paginate(index); }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1, zIndex: 1 }}
+                exit={{ scale: 0.8, opacity: 0, zIndex: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               >
                 <StoryCard
-                  storyData={storyData}
-                  isActive={offset === 0}
-                  onNextUser={() => paginate(currentUserIndex + 1)}
+                  storyData={currentGroup}
+                  story={currentStory}
+                  isActive={true}
+                  onNextUser={paginateStory}
                   onReply={handleReply}
                   onReact={handleReact}
                   showToast={showToast}
                   isHighlight={isHighlight}
                 />
               </motion.div>
-            );
-          })}
         </AnimatePresence>
       </div>
     </motion.div>

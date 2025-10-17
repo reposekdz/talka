@@ -18,6 +18,24 @@ interface CreatorFlowModalProps {
 
 type CreatorMode = 'select' | 'post' | 'story' | 'reel';
 
+const CreatorOptionButton: React.FC<{icon: React.ReactNode, title: string, description: string, onClick: () => void, gradient: string}> = ({ icon, title, description, onClick, gradient }) => (
+    <motion.button
+        onClick={onClick}
+        className={`relative p-6 bg-light-hover dark:bg-white/5 rounded-2xl flex flex-col items-start gap-4 hover:bg-light-border dark:hover:bg-white/10 transition-colors text-left overflow-hidden group`}
+        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+    >
+        <div className={`absolute -top-4 -right-4 w-24 h-24 rounded-full bg-gradient-to-br ${gradient} opacity-20 group-hover:opacity-40 transition-opacity duration-300`}></div>
+        <div className={`p-3 rounded-full bg-gradient-to-br ${gradient} text-white`}>
+            {icon}
+        </div>
+        <div>
+            <h3 className="font-bold text-xl">{title}</h3>
+            <p className="text-sm text-light-secondary-text dark:text-twitter-gray mt-1">{description}</p>
+        </div>
+    </motion.button>
+);
+
+
 const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'select', onClose, onPostTweet, onPostStory, onPostReel }) => {
     const [mode, setMode] = useState<CreatorMode>(initialMode);
 
@@ -34,19 +52,10 @@ const CreatorFlowModal: React.FC<CreatorFlowModalProps> = ({ initialMode = 'sele
                 return (
                     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                         <h2 className="text-3xl font-extrabold mb-8 text-light-text dark:text-dim-text">What would you like to create?</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-2xl">
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setMode('post')} className="p-8 bg-light-hover dark:bg-white/5 rounded-2xl flex flex-col items-center gap-4 hover:bg-light-border dark:hover:bg-white/10 transition-colors aspect-square justify-center">
-                                <ComposeIcon />
-                                <span className="font-bold text-xl">Post</span>
-                            </motion.button>
-                             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setMode('story')} className="p-8 bg-light-hover dark:bg-white/5 rounded-2xl flex flex-col items-center gap-4 hover:bg-light-border dark:hover:bg-white/10 transition-colors aspect-square justify-center">
-                                <StoryIcon />
-                                <span className="font-bold text-xl">Story</span>
-                            </motion.button>
-                             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setMode('reel')} className="p-8 bg-light-hover dark:bg-white/5 rounded-2xl flex flex-col items-center gap-4 hover:bg-light-border dark:hover:bg-white/10 transition-colors aspect-square justify-center">
-                                <ReelsIcon />
-                                <span className="font-bold text-xl">Reel</span>
-                            </motion.button>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-3xl">
+                             <CreatorOptionButton icon={<ComposeIcon className="w-8 h-8"/>} title="Post" description="Share a quick thought, photo, or voice note." onClick={() => setMode('post')} gradient="from-blue-400 to-blue-600" />
+                             <CreatorOptionButton icon={<StoryIcon className="w-8 h-8"/>} title="Story" description="Share a photo or video that disappears in 24 hours." onClick={() => setMode('story')} gradient="from-purple-400 to-pink-500" />
+                             <CreatorOptionButton icon={<ReelsIcon className="w-8 h-8"/>} title="Reel" description="Create and share short, entertaining videos." onClick={() => setMode('reel')} gradient="from-rose-400 to-orange-500" />
                         </div>
                     </div>
                 );
