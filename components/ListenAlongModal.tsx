@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Space } from '../types';
@@ -53,8 +55,8 @@ const ListenAlongModal: React.FC<ListenAlongModalProps> = ({ space, onClose }) =
                                         <p className="text-sm text-light-secondary-text dark:text-twitter-gray">@{user.username}</p>
                                     </div>
                                 </div>
-                                <div className={`w-6 h-6 rounded-full border-2 ${isSelected ? 'bg-twitter-blue border-twitter-blue' : 'border-light-border dark:border-twitter-border'}`}>
-                                    {isSelected && <CheckmarkCircleIcon className="text-white" />}
+                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isSelected ? 'bg-twitter-blue border-twitter-blue' : 'border-light-border dark:border-twitter-border'}`}>
+                                    {isSelected && <CheckmarkCircleIcon className="text-white w-5 h-5" />}
                                 </div>
                             </div>
                         );

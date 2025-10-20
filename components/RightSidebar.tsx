@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import WhoToFollow from './WhoToFollow';
 import TrendingTopic from './TrendingTopic';
@@ -66,7 +68,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ onViewProfile, onFollowTogg
   };
 
   return (
-    <aside className="w-[290px] xl:w-[350px] h-screen sticky top-14 px-6 py-4 flex-col gap-4 hidden md:flex overflow-y-auto no-scrollbar">
+    <aside className="w-[290px] xl:w-[350px] h-screen sticky top-14 px-6 py-4 flex-col gap-4 hidden lg:flex overflow-y-auto no-scrollbar">
       <PremiumCard />
 
       <AiAssistantCard onClick={openAiAssistant} />

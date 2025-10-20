@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { Highlight } from '../types';
 import { motion } from 'framer-motion';
@@ -36,8 +38,10 @@ const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwn
             onClick={() => onHighlightClick(highlight)}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="w-16 h-16 rounded-full overflow-hidden transition-all duration-300 neumorphic-light dark:neumorphic-dark hover:scale-105">
-                <img src={highlight.coverUrl} alt={highlight.title} className="w-full h-full object-cover"/>
+            <div className="w-16 h-16 p-0.5 rounded-full neumorphic-light dark:neumorphic-dark">
+                <div className="w-full h-full rounded-full overflow-hidden transition-all duration-300 hover:scale-105">
+                    <img src={highlight.coverUrl} alt={highlight.title} className="w-full h-full object-cover"/>
+                </div>
             </div>
             <p className="text-sm mt-2 truncate w-full text-center">{highlight.title}</p>
           </motion.div>

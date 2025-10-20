@@ -1,3 +1,5 @@
+
+
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers } from '../data/mockData';
@@ -5,6 +7,7 @@ import TweetCard from './TweetCard';
 import WhoToFollow from './WhoToFollow';
 import { Tweet, User, AppSettings } from '../types';
 import { SearchIcon } from '../components/Icon';
+import SearchFilters from './SearchFilters';
 
 interface SearchModalProps {
   onClose: () => void;
@@ -29,6 +32,7 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
   const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions, appSettings, currentUser } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const tabs = ['Top', 'Latest', 'People', 'Photos', 'Videos'];
 
@@ -36,6 +40,10 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
     onViewProfile(user);
     onClose();
   };
+
+  const handleToggleFilter = (filter: string) => {
+      setActiveFilters(prev => prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]);
+  }
 
   const results = useMemo((): SearchResult[] => {
     if (!searchTerm.trim()) return [];
@@ -52,22 +60,38 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
       user.displayName.toLowerCase().includes(lowerCaseSearch) ||
       user.username.toLowerCase().includes(lowerCaseSearch)
     );
+    
+    let combinedResults: SearchResult[] = [];
 
     switch(activeTab) {
       case 'Latest':
-        return tweetResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        combinedResults = tweetResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        break;
       case 'People':
-        return userResults;
+        combinedResults = userResults;
+        break;
       case 'Photos':
-        return tweetResults.filter(t => t.mediaUrls && t.mediaUrls.some(url => !url.endsWith('.mp4')));
+        combinedResults = tweetResults.filter(t => t.mediaUrls && t.mediaUrls.some(url => !url.endsWith('.mp4')));
+        break;
       case 'Videos':
-        return tweetResults.filter(t => t.mediaUrls && t.mediaUrls.some(url => url.endsWith('.mp4')));
+        combinedResults = tweetResults.filter(t => t.mediaUrls && t.mediaUrls.some(url => url.endsWith('.mp4')));
+        break;
       case 'Top':
       default:
-        // A real implementation would have a better sorting algorithm
-        return [...userResults, ...tweetResults];
+        combinedResults = [...userResults, ...tweetResults];
+        break;
     }
-  }, [searchTerm, activeTab]);
+
+    if (activeFilters.includes("From people you follow")) {
+        return combinedResults.filter(item => {
+            const userId = 'content' in item ? item.user.id : item.id;
+            return currentUser.followingIds.includes(userId);
+        });
+    }
+
+    return combinedResults;
+
+  }, [searchTerm, activeTab, activeFilters, currentUser.followingIds]);
   
   const commonTweetCardProps = {
     currentUser: currentUser,
@@ -120,6 +144,10 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
           </div>
         </div>
 
+        {searchTerm.trim() && (
+            <SearchFilters activeFilters={activeFilters} onToggleFilter={handleToggleFilter} />
+        )}
+        
         <div className="flex border-b border-light-border dark:border-twitter-border dim:border-dim-border">
           {tabs.map(tab => (
             <div 
