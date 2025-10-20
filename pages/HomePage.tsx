@@ -156,6 +156,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             onLikeTweet={onLikeTweet}
             onRetweet={onRetweet}
             liveReactions={liveReactions}
+            appSettings={appSettings}
           />
       )}
     </div>

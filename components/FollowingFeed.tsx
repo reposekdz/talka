@@ -1,5 +1,6 @@
+
 import React, { useMemo } from 'react';
-import { Tweet, User } from '../types';
+import { Tweet, User, AppSettings } from '../types';
 import TweetCard from './TweetCard';
 import WhoToFollow from './WhoToFollow';
 import { motion } from 'framer-motion';
@@ -26,6 +27,7 @@ interface FollowingFeedProps {
     onLikeTweet: (tweetId: string) => void;
     onRetweet: (tweetId: string) => void;
     liveReactions: { id: number; emoji: string; tweetId: string }[];
+    appSettings: AppSettings;
 }
 
 const containerVariants = {
@@ -47,7 +49,7 @@ const itemVariants = {
 };
 
 const FollowingFeed: React.FC<FollowingFeedProps> = (props) => {
-    const { currentUser, otherUsers, tweets, onFollowToggle, ...tweetCardProps } = props;
+    const { currentUser, otherUsers, tweets, onFollowToggle, appSettings, ...tweetCardProps } = props;
 
     const followingTweets = useMemo(() => {
         const followingAndOwnTweets = tweets.filter(
@@ -103,7 +105,7 @@ const FollowingFeed: React.FC<FollowingFeedProps> = (props) => {
                          <span className="text-light-secondary-text dark:text-twitter-gray">@{group.user.username}</span>
                     </div>
                     {group.tweets.map(tweet => (
-                        <TweetCard key={tweet.id} tweet={tweet} {...tweetCardProps} currentUser={currentUser} />
+                        <TweetCard key={tweet.id} tweet={tweet} {...tweetCardProps} currentUser={currentUser} appSettings={appSettings} />
                     ))}
                 </motion.div>
             ))}

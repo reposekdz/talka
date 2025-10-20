@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AccountIcon, SecurityIcon, PrivacyIcon, NotificationsIcon, ChevronRightIcon, DisplayIcon } from '../components/Icon';
 import SettingsDetailView from '../components/SettingsDetailView';
@@ -88,7 +89,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onUpdateSettings,
                 />
             </div>
             <div className="flex-1 overflow-y-auto px-4 space-y-4">
-              <div className="bg-light-hover/50 dark:bg-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-light-hover/50 dark:bg-white/5 rounded-2xl overflow-hidden divide-y divide-light-border dark:divide-twitter-border dim:divide-dim-border">
                 {settingsSections.map((item, index) => (
                   <div key={item.title} className={index !== 0 ? "border-t border-light-border dark:border-twitter-border dim:border-dim-border" : ""}>
                     <SettingsItem icon={item.icon} title={item.title} subtitle={item.subtitle} onClick={item.action} />

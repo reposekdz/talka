@@ -1,3 +1,4 @@
+
 import { User, Tweet, Notification, Conversation, Message, Community, Story, UserStory, Reel, Space, Highlight, Moment } from '../types';
 
 export const mockUser: User = {

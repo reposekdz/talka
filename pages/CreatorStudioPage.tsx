@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MonetizationIcon, AnalyticsIcon, PeopleIcon } from '../components/Icon';
 import BarChart from '../components/BarChart';
