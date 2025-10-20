@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockTweets, otherUsers } from '../data/mockData';

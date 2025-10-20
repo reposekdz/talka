@@ -1,79 +1,70 @@
-
-
-import React, { useState, useEffect, useRef } from 'react';
-import { UserStory, Highlight, Story, User } from '../types';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+// FIX: Import User type to be used in StoryViewerProps
+import { UserStory, Story, User } from '../types';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { CloseIcon, PaperPlaneIcon, MoreIcon } from './Icon';
+import { CloseIcon, PaperPlaneIcon } from './Icon';
 import FloatingEmojis from './FloatingEmojis';
 
 interface StoryViewerProps {
   stories: UserStory[];
+  // FIX: Add allUsers prop to match usage in App.tsx
+  allUsers: User[];
   initialUserIndex: number;
   onClose: () => void;
   showToast: (message: string) => void;
-  allUsers: User[];
 }
 
-const StoryProgress: React.FC<{
+const StoryProgressBar: React.FC<{
   storyCount: number;
   currentStoryIndex: number;
-  story: Story;
+  onNext: () => void;
+  duration: number;
   isPaused: boolean;
-}> = ({ storyCount, currentStoryIndex, story, isPaused }) => {
-  return (
-    <div className="absolute top-4 left-4 right-4 z-20 flex gap-1">
-      {Array.from({ length: storyCount }).map((_, index) => (
-        <div key={index} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-          {index < currentStoryIndex && <div className="h-full bg-white"></div>}
-          {index === currentStoryIndex && (
-            <AnimatePresence>
-              <motion.div
-                className="h-full bg-white"
-                initial={{ width: '0%' }}
-                animate={{ width: isPaused ? '0%' : '100%' }}
-                transition={{ duration: isPaused ? 0 : story.duration, ease: 'linear' }}
-              />
-            </AnimatePresence>
-          )}
+}> = ({ storyCount, currentStoryIndex, onNext, duration, isPaused }) => {
+    return (
+        <div className="absolute top-4 left-4 right-4 z-20 flex gap-1">
+            {Array.from({ length: storyCount }).map((_, index) => (
+                <div key={index} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                    {index < currentStoryIndex && <div className="h-full bg-white"></div>}
+                    {index === currentStoryIndex && (
+                        <motion.div
+                            className="h-full bg-white"
+                            initial={{ width: '0%' }}
+                            animate={isPaused ? { width: '0%' } : { width: '100%' }}
+                            transition={{ duration: isPaused ? 0 : duration, ease: 'linear' }}
+                            onAnimationComplete={onNext}
+                        />
+                    )}
+                </div>
+            ))}
         </div>
-      ))}
-    </div>
-  );
+    );
 };
 
 const StoryContent: React.FC<{
   storyData: UserStory;
   story: Story;
-  isActive: boolean;
   onNext: () => void;
   onPrev: () => void;
-  onNextUser: () => void;
   onClose: () => void;
   showToast: (message: string) => void;
-}> = ({ storyData, story, isActive, onNext, onPrev, onNextUser, onClose, showToast }) => {
-  const [isPaused, setIsPaused] = useState(false);
+  isPaused: boolean;
+  setIsPaused: (paused: boolean) => void;
+}> = ({ storyData, story, onNext, onPrev, onClose, showToast, isPaused, setIsPaused }) => {
   const [replyText, setReplyText] = useState('');
   const [emojis, setEmojis] = useState<{ id: number; emoji: string }[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    let timer: number;
-    if (isPaused || !isActive || !story) return;
-    timer = window.setTimeout(onNext, story.duration * 1000);
-    return () => clearTimeout(timer);
-  }, [story, isPaused, isActive, onNext]);
-
-  useEffect(() => {
     const video = videoRef.current;
     if (story.type === 'video' && video) {
-        if (isActive) {
-            video.currentTime = 0;
+        if (!isPaused) {
             video.play().catch(() => {});
         } else {
             video.pause();
         }
     }
-  }, [story, isActive]);
+  }, [story, isPaused]);
 
   const handleReply = () => {
     if (replyText.trim()) {
@@ -84,8 +75,6 @@ const StoryContent: React.FC<{
 
   const onEmojiComplete = (id: number) => setEmojis(prev => prev.filter(e => e.id !== id));
   const quickReact = (emoji: string) => setEmojis(prev => [...prev, { id: Date.now(), emoji }]);
-
-  if (!story) return null;
 
   return (
     <div
@@ -98,7 +87,7 @@ const StoryContent: React.FC<{
       <FloatingEmojis emojis={emojis} onComplete={onEmojiComplete} />
       <div className="absolute inset-0 bg-cover bg-center blur-2xl scale-110" style={{ backgroundImage: `url(${story.mediaUrl})` }} />
       {story.type === 'video' ? (
-        <video ref={videoRef} src={story.mediaUrl} loop muted={!isActive} className="w-full h-full object-contain z-10" playsInline />
+        <video ref={videoRef} src={story.mediaUrl} autoPlay loop muted className="w-full h-full object-contain z-10" playsInline />
       ) : (
         <img src={story.mediaUrl} className="w-full h-full object-contain z-10" alt="Story content" />
       )}
@@ -137,44 +126,44 @@ const StoryContent: React.FC<{
   );
 };
 
-const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initialUserIndex, onClose, showToast }) => {
+const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initialUserIndex, onClose, showToast, allUsers }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState(initialUserIndex);
   const [storyIndices, setStoryIndices] = useState<Record<string, number>>(
     storyGroups.reduce((acc, group) => ({ ...acc, [group.user.id]: 0 }), {})
   );
+  const [isPaused, setIsPaused] = useState(false);
+  const dragControls = useDragControls();
 
   const currentGroup = storyGroups[currentUserIndex];
   const currentStoryIndex = storyIndices[currentGroup.user.id] || 0;
   const currentStory = currentGroup.stories[currentStoryIndex];
 
-  const goToUser = (index: number) => {
+  const goToUser = useCallback((index: number) => {
     if (index >= 0 && index < storyGroups.length) {
       setCurrentUserIndex(index);
     } else {
       onClose();
     }
-  };
+  }, [storyGroups.length, onClose]);
 
-  const nextUser = () => goToUser(currentUserIndex + 1);
-  const prevUser = () => goToUser(currentUserIndex - 1);
+  const nextUser = useCallback(() => goToUser(currentUserIndex + 1), [currentUserIndex, goToUser]);
+  const prevUser = useCallback(() => goToUser(currentUserIndex - 1), [currentUserIndex, goToUser]);
 
-  const nextStory = () => {
+  const nextStory = useCallback(() => {
     if (currentStoryIndex < currentGroup.stories.length - 1) {
       setStoryIndices(prev => ({ ...prev, [currentGroup.user.id]: prev[currentGroup.user.id] + 1 }));
     } else {
       nextUser();
     }
-  };
+  }, [currentStoryIndex, currentGroup, nextUser]);
 
-  const prevStory = () => {
+  const prevStory = useCallback(() => {
     if (currentStoryIndex > 0) {
       setStoryIndices(prev => ({ ...prev, [currentGroup.user.id]: prev[currentGroup.user.id] - 1 }));
     } else {
       prevUser();
     }
-  };
-
-  const dragControls = useDragControls();
+  }, [currentStoryIndex, prevUser]);
 
   return (
     <motion.div
@@ -182,6 +171,18 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initial
       className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm"
       onPointerDown={(e) => { e.target === e.currentTarget && onClose(); }}
     >
+        {/* Prev User Peek */}
+        {currentUserIndex > 0 && (
+             <motion.div 
+                initial={{ x: -20, opacity: 0, scale: 0.8 }}
+                animate={{ x: 0, opacity: 1, scale: 1 }}
+                onClick={prevUser}
+                className="absolute left-4 sm:left-10 cursor-pointer p-1 bg-white/10 rounded-full"
+            >
+                <img src={storyGroups[currentUserIndex - 1].user.avatarUrl} alt="Previous user" className="w-10 h-10 rounded-full opacity-60 hover:opacity-100"/>
+            </motion.div>
+        )}
+
       <AnimatePresence custom={currentUserIndex}>
         <motion.div
           key={currentUserIndex}
@@ -198,24 +199,37 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initial
           exit={{ x: -300, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <StoryProgress
+          <StoryProgressBar
             storyCount={currentGroup.stories.length}
             currentStoryIndex={currentStoryIndex}
-            story={currentStory}
-            isPaused={false}
+            onNext={nextStory}
+            duration={currentStory.duration}
+            isPaused={isPaused}
           />
           <StoryContent
             storyData={currentGroup}
             story={currentStory}
-            isActive={true}
             onNext={nextStory}
             onPrev={prevStory}
-            onNextUser={nextUser}
             onClose={onClose}
             showToast={showToast}
+            isPaused={isPaused}
+            setIsPaused={setIsPaused}
           />
         </motion.div>
       </AnimatePresence>
+
+       {/* Next User Peek */}
+        {currentUserIndex < storyGroups.length - 1 && (
+            <motion.div 
+                initial={{ x: 20, opacity: 0, scale: 0.8 }}
+                animate={{ x: 0, opacity: 1, scale: 1 }}
+                onClick={nextUser}
+                className="absolute right-4 sm:right-10 cursor-pointer p-1 bg-white/10 rounded-full"
+            >
+                <img src={storyGroups[currentUserIndex + 1].user.avatarUrl} alt="Next user" className="w-10 h-10 rounded-full opacity-60 hover:opacity-100"/>
+            </motion.div>
+        )}
     </motion.div>
   );
 };

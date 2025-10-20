@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { User } from '../types';
 import AvatarWithStatus from './AvatarWithStatus';
@@ -51,16 +49,17 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({ user, currentUser, onFollowTo
         </div>
       </div>
        <div className="flex items-center gap-2 flex-shrink-0">
-        {(!isFollowerOfCurrentUser || isFollowing) && (
-            <button
-                className={`font-bold px-4 py-1.5 rounded-full transition-colors duration-200 self-center ${followButtonClasses}`}
-                onClick={handleFollowClick}
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => setIsHovering(false)}
-            >
-                {followButtonText}
-            </button>
-        )}
+        {/* Always show follow/unfollow button if not the current user's profile */}
+        <button
+            className={`font-bold px-4 py-1.5 rounded-full transition-colors duration-200 self-center ${followButtonClasses}`}
+            onClick={handleFollowClick}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+        >
+            {followButtonText}
+        </button>
+
+        {/* Show "Remove Follower" option in a menu if viewing own followers list */}
         {isFollowerOfCurrentUser && onRemoveFollower && (
            <div className="relative">
              <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }} className="p-2 hover:bg-light-hover dark:hover:bg-white/10 rounded-full">

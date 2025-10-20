@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 // FIX: Added strokeWidth prop to allow customization and resolve type error.

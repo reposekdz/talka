@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Call } from '../types';
@@ -117,8 +115,11 @@ const CallView: React.FC<CallViewProps> = (props) => {
         dragConstraints={{ top: 16, left: 16, right: window.innerWidth - (isChatOpen ? 768 : 384), bottom: window.innerHeight - 500 }}
         className="fixed top-16 left-1/2 -translate-x-1/2 w-[384px] h-[500px] bg-black rounded-2xl shadow-2xl z-50 overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
         initial={{ opacity: 0, scale: 0.9 }}
-        // FIX: Merged duplicate 'animate' props into one.
-        animate={{ width: isChatOpen ? 768 : 384, opacity: 1, scale: 1 }}
+        animate={{ 
+            width: isChatOpen ? 768 : 384,
+            opacity: 1, 
+            scale: 1 
+        }}
         exit={{ opacity: 0, scale: 0.9 }}
     >
       <div className="flex-1 flex relative">
