@@ -1,4 +1,5 @@
 
+
 export enum Page {
     Home = 'Home',
     Explore = 'Explore',
@@ -19,6 +20,8 @@ export enum Page {
 export type Theme = 'light' | 'dim' | 'dark';
 
 export type ChatTheme = 'default-blue' | 'sunset-orange' | 'ocean-green' | 'minty-fresh';
+
+export type AiWriterAction = 'improve' | 'shorten' | 'casual' | 'professional';
 
 export interface AppSettings {
   privacyAndSafety: {

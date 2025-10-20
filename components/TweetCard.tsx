@@ -1,9 +1,12 @@
+
+
 import React, { useState } from 'react';
 import { Tweet, User, AppSettings } from '../types';
-import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon, MessagesIcon, RetweetFillIcon } from './Icon';
+import { VerifiedIcon, ReplyIcon, RetweetIcon, LikeIcon, ShareIcon, PinIcon, MoreIcon, HeartFillIcon, BookmarkIcon, BookmarkFillIcon, EditIcon, TrashIcon, QuoteIcon, SparklesIcon, TranslateIcon, MessagesIcon, RetweetFillIcon, DollarSignIcon } from './Icon';
 import Avatar from './Avatar';
 import PollDisplay from './PollDisplay';
 import VideoPlayer from './VideoPlayer';
+import TipModal from './TipModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
 
@@ -40,7 +43,7 @@ const TweetMenu: React.FC<TweetMenuProps> = ({ tweet, isOwnTweet, onClose, onEdi
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="absolute top-8 right-0 bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg rounded-lg shadow-lg w-56 border border-light-border dark:border-twitter-border z-50 origin-top-right"
+        className="absolute top-8 right-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-xl rounded-lg shadow-lg w-56 border border-light-border/50 dark:border-twitter-border/50 z-50 origin-top-right"
         onClick={(e) => e.stopPropagation()}
       >
         <ul>
@@ -87,6 +90,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
     const { tweet, currentUser, onImageClick, onViewProfile, onReply, onToggleBookmark, onVote, onQuote, onEdit, onDeleteTweet, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, liveReactions, appSettings } = props;
     const { user, content, timestamp, mediaUrls, quotedTweet, poll, isLiked, isRetweeted, isBookmarked, pinned, translation, isVoiceTweet, audioUrl } = tweet;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isTipModalOpen, setIsTipModalOpen] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     
@@ -168,7 +172,10 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
     };
 
     return (
-        <div className="p-4 border-b border-light-border dark:border-twitter-border dim:border-dim-border">
+        <div className="p-4 border-b border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border/50">
+            <AnimatePresence>
+                {isTipModalOpen && <TipModal user={user} onClose={() => setIsTipModalOpen(false)} />}
+            </AnimatePresence>
             <div className="flex gap-4">
                 <div className="flex-shrink-0" onClick={(e) => handleActionClick(e, () => onViewProfile(user))}>
                     <Avatar src={user.avatarUrl} alt={user.displayName} />
@@ -228,7 +235,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                             <div className="p-2 rounded-full group-hover:bg-green-500/10">{isRetweeted ? <RetweetFillIcon/> : <RetweetIcon />}</div>
                             <span className="text-xs">{tweet.retweetCount > 0 ? tweet.retweetCount : ''}</span>
                         </motion.button>
-                        <motion.div className="relative" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div className="relative">
                             <AnimatePresence>
                                 {relevantReactions.map(reaction => (
                                     <motion.div
@@ -243,12 +250,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-                            <button onClick={(e) => handleActionClick(e, () => onLikeTweet(tweet.id))} className={`flex items-center gap-2 group ${isLiked ? 'text-red-500' : ''}`}>
+                            <motion.button whileTap={{ scale: 1.2 }} onClick={(e) => handleActionClick(e, () => onLikeTweet(tweet.id))} className={`flex items-center gap-2 group ${isLiked ? 'text-red-500' : ''}`}>
                                 <div className="p-2 rounded-full group-hover:bg-red-500/10">{isLiked ? <HeartFillIcon/> : <LikeIcon />}</div>
                                 <span className="text-xs">{tweet.likeCount > 0 ? tweet.likeCount : ''}</span>
-                            </button>
+                            </motion.button>
                         </motion.div>
                          <div className="flex items-center">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={(e) => handleActionClick(e, () => setIsTipModalOpen(true))} className="p-2 rounded-full group-hover:bg-yellow-500/10 text-yellow-500">
+                                <DollarSignIcon />
+                            </motion.button>
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleTranslate} className="p-2 rounded-full group-hover:bg-twitter-blue/10">
                                 <TranslateIcon />
                             </motion.button>

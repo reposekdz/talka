@@ -46,7 +46,7 @@ import UserListModal from './components/UserListModal';
 
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment, Moment } from './types';
 import { mockUser as initialMockUser, otherUsers as initialOtherUsers, mockTweets as initialMockTweets, mockNotifications, mockConversations as initialMockConversations, mockMessages as initialMockMessages, initialUserStories, mockHighlights as initialMockHighlights, mockReels as initialMockReels, mockMoments as initialMockMoments } from './data/mockData';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleGenAI } from '@google/genai';
 
 type MessageContent = | { type: 'text'; text: string } | { type: 'voice'; audioUrl: string; duration: number } | { type: 'gif'; gifUrl: string } | { type: 'wave' } | { type: 'image', imageUrl: string, text?: string } | { type: 'reel-share', reelId: string };
@@ -570,6 +570,10 @@ const App: React.FC = () => {
         }
     };
     
+    const onSimulateIncomingCall = (user: User) => {
+        setIncomingCall({ user, type: 'video', status: 'incoming' });
+    };
+
     const mainContent = () => {
         const commonTweetCardProps = {
             currentUser: currentUser,
@@ -640,6 +644,7 @@ const App: React.FC = () => {
                     onOpenCreateHighlight={() => setIsCreateHighlightModalOpen(true)}
                     onHighlightClick={setViewingHighlight}
                     onOpenAiSummary={(user, tweets) => setIsAiSummaryOpen({ user, tweets })}
+                    onSimulateCall={onSimulateIncomingCall}
                     {...commonTweetCardProps}
                 />;
             case Page.Communities:
@@ -685,6 +690,7 @@ const App: React.FC = () => {
 
     return (
         <div className={`min-h-screen bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg text-light-text dark:text-white dim:text-dim-text transition-colors duration-300`}>
+             <div className="fixed inset-0 -z-10 bg-aurora from-blue-300 via-purple-300 to-pink-300 dark:from-blue-900 dark:via-purple-900 dark:to-pink-900 bg-[size:400%_400%] animate-aurora" />
              <Header 
                 currentUser={currentUser}
                 currentPage={currentPage}
@@ -703,8 +709,10 @@ const App: React.FC = () => {
                     activeChatCount={allKnownConversations.reduce((sum, chat) => sum + chat.unreadCount, 0)}
                     onOpenCreator={(mode) => { setIsCreatorOpen(true); setCreatorMode(mode); }}
                 />
-                <main className="flex-1 min-w-0 w-full max-w-[600px] border-x border-light-border dark:border-twitter-border dim:border-dim-border pb-16 sm:pb-0">
-                    {mainContent()}
+                <main className="flex-1 min-w-0 w-full max-w-[600px] border-x border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border/50 pb-16 sm:pb-0">
+                   <AnimatePresence mode="wait">
+                        {mainContent()}
+                    </AnimatePresence>
                 </main>
                 <RightSidebar 
                     onViewProfile={(user) => setCurrentPage(Page.Profile)}

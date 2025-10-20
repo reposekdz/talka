@@ -14,6 +14,16 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
+      .prose { color: inherit; }
+      .prose a { color: #1DA1F2; }
+      .prose strong { font-weight: bold; }
+      .prose em { font-style: italic; }
+      .prose code { background-color: rgba(128,128,128,0.15); padding: 2px 4px; border-radius: 4px; }
+      .prose pre { background-color: rgba(128,128,128,0.15); padding: 8px; border-radius: 8px; overflow-x: auto; }
+      .prose blockquote { border-left: 2px solid #1DA1F2; padding-left: 1rem; margin-left: 0; }
+      .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+      .prose ol { list-style-type: decimal; padding-left: 1.5rem; }
+      .dark .prose-invert { color: #F7F9F9; }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -47,15 +57,31 @@
               'create-gradient': 'linear-gradient(to right, #1DA1F2, #188ae8)',
               'space-gradient': 'linear-gradient(to right top, #654ea3, #eaafc8)',
               'create-story-gradient': 'linear-gradient(to top, #0f1419, #536471)',
+              'glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0))',
+              'aurora': 'radial-gradient(ellipse at top, var(--tw-gradient-stops))',
+            },
+            backdropBlur: {
+                'xl': '24px',
             },
             animation: {
               'pulse-glow': 'pulse-glow 4s infinite ease-in-out',
+              'aurora': 'aurora 15s ease-in-out infinite',
+              'confetti-burst': 'confetti-burst 0.8s ease-out forwards',
             },
             keyframes: {
                 'pulse-glow': {
                     '0%, 100%': { boxShadow: '0 0 10px 0px rgba(29, 161, 242, 0.3)' },
                     '50%': { boxShadow: '0 0 20px 5px rgba(29, 161, 242, 0.3)' },
-                }
+                },
+                aurora: {
+                  '0%, 100%': { backgroundPosition: '0% 50%' },
+                  '50%': { backgroundPosition: '100% 50%' },
+                },
+                'confetti-burst': {
+                  '0%': { transform: 'scale(0)', opacity: 1 },
+                  '80%': { transform: 'scale(1.5)', opacity: 0.5 },
+                  '100%': { transform: 'scale(2)', opacity: 0 },
+                },
             }
           }
         }

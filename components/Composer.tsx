@@ -7,7 +7,8 @@ import Avatar from './Avatar';
 import { mockUser } from '../data/mockData';
 import GifComposerModal from './GifComposerModal';
 import AiImageGeneratorModal from './AiImageGeneratorModal';
-import { motion } from 'framer-motion';
+import AiWriterMenu from './AiWriterMenu';
+import { motion, AnimatePresence } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
 
 interface ComposerProps {
@@ -28,6 +29,7 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet, placeholder = "What is
   const [recordingTime, setRecordingTime] = useState(0);
   const [isGifModalOpen, setIsGifModalOpen] = useState(false);
   const [isAiImageModalOpen, setIsAiImageModalOpen] = useState(false);
+  const [isAiWriterOpen, setIsAiWriterOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<number | null>(null);
@@ -108,7 +110,10 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet, placeholder = "What is
       <div className="flex-shrink-0">
         <Avatar src={mockUser.avatarUrl} alt={mockUser.displayName} />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 relative">
+        <AnimatePresence>
+            {isAiWriterOpen && <AiWriterMenu currentText={text} onApplyText={setText} onClose={() => setIsAiWriterOpen(false)} />}
+        </AnimatePresence>
         <textarea
           value={text}
           onChange={handleTextChange}
@@ -158,13 +163,18 @@ const Composer: React.FC<ComposerProps> = ({ onPostTweet, placeholder = "What is
             <button onClick={startRecording} className="p-2 hover:bg-twitter-blue/10 rounded-full"><MicrophoneIcon /></button>
             <button onClick={() => setIsAiImageModalOpen(true)} className="p-2 hover:bg-twitter-blue/10 rounded-full"><SparklesIcon /></button>
           </div>
-          <button 
-            onClick={handlePost}
-            className="bg-create-gradient text-white font-bold px-6 py-2 rounded-full hover:shadow-lg hover:shadow-twitter-blue/40 disabled:opacity-50 disabled:shadow-none transition-all"
-            disabled={isDisabled}
-          >
-            Post
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsAiWriterOpen(!isAiWriterOpen)} className="p-2 text-twitter-blue hover:bg-twitter-blue/10 rounded-full" disabled={!text}>
+                <SparklesIcon />
+            </button>
+            <button 
+                onClick={handlePost}
+                className="bg-create-gradient text-white font-bold px-6 py-2 rounded-full hover:shadow-lg hover:shadow-twitter-blue/40 disabled:opacity-50 disabled:shadow-none transition-all"
+                disabled={isDisabled}
+            >
+                Post
+            </button>
+          </div>
         </div>
       </div>
       {isGifModalOpen && <GifComposerModal onClose={() => setIsGifModalOpen(false)} onSelectGif={(url) => { setMedia([...media, url]); setIsGifModalOpen(false); }} />}

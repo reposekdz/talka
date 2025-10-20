@@ -1,5 +1,7 @@
+
+
 import React, { useState } from 'react';
-import { Tweet, User, Reel } from '../types';
+import { Tweet, User, Reel, AppSettings } from '../types';
 import TweetCard from '../components/TweetCard';
 import { BookmarkIcon, ReelsIcon } from '../components/Icon';
 import TweetSkeleton from '../components/TweetSkeleton';
@@ -24,12 +26,13 @@ interface BookmarksPageProps {
   onEdit: (tweet: Tweet) => void;
   onToggleBookmark: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
+  appSettings: AppSettings;
 }
 
 const TWEETS_PER_PAGE = 10;
 
 const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
-  const { tweets, reels, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions } = props;
+  const { tweets, reels, currentUser, onViewProfile, onImageClick, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, onVote, onQuote, onEdit, onToggleBookmark, liveReactions, appSettings } = props;
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [activeTab, setActiveTab] = useState('Posts');
@@ -88,6 +91,8 @@ const BookmarksPage: React.FC<BookmarksPageProps> = (props) => {
                   onLikeTweet={onLikeTweet}
                   onRetweet={onRetweet}
                   liveReactions={liveReactions}
+                  // FIX: Added missing appSettings prop
+                  appSettings={appSettings}
                 />
               ))}
               {isLoadingMore && Array.from({ length: 3 }).map((_, i) => <TweetSkeleton key={`loading-${i}`} />)}

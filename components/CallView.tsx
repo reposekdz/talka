@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Call } from '../types';
@@ -5,6 +7,7 @@ import { EndCallIcon, MicOffIcon, MicrophoneIcon, CameraOnIcon, CameraOffIcon, M
 import FloatingEmojis from './FloatingEmojis';
 import ReactionPicker from './ReactionPicker';
 import AudioCallView from './AudioCallView';
+import CallChatPanel from './CallChatPanel';
 
 interface CallViewProps {
   call: Call;
@@ -71,6 +74,7 @@ const CallView: React.FC<CallViewProps> = (props) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -110,58 +114,68 @@ const CallView: React.FC<CallViewProps> = (props) => {
     <motion.div
         drag
         dragMomentum={false}
-        dragConstraints={{ top: 16, left: 16, right: window.innerWidth - 384, bottom: window.innerHeight - 500 }}
+        dragConstraints={{ top: 16, left: 16, right: window.innerWidth - (isChatOpen ? 768 : 384), bottom: window.innerHeight - 500 }}
         className="fixed top-16 left-1/2 -translate-x-1/2 w-[384px] h-[500px] bg-black rounded-2xl shadow-2xl z-50 overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
         initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        // FIX: Merged duplicate 'animate' props into one.
+        animate={{ width: isChatOpen ? 768 : 384, opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
     >
-      <FloatingEmojis emojis={reactions} onComplete={onEmojiComplete} />
-      {call.type === 'video' ? (
-        <video ref={remoteVideoRef} autoPlay playsInline className="absolute top-0 left-0 w-full h-full object-cover" />
-      ) : (
-        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-            <AudioVisualizer />
-            <img src={call.user.avatarUrl} alt={call.user.displayName} className="w-32 h-32 rounded-full z-10"/>
-        </div>
-      )}
-      
-      <div className="absolute inset-0 bg-black/20"></div>
+      <div className="flex-1 flex relative">
+          <div className="flex-1 relative">
+            <FloatingEmojis emojis={reactions} onComplete={onEmojiComplete} />
+            <video ref={remoteVideoRef} autoPlay playsInline className="absolute top-0 left-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/20"></div>
 
-      <header className="relative z-10 p-4 flex justify-between items-center text-white">
-        <div >
-            <h2 className="font-bold">{call.user.displayName}</h2>
-            <p className="text-sm">{call.status === 'outgoing' ? 'Ringing...' : 'Connected'}</p>
-        </div>
-        <button onClick={onMinimize} className="p-2 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition-colors">
-            <MinimizeIcon className="w-5 h-5" />
-        </button>
-      </header>
-      
-      {call.type === 'video' && (
-        <motion.div
-            drag
-            dragConstraints={{ top: 0, left: 0, right: 384 - 128, bottom: 500 - 96 }}
-            className="absolute top-20 right-4 w-32 h-24 rounded-lg overflow-hidden shadow-lg cursor-grab active:cursor-grabbing z-20"
-        >
-            <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-        </motion.div>
-      )}
+            <header className="relative z-10 p-4 flex justify-between items-center text-white">
+                <div >
+                    <h2 className="font-bold">{call.user.displayName}</h2>
+                    <p className="text-sm">{call.status === 'outgoing' ? 'Ringing...' : 'Connected'}</p>
+                </div>
+                <button onClick={onMinimize} className="p-2 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition-colors">
+                    <MinimizeIcon className="w-5 h-5" />
+                </button>
+            </header>
+            
+            <motion.div
+                drag
+                dragConstraints={{ top: 0, left: 0, right: 384 - 128, bottom: 500 - 96 - 80 }} // Adjust for footer
+                className="absolute top-20 right-4 w-32 h-24 rounded-lg overflow-hidden shadow-lg cursor-grab active:cursor-grabbing z-20"
+            >
+                <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            </motion.div>
+          </div>
+           <AnimatePresence>
+                {isChatOpen && (
+                    <motion.div 
+                        className="w-96 h-full bg-light-bg/80 dark:bg-twitter-dark/80 backdrop-blur-xl"
+                        initial={{ x: '100%'}}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%'}}
+                        transition={{type: 'spring', stiffness: 400, damping: 40}}
+                    >
+                       <CallChatPanel onClose={() => setIsChatOpen(false)} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+      </div>
 
-      <footer className="relative z-10 mt-auto p-4">
+      <footer className="relative z-10 p-4 bg-black/30">
         <div className="flex justify-center items-center gap-3">
           <button onClick={onToggleMic} className={`${controlButtonClasses} ${call.isMicMuted ? 'bg-white text-black' : ''}`}>
             {call.isMicMuted ? <MicOffIcon /> : <MicrophoneIcon />}
           </button>
-          {call.type === 'video' && (
-            <button onClick={onToggleCamera} className={`${controlButtonClasses} ${call.isCameraOff ? 'bg-white text-black' : ''}`}>
-                {call.isCameraOff ? <CameraOffIcon /> : <CameraOnIcon />}
-            </button>
-          )}
-          <button onClick={() => setIsReactionPickerOpen(true)} className={`${controlButtonClasses} relative`}>
-            <EmojiIcon />
-            {isReactionPickerOpen && <ReactionPicker onSelect={handleSelectReaction} onClose={() => setIsReactionPickerOpen(false)} />}
+          <button onClick={onToggleCamera} className={`${controlButtonClasses} ${call.isCameraOff ? 'bg-white text-black' : ''}`}>
+              {call.isCameraOff ? <CameraOffIcon /> : <CameraOnIcon />}
           </button>
+           <button className={`${controlButtonClasses}`}><ScreenShareIcon/></button>
+           <button onClick={() => setIsChatOpen(!isChatOpen)} className={`${controlButtonClasses} ${isChatOpen ? 'bg-twitter-blue' : ''}`}><ChatBubbleIcon /></button>
+          <div className="relative">
+            <button onClick={() => setIsReactionPickerOpen(true)} className={`${controlButtonClasses}`}>
+                <EmojiIcon />
+            </button>
+            {isReactionPickerOpen && <ReactionPicker onSelect={handleSelectReaction} onClose={() => setIsReactionPickerOpen(false)} />}
+          </div>
            <button onClick={onEndCall} className="p-4 bg-red-600 text-white rounded-full">
             <EndCallIcon />
           </button>
