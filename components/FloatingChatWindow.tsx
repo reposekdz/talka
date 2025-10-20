@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Conversation, Message, User, ChatTheme, Reel } from '../types';
@@ -66,7 +68,13 @@ const ChatOptionsMenu: React.FC<{onSelectTheme: (theme: ChatTheme) => void; onCl
             <p className="text-xs text-light-secondary-text dark:text-twitter-gray px-2 pb-1">Chat Theme</p>
             <div className="flex gap-2">
                 {themeOptions.map(opt => (
-                    <button key={opt.theme} onClick={() => onSelectTheme(opt.theme)} className={`w-6 h-6 rounded-full ${opt.class}`}></button>
+                    <motion.button 
+                        key={opt.theme} 
+                        onClick={() => onSelectTheme(opt.theme)} 
+                        className={`w-6 h-6 rounded-full ${opt.class}`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                    />
                 ))}
             </div>
         </motion.div>
@@ -232,6 +240,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
             )}
         </AnimatePresence>
 
+        <AnimatePresence>
         {filteredMessages.map(msg => (
           <MessageBubble 
             key={msg.id} 
@@ -246,6 +255,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = (props) => {
             chatTheme={conversation.chatTheme || 'default-blue'}
           />
         ))}
+        </AnimatePresence>
         {searchTerm && filteredMessages.length === 0 && (
             <div className="text-center text-sm text-light-secondary-text dark:text-twitter-gray p-4">No results found.</div>
         )}

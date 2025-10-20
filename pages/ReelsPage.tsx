@@ -38,7 +38,7 @@ const ReelsPage: React.FC<ReelsPageProps> = (props) => {
                  cancel();
             }
         },
-        { axis: 'y', filterTaps: true, rubberband: true }
+        { axis: 'y', filterTaps: true, rubberband: 0.2 }
     );
 
     return (
@@ -49,7 +49,7 @@ const ReelsPage: React.FC<ReelsPageProps> = (props) => {
             <motion.div
                 className="h-full w-full"
                 animate={controls}
-                transition={{ type: 'spring', stiffness: 400, damping: 50 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 50 }}
                 {...bind()}
             >
                 {props.reels.map((reel, index) => (

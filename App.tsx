@@ -690,6 +690,18 @@ const App: React.FC = () => {
         return <LoginPage onLogin={handleLogin} />;
     }
 
+    const pageVariants = {
+        initial: { opacity: 0, x: -20 },
+        in: { opacity: 1, x: 0 },
+        out: { opacity: 0, x: 20 },
+    };
+
+    const pageTransition = {
+        type: "tween",
+        ease: "anticipate",
+        duration: 0.4,
+    };
+
     return (
         <div className={`min-h-screen bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg text-light-text dark:text-white dim:text-dim-text transition-colors duration-300`}>
              <div className="fixed inset-0 -z-10 bg-aurora from-blue-300 via-purple-300 to-pink-300 dark:from-blue-900 dark:via-purple-900 dark:to-pink-900 bg-[size:400%_400%] animate-aurora" />
@@ -713,7 +725,16 @@ const App: React.FC = () => {
                 />
                 <main className="flex-1 min-w-0 w-full max-w-[600px] border-x border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border/50 pb-16 sm:pb-0">
                    <AnimatePresence mode="wait">
-                        {mainContent()}
+                        <motion.div
+                            key={currentPage}
+                            initial="initial"
+                            animate="in"
+                            exit="out"
+                            variants={pageVariants}
+                            transition={pageTransition}
+                        >
+                            {mainContent()}
+                        </motion.div>
                     </AnimatePresence>
                 </main>
                 <RightSidebar 

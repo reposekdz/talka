@@ -55,8 +55,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, activeCh
         </nav>
         <motion.button 
             onClick={() => onOpenCreator('select')} 
-            className="bg-create-gradient w-14 h-14 xl:w-56 mt-4 text-white font-bold text-lg p-3 rounded-full hover:shadow-lg hover:shadow-twitter-blue/40 transition-all duration-300 animate-pulse-glow"
-            whileHover={{ scale: 1.05, y: -2 }}
+            className="bg-interactive-gradient bg-[size:200%_auto] w-14 h-14 xl:w-56 mt-4 text-white font-bold text-lg p-3 rounded-full hover:shadow-lg hover:shadow-twitter-blue/40 transition-all duration-300 animate-pulse-glow"
+            whileHover={{ 
+                scale: 1.05, 
+                y: -2,
+                backgroundPosition: 'right center',
+                transition: { duration: 0.4 }
+            }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 10 }}
         >

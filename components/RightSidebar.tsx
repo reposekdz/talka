@@ -6,7 +6,7 @@ import TrendingTopic from './TrendingTopic';
 import { mockTrendingTopics } from '../data/mockData';
 import { User } from '../types';
 import { RefreshIcon, SearchIcon, SparklesIcon, VerifiedIcon } from './Icon';
-import { motion } from 'framer-motion';
+import { motion, useAnimationControls } from 'framer-motion';
 
 interface RightSidebarProps {
   onViewProfile: (user: User) => void;
@@ -18,8 +18,8 @@ interface RightSidebarProps {
 
 const PremiumCard: React.FC = () => (
     <motion.div 
-        className="bg-premium-gradient rounded-2xl p-4 text-white"
-        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+        className="bg-premium-gradient rounded-2xl p-4 text-white animate-subtle-float"
+        whileHover={{ y: -5, scale: 1.02, transition: { type: 'spring', stiffness: 300 } }}
     >
         <h2 className="text-xl font-extrabold">Subscribe to Premium</h2>
         <p className="my-2 font-semibold">
@@ -37,18 +37,18 @@ const PremiumCard: React.FC = () => (
 
 const AiAssistantCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <motion.div 
-        className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl p-4 text-center"
-        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+        className="bg-ai-gradient bg-[size:200%_auto] rounded-2xl p-4 text-center text-white"
+        whileHover={{ y: -5, scale: 1.02, backgroundPosition: 'right center', transition: { type: 'spring', stiffness: 300, duration: 0.4 } }}
     >
-        <SparklesIcon className="w-10 h-10 mx-auto text-twitter-blue" />
+        <SparklesIcon className="w-10 h-10 mx-auto" />
         <h2 className="text-xl font-extrabold mt-2">Talka AI</h2>
-        <p className="my-2 text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text">
+        <p className="my-2 text-sm text-white/80">
             Ask questions, summarize threads, and more with the power of AI.
         </p>
         <motion.button 
             onClick={onClick}
-            className="bg-twitter-blue text-white font-bold px-4 py-2 rounded-full w-full"
-            whileHover={{ scale: 1.05 }}
+            className="bg-white/90 text-black font-bold px-4 py-2 rounded-full w-full"
+            whileHover={{ scale: 1.05, backgroundColor: '#FFFFFF' }}
             whileTap={{ scale: 0.95 }}
         >
             Ask AI
@@ -61,8 +61,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ onViewProfile, onFollowTogg
   const [whoToFollowUsers, setWhoToFollowUsers] = useState(() => 
     [...otherUsers].sort(() => 0.5 - Math.random()).slice(0, 3)
   );
+  const refreshControls = useAnimationControls();
+
 
   const refreshWhoToFollow = () => {
+    refreshControls.start({ rotate: 360, transition: { duration: 0.5 } });
     const shuffled = [...otherUsers].sort(() => 0.5 - Math.random());
     setWhoToFollowUsers(shuffled.slice(0, 3));
   };
@@ -88,9 +91,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ onViewProfile, onFollowTogg
       <div className="bg-light-hover dark:bg-twitter-light-dark dim:bg-dim-hover rounded-2xl">
         <div className="flex justify-between items-center p-4">
           <h2 className="text-xl font-extrabold">Who to follow</h2>
-          <button onClick={refreshWhoToFollow} className="p-2 text-twitter-blue hover:bg-twitter-blue/10 rounded-full">
+          <motion.button animate={refreshControls} onClick={refreshWhoToFollow} className="p-2 text-twitter-blue hover:bg-twitter-blue/10 rounded-full">
               <RefreshIcon />
-          </button>
+          </motion.button>
         </div>
         {whoToFollowUsers.map(user => (
           <WhoToFollow 

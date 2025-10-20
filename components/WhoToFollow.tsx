@@ -50,14 +50,16 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({ user, currentUser, onFollowTo
       </div>
        <div className="flex items-center gap-2 flex-shrink-0">
         {/* Always show follow/unfollow button if not the current user's profile */}
-        <button
+        <motion.button
             className={`font-bold px-4 py-1.5 rounded-full transition-colors duration-200 self-center ${followButtonClasses}`}
             onClick={handleFollowClick}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
         >
             {followButtonText}
-        </button>
+        </motion.button>
 
         {/* Show "Remove Follower" option in a menu if viewing own followers list */}
         {isFollowerOfCurrentUser && onRemoveFollower && (

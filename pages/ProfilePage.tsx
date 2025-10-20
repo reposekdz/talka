@@ -1,12 +1,12 @@
 
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { User, Tweet, Highlight, AppSettings } from '../types';
 import { CalendarIcon, MoreIcon, PinIcon, MessagesIcon, SparklesIcon, PhoneIcon } from '../components/Icon';
 import TweetCard from '../components/TweetCard';
 import ProfileHighlights from '../components/ProfileHighlights';
 import TweetSkeleton from '../components/TweetSkeleton';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 interface ProfilePageProps {
   user: User;
@@ -45,6 +45,11 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
   const [activeTab, setActiveTab] = useState('Posts');
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollY } = useScroll({ container: scrollRef });
+  const bannerY = useTransform(scrollY, [0, 500], [0, -100]);
+  const avatarScale = useTransform(scrollY, [0, 100], [1, 1.1]);
   
   const isOwnProfile = user.id === 'u1'; // Mock check for current user
   const pinnedTweet = tweets.find(t => t.pinned);
@@ -143,12 +148,13 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="pb-16 sm:pb-0"
+        className="pb-16 sm:pb-0 h-full overflow-y-auto no-scrollbar"
+        ref={scrollRef}
     >
       <div className="relative">
-        <img src={user.bannerUrl} alt={`${user.displayName}'s banner`} className="w-full h-48 object-cover" />
+        <motion.img style={{ y: bannerY }} src={user.bannerUrl} alt={`${user.displayName}'s banner`} className="w-full h-48 object-cover" />
         <div className="absolute -bottom-16 left-4">
-          <img src={user.avatarUrl} alt={user.displayName} className="w-32 h-32 rounded-full border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg" />
+          <motion.img style={{ scale: avatarScale }} src={user.avatarUrl} alt={user.displayName} className="w-32 h-32 rounded-full border-4 border-light-bg dark:border-twitter-dark dim:border-dim-bg origin-bottom" />
         </div>
       </div>
 
@@ -183,7 +189,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
       
       {isOwnProfile && <ProfileHighlights highlights={highlights} isOwnProfile={isOwnProfile} onHighlightClick={onHighlightClick} onOpenCreateHighlight={onOpenCreateHighlight} />}
 
-      <div className="flex border-b border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border mt-4">
+      <div className="flex border-b border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border mt-4 sticky top-0 bg-light-bg/80 dark:bg-twitter-dark/80 dim:bg-dim-bg/80 backdrop-blur-md z-10">
           {tabs.map(tab => (
             <div key={tab} onClick={() => setActiveTab(tab)} className="flex-1 text-center font-bold p-4 hover:bg-light-hover dark:hover:bg-white/10 dim:hover:bg-dim-hover cursor-pointer relative">
                 <span className={activeTab === tab ? 'text-light-text dark:text-white dim:text-dim-text' : 'text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text'}>

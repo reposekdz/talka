@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Theme } from '../types';
 import { CheckmarkCircleIcon } from './Icon';
+import { motion } from 'framer-motion';
 
 interface DisplayModalProps {
   onClose: () => void;
@@ -64,13 +65,15 @@ const DisplayModal: React.FC<DisplayModalProps> = ({ onClose, currentTheme, setT
             <h3 className="font-bold text-center mb-4">Color</h3>
             <div className="flex justify-around items-center bg-light-bg dark:bg-twitter-dark dim:bg-dim-bg p-4 rounded-lg">
                 {colors.map(color => (
-                     <button
+                     <motion.button
                         key={color.name}
                         onClick={() => setAccentColor(color.name)}
                         className={`w-10 h-10 rounded-full ${color.class} flex items-center justify-center`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                     >
                         {accentColor === color.name && <CheckmarkCircleIcon />}
-                    </button>
+                    </motion.button>
                 ))}
             </div>
         </div>
@@ -79,10 +82,12 @@ const DisplayModal: React.FC<DisplayModalProps> = ({ onClose, currentTheme, setT
             <h3 className="font-bold mb-4 text-center">Background</h3>
             <div className="flex justify-around gap-4">
                 {themes.map(theme => (
-                    <div 
+                    <motion.div 
                         key={theme.name}
                         onClick={() => setTheme(theme.name)}
                         className={`flex-1 p-4 rounded-lg cursor-pointer border-2 ${currentTheme === theme.name ? 'border-twitter-blue' : 'border-transparent'} ${theme.bgClass}`}
+                        whileHover={{ y: -5 }}
+                        whileTap={{ scale: 0.95 }}
                     >
                        <div className="flex items-center justify-center gap-2">
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${currentTheme === theme.name ? 'bg-twitter-blue border-twitter-blue' : 'border-gray-500'}`}>
@@ -90,17 +95,19 @@ const DisplayModal: React.FC<DisplayModalProps> = ({ onClose, currentTheme, setT
                             </div>
                             <span className={`font-bold ${theme.textClass}`}>{theme.label}</span>
                        </div>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
         </div>
 
-        <button 
+        <motion.button 
             onClick={onClose}
-            className="w-full mt-8 bg-twitter-blue text-white font-bold py-3 rounded-full hover:bg-opacity-90"
+            className="w-full mt-8 bg-twitter-blue text-white font-bold py-3 rounded-full"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
         >
             Done
-        </button>
+        </motion.button>
       </div>
     </div>
   );

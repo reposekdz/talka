@@ -9,6 +9,7 @@ import VideoPlayer from './VideoPlayer';
 import TipModal from './TipModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import AudioPlayer from './AudioPlayer';
+import Confetti from './Confetti';
 
 interface TweetMenuProps {
   tweet: Tweet;
@@ -93,6 +94,7 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
     const [isTipModalOpen, setIsTipModalOpen] = useState(false);
     const [showTranslation, setShowTranslation] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [fireConfetti, setFireConfetti] = useState(false);
     
     const relevantReactions = liveReactions.filter(r => r.tweetId === tweet.id);
 
@@ -118,6 +120,15 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
         action?.();
     };
     
+    const handleLikeClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isLiked) {
+            setFireConfetti(true);
+            setTimeout(() => setFireConfetti(false), 1000);
+        }
+        onLikeTweet(tweet.id);
+    }
+
     const handleTranslate = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (translation) {
@@ -172,7 +183,8 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
     };
 
     return (
-        <div className="p-4 border-b border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border/50">
+        <div className="p-4 border-b border-light-border/50 dark:border-twitter-border/50 dim:border-dim-border/50 relative">
+            <Confetti fire={fireConfetti} />
             <AnimatePresence>
                 {isTipModalOpen && <TipModal user={user} onClose={() => setIsTipModalOpen(false)} />}
             </AnimatePresence>
@@ -250,8 +262,10 @@ const TweetCard: React.FC<TweetCardProps> = (props) => {
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-                            <motion.button whileTap={{ scale: 1.2 }} onClick={(e) => handleActionClick(e, () => onLikeTweet(tweet.id))} className={`flex items-center gap-2 group ${isLiked ? 'text-red-500' : ''}`}>
-                                <div className="p-2 rounded-full group-hover:bg-red-500/10">{isLiked ? <HeartFillIcon/> : <LikeIcon />}</div>
+                            <motion.button whileTap={{ scale: 1.2 }} onClick={handleLikeClick} className={`flex items-center gap-2 group ${isLiked ? 'text-red-500' : ''}`}>
+                                <div className="p-2 rounded-full group-hover:bg-red-500/10">
+                                    {isLiked ? <motion.div animate={{animation: 'heart-beat 1s ease-in-out'}}><HeartFillIcon/></motion.div> : <LikeIcon />}
+                                </div>
                                 <span className="text-xs">{tweet.likeCount > 0 ? tweet.likeCount : ''}</span>
                             </motion.button>
                         </motion.div>
