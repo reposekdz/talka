@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Space } from '../types';
-import { CloseIcon, MicrophoneIcon, HandRaiseIcon, LeaveIcon, ChevronRightIcon, ChevronLeftIcon } from './Icon';
+import { CloseIcon, MicrophoneIcon, HandRaiseIcon, LeaveIcon, ChevronRightIcon, ChevronLeftIcon, UserPlusIcon } from './Icon';
 
 interface SpacesPlayerProps {
   space: Space;
   onClose: () => void;
+  onListenAlong: (space: Space) => void;
 }
 
-const SpacesPlayer: React.FC<SpacesPlayerProps> = ({ space, onClose }) => {
+const SpacesPlayer: React.FC<SpacesPlayerProps> = ({ space, onClose, onListenAlong }) => {
     const [isMuted, setIsMuted] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -85,6 +86,9 @@ const SpacesPlayer: React.FC<SpacesPlayerProps> = ({ space, onClose }) => {
                 </button>
                  <button className={`${controlButtonClasses} bg-white/30`}>
                     <HandRaiseIcon />
+                </button>
+                <button onClick={() => onListenAlong(space)} className={`${controlButtonClasses} bg-white/30`}>
+                    <UserPlusIcon />
                 </button>
                 <button onClick={onClose} className="text-red-400 font-bold flex items-center gap-2 py-2 px-4 rounded-full bg-white/20 hover:bg-white/30">
                     <LeaveIcon /> Leave

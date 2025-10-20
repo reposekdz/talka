@@ -17,23 +17,26 @@ const ProfileHighlights: React.FC<ProfileHighlightsProps> = ({ highlights, isOwn
         <p className="text-sm text-light-secondary-text dark:text-twitter-gray dim:text-dim-secondary-text mb-4">
             Keep your favorite stories on your profile
         </p>
-      <div className="flex gap-4 overflow-x-auto no-scrollbar">
+      <div className="flex gap-4 overflow-x-auto no-scrollbar py-4">
         {isOwnProfile && (
             <div className="flex flex-col items-center flex-shrink-0 w-20">
-                <button onClick={onOpenCreateHighlight} className="w-16 h-16 rounded-full border-2 border-dashed border-light-secondary-text dark:border-twitter-gray flex items-center justify-center text-light-secondary-text dark:text-twitter-gray hover:bg-light-hover dark:hover:bg-white/10 transition-colors">
+                <button 
+                    onClick={onOpenCreateHighlight} 
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-light-secondary-text dark:text-twitter-gray transition-all duration-300 neumorphic-light dark:neumorphic-dark hover:scale-105"
+                >
                     <PlusIcon />
                 </button>
                 <p className="text-sm mt-2">New</p>
             </div>
         )}
-        {highlights.map((highlight, index) => (
+        {highlights.map((highlight) => (
           <motion.div 
             key={highlight.id} 
             className="flex flex-col items-center flex-shrink-0 w-20 cursor-pointer"
             onClick={() => onHighlightClick(highlight)}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-light-border dark:ring-twitter-border ring-offset-2 ring-offset-light-bg dark:ring-offset-twitter-dark">
+            <div className="w-16 h-16 rounded-full overflow-hidden transition-all duration-300 neumorphic-light dark:neumorphic-dark hover:scale-105">
                 <img src={highlight.coverUrl} alt={highlight.title} className="w-full h-full object-cover"/>
             </div>
             <p className="text-sm mt-2 truncate w-full text-center">{highlight.title}</p>

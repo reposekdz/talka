@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockTweets, otherUsers, mockUser } from '../data/mockData';
+import { mockTweets, otherUsers } from '../data/mockData';
 import TweetCard from './TweetCard';
 import WhoToFollow from './WhoToFollow';
 import { Tweet, User, AppSettings } from '../types';
@@ -20,12 +20,13 @@ interface SearchModalProps {
   onDeleteTweet: (tweetId: string) => void;
   liveReactions: { id: number; emoji: string; tweetId: string }[];
   appSettings: AppSettings;
+  currentUser: User;
 }
 
 type SearchResult = Tweet | User;
 
 const SearchModal: React.FC<SearchModalProps> = (props) => {
-  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions, appSettings } = props;
+  const { onClose, onImageClick, onViewProfile, onGrok, onTranslateTweet, onPinTweet, onFeatureTweet, onOpenChat, onLikeTweet, onRetweet, onDeleteTweet, liveReactions, appSettings, currentUser } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Top');
 
@@ -69,7 +70,7 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
   }, [searchTerm, activeTab]);
   
   const commonTweetCardProps = {
-    currentUser: mockUser,
+    currentUser: currentUser,
     onImageClick,
     onViewProfile: handleProfileClick,
     onReply: () => {},
@@ -146,7 +147,7 @@ const SearchModal: React.FC<SearchModalProps> = (props) => {
                 if ('content' in item) { 
                   return <TweetCard key={`tweet-${item.id}`} tweet={item} {...commonTweetCardProps} />;
                 } else {
-                  return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={mockUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;
+                  return <WhoToFollow key={`user-${item.id}`} user={item} currentUser={currentUser} onFollowToggle={() => {}} onViewProfile={handleProfileClick} />;
                 }
               })
             ) : (

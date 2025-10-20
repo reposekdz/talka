@@ -37,19 +37,19 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({ user, currentUser, onFollowTo
 
   return (
     <div onClick={handleUserClick} className="flex items-start justify-between p-4 hover:bg-white/10 cursor-pointer transition-colors duration-200">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 overflow-hidden">
         <AvatarWithStatus user={user} size="medium" />
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-hidden">
           <div className="flex items-center gap-1">
-            <span className="font-bold hover:underline">{user.displayName}</span>
+            <span className="font-bold hover:underline truncate">{user.displayName}</span>
             {user.verified && <VerifiedIcon />}
           </div>
-          <span className="text-twitter-gray">@{user.username}</span>
-          <p className="text-sm text-light-text dark:text-dim-text mt-1">{user.bio}</p>
+          <span className="text-twitter-gray truncate">@{user.username}</span>
+          <p className="text-sm text-light-text dark:text-dim-text mt-1 line-clamp-2">{user.bio}</p>
         </div>
       </div>
-       <div className="flex items-center gap-2">
-        {!isFollowerOfCurrentUser && (
+       <div className="flex items-center gap-2 flex-shrink-0">
+        {!isFollowerOfCurrentUser || isFollowing ? (
             <button
                 className={`font-bold px-4 py-1.5 rounded-full transition-colors duration-200 self-center ${followButtonClasses}`}
                 onClick={handleFollowClick}
@@ -58,7 +58,7 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({ user, currentUser, onFollowTo
             >
                 {followButtonText}
             </button>
-        )}
+        ) : null}
         {isFollowerOfCurrentUser && onRemoveFollower && (
            <div className="relative">
              <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }} className="p-2 hover:bg-white/10 rounded-full">

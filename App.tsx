@@ -42,6 +42,7 @@ import CallView from './components/CallView';
 import CreateHighlightModal from './components/CreateHighlightModal';
 import HighlightViewerModal from './components/HighlightViewerModal';
 import UserListModal from './components/UserListModal';
+import ListenAlongModal from './components/ListenAlongModal';
 
 
 import { Page, Theme, Tweet, User, AppSettings, UserStory, Highlight, Conversation, Message, ChatTheme, Reel, Story, Call, Space, ReelComment, Moment } from './types';
@@ -95,6 +96,7 @@ const App: React.FC = () => {
 
     // Spaces state
     const [activeSpace, setActiveSpace] = useState<Space | null>(null);
+    const [listenAlongSpace, setListenAlongSpace] = useState<Space | null>(null);
     
     // User list modal state
     const [userListModal, setUserListModal] = useState<{user: User, initialTab: 'followers' | 'following'} | null>(null);
@@ -741,7 +743,7 @@ const App: React.FC = () => {
             
             <AnimatePresence>
                 {isDisplayModalOpen && <DisplayModal onClose={() => setIsDisplayModalOpen(false)} currentTheme={theme} setTheme={setTheme} />}
-                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={(images, startIndex) => {setIsSearchModalOpen(false); setLightboxState({images, startIndex})}} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onFeatureTweet={handleFeatureTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} onRetweet={handleRetweet} onDeleteTweet={handleDeleteTweet} liveReactions={liveReactions} appSettings={appSettings} />}
+                {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} onImageClick={(images, startIndex) => {setIsSearchModalOpen(false); setLightboxState({images, startIndex})}} onViewProfile={(user) => {setIsSearchModalOpen(false); setCurrentPage(Page.Profile)}} onGrok={(tweet) => {setIsSearchModalOpen(false); setGrokTweet(tweet)}} onTranslateTweet={handleTranslateTweet} onPinTweet={handlePinTweet} onFeatureTweet={handleFeatureTweet} onOpenChat={handleOpenChat} onLikeTweet={handleLikeTweet} onRetweet={handleRetweet} onDeleteTweet={handleDeleteTweet} liveReactions={liveReactions} appSettings={appSettings} currentUser={currentUser} />}
                 {lightboxState && <Lightbox images={lightboxState.images} startIndex={lightboxState.startIndex} onClose={() => setLightboxState(null)} />}
                 {replyingToTweet && <ReplyModal tweet={replyingToTweet} currentUser={currentUser} onClose={() => setReplyingToTweet(null)} onPostReply={(reply) => {handlePostTweet({ content: reply, isBookmarked: false }); setReplyingToTweet(null); }} />}
                 {quotingTweet && <QuoteTweetModal tweet={quotingTweet} currentUser={currentUser} onClose={() => setQuotingTweet(null)} onPostTweet={(tweet) => {handlePostTweet(tweet); setQuotingTweet(null);}} />}
@@ -758,7 +760,8 @@ const App: React.FC = () => {
                 {isMobileDrawerOpen && <MobileDrawer user={currentUser} onClose={() => setIsMobileDrawerOpen(false)} onNavigate={(page) => {setCurrentPage(page); setUserListModal(null);}} notificationCount={mockNotifications.length} />}
                 {isMobileExploreOpen && <MobileExploreDrawer onClose={() => setIsMobileExploreOpen(false)} />}
                 {toast && <Toast key={toast.id} {...toast} onClose={() => setToast(null)} />}
-                {activeSpace && <SpacesPlayer space={activeSpace} onClose={() => setActiveSpace(null)} />}
+                {activeSpace && <SpacesPlayer space={activeSpace} onClose={() => setActiveSpace(null)} onListenAlong={setListenAlongSpace} />}
+                {listenAlongSpace && <ListenAlongModal space={listenAlongSpace} onClose={() => setListenAlongSpace(null)} />}
                 {incomingCall && <IncomingCallModal call={incomingCall} onAccept={() => { setActiveCall({...incomingCall, status: 'active'}); setIncomingCall(null); }} onDecline={() => setIncomingCall(null)} onReplyWithMessage={() => { setIncomingCall(null); showToast("Replied via message."); }} />}
                 {activeCall && activeCall.status !== 'minimized' && <CallView call={activeCall} onEndCall={() => setActiveCall(null)} onMinimize={() => setActiveCall(c => c ? {...c, status: 'minimized'} : null)} onToggleMic={() => setActiveCall(c => c ? {...c, isMicMuted: !c.isMicMuted} : null)} onToggleCamera={() => setActiveCall(c => c ? {...c, isCameraOff: !c.isCameraOff} : null)} onSendReaction={(emoji) => setCallReactions(prev => [...prev, {id: Date.now(), emoji}])} reactions={callReactions} setReactions={setCallReactions} />}
                 {activeCall && activeCall.status === 'minimized' && <ActiveCallBubble call={activeCall} onMaximize={() => setActiveCall(c => c ? {...c, status: 'active'} : null)} onEndCall={() => setActiveCall(null)} />}
