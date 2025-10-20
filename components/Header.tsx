@@ -18,19 +18,20 @@ interface HeaderProps {
     onOpenDrawer: () => void; // For mobile
 }
 
+const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    return isMobile;
+};
+
 const Header: React.FC<HeaderProps> = (props) => {
     const { currentUser, setCurrentPage, notificationCount, onOpenCreator, openSearchModal, onLogout, openDisplayModal, onOpenDrawer } = props;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
-    const useIsMobile = () => {
-        const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
-        useEffect(() => {
-            const handleResize = () => setIsMobile(window.innerWidth < 640);
-            window.addEventListener('resize', handleResize);
-            return () => window.removeEventListener('resize', handleResize);
-        }, []);
-        return isMobile;
-    };
     const isMobile = useIsMobile();
     
     const handleAvatarClick = () => {

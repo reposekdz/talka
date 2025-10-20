@@ -125,6 +125,12 @@ const App: React.FC = () => {
         document.documentElement.className = theme;
     }, [theme]);
     
+    const filteredTweetsForYou = useMemo(() => {
+        const { mutedWords } = appSettings.notifications;
+        if (mutedWords.length === 0) return tweets;
+        return tweets.filter(tweet => !mutedWords.some(word => tweet.content.toLowerCase().includes(word.toLowerCase())));
+    }, [tweets, appSettings.notifications.mutedWords]);
+
     const handleLogin = () => setIsLoggedIn(true);
     const handleLogout = () => setIsLoggedIn(false);
 
@@ -586,12 +592,6 @@ const App: React.FC = () => {
             appSettings: appSettings,
         };
         
-        const filteredTweetsForYou = useMemo(() => {
-            const { mutedWords } = appSettings.notifications;
-            if (mutedWords.length === 0) return tweets;
-            return tweets.filter(tweet => !mutedWords.some(word => tweet.content.toLowerCase().includes(word.toLowerCase())));
-        }, [tweets, appSettings.notifications.mutedWords]);
-
 
         switch (currentPage) {
             case Page.Home:
