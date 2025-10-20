@@ -176,10 +176,12 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initial
              <motion.div 
                 initial={{ x: -20, opacity: 0, scale: 0.8 }}
                 animate={{ x: 0, opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 300 }}
                 onClick={prevUser}
-                className="absolute left-4 sm:left-10 cursor-pointer p-1 bg-white/10 rounded-full"
+                className="absolute left-4 sm:left-10 cursor-pointer p-1 bg-white/10 rounded-full group"
             >
-                <img src={storyGroups[currentUserIndex - 1].user.avatarUrl} alt="Previous user" className="w-10 h-10 rounded-full opacity-60 hover:opacity-100"/>
+                <img src={storyGroups[currentUserIndex - 1].user.avatarUrl} alt="Previous user" className="w-12 h-12 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"/>
             </motion.div>
         )}
 
@@ -224,10 +226,12 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ stories: storyGroups, initial
             <motion.div 
                 initial={{ x: 20, opacity: 0, scale: 0.8 }}
                 animate={{ x: 0, opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 300 }}
                 onClick={nextUser}
-                className="absolute right-4 sm:right-10 cursor-pointer p-1 bg-white/10 rounded-full"
+                className="absolute right-4 sm:right-10 cursor-pointer p-1 bg-white/10 rounded-full group"
             >
-                <img src={storyGroups[currentUserIndex + 1].user.avatarUrl} alt="Next user" className="w-10 h-10 rounded-full opacity-60 hover:opacity-100"/>
+                <img src={storyGroups[currentUserIndex + 1].user.avatarUrl} alt="Next user" className="w-12 h-12 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"/>
             </motion.div>
         )}
     </motion.div>
